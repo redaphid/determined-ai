@@ -9,6 +9,10 @@ import determined as det
 from determined import core, horovod, load
 from determined.common.api import analytics, certs
 
+try:
+    from ray import train
+except:
+    logging.debug("not importing ray")
 
 @contextlib.contextmanager
 def maybe_periodic_stacktraces(debug_enabled: bool) -> Iterator[None]:
@@ -94,6 +98,8 @@ def main(train_entrypoint: str) -> int:
             distributed = core.DistributedContext.from_deepspeed()
         elif distributed_backend.use_torch():
             distributed = core.DistributedContext.from_torch_distributed()
+        elif distributed_backend.use_ray():
+            distributed = core.DistributedContext.from_ray(info.container_rank, len(info.container_addrs), len(info.gpu_uuids), train)
         elif len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
             raise ValueError(
                 "In multi-slot tasks, the determined.exec.harness module must not be invoked "

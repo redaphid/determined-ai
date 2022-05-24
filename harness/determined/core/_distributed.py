@@ -163,6 +163,21 @@ class DistributedContext:
             self._local_worker_zmq.safe_start()
 
     @classmethod
+    def from_ray(cls, machine_rank: int, num_machines: int,
+                 gpus_per_machine: int,
+                 train: Any, chief_ip: Optional[str] = None) -> "DistributedContext":
+        return cls(
+            rank=train.world_rank(),
+            size=train.world_size(),
+            local_rank=train.local_rank(),
+            local_size=gpus_per_machine,
+            cross_rank=machine_rank,
+            cross_size=num_machines,
+            chief_ip=chief_ip or os.environ.get("DET_CHIEF_IP"),
+            port_offset=_get_training_port_offset()
+        )
+
+    @classmethod
     def from_horovod(cls, hvd: Any, chief_ip: Optional[str] = None) -> "DistributedContext":
         """
         Create a ``DistributedContext`` using the provided ``hvd`` module to determine rank

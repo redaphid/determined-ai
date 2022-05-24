@@ -17,6 +17,7 @@ class _DistributedBackend:
     HOROVOD = "USE_HOROVOD"
     DEEPSPEED = "USE_DEEPSPEED"
     TORCH = "USE_TORCH_DISTRIBUTED"
+    RAY = "USE_RAY"
 
     def use_horovod(self) -> bool:
         return bool(os.environ.get(self.HOROVOD, None))
@@ -26,6 +27,9 @@ class _DistributedBackend:
 
     def use_deepspeed(self) -> bool:
         return bool(os.environ.get(self.DEEPSPEED, None))
+
+    def use_ray(self) -> bool:
+        return bool(os.environ.get(self.RAY, None))
 
 
 class TrialController(metaclass=abc.ABCMeta):
