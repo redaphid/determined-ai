@@ -4,44 +4,44 @@ Mappings:
   RegionMap:
     ap-northeast-1:
       Master: ami-0d40f290731382e9c
-      Agent: ami-09b858b9faff207a9
+      Agent: ami-0c72d07f75149e56b
       Bastion: ami-0d40f290731382e9c
     # TODO(DET-4258) Uncomment these when we fully support all P3 regions.
     # ap-northeast-2:
     #   Master: ami-07cc75e9e8f9300eb
-    #   Agent: ami-015ab3e5a38ea8658
+    #   Agent: ami-069f816f206a22f50
     #   Bastion: ami-07cc75e9e8f9300eb
     # ap-southeast-1:
     #   Master: ami-06004dc0577827979
-    #   Agent: ami-0a93cc0d839604673
+    #   Agent: ami-051139bc0052170a2
     #   Bastion: ami-06004dc0577827979
     # ap-southeast-2:
     #   Master: ami-0e1310e493e66914a
-    #   Agent: ami-0c70420cc468cff2b
+    #   Agent: ami-0e9aff50e68c83537
     #   Bastion: ami-0e1310e493e66914a
     eu-central-1:
       Master: ami-0243761267e52b9ce
-      Agent: ami-00c3bdcf86fef0569
+      Agent: ami-05d9c9dc124f408e6
       Bastion: ami-0243761267e52b9ce
     eu-west-1:
       Master: ami-015afd151917a362d
-      Agent: ami-004336f1e6d7af72c
+      Agent: ami-01518e11aabd04408
       Bastion: ami-015afd151917a362d
     # eu-west-2:
     #   Master: ami-0b2537c6147faa3e2
-    #   Agent: ami-0792151eff6317968
+    #   Agent: ami-0d90591e0d8f0db3e
     #   Bastion: ami-0b2537c6147faa3e2
     us-east-1:
       Master: ami-000722651477bd39b
-      Agent: ami-05b2885aabd00770b
+      Agent: ami-00c2ba36b9f97cd59
       Bastion: ami-000722651477bd39b
     us-east-2:
       Master: ami-0f597975071f4c4ec
-      Agent: ami-0e66fcef272135c97
+      Agent: ami-0f69a9a775d104169
       Bastion: ami-0f597975071f4c4ec
     us-west-2:
       Master: ami-0d37fe5ba03a9ac43
-      Agent: ami-059453aebcb2d4a14
+      Agent: ami-03dc6039049550ca5
       Bastion: ami-0d37fe5ba03a9ac43
 
 Parameters:
