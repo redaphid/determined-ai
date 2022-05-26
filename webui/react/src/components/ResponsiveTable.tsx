@@ -1,4 +1,4 @@
-import { Table } from 'antd';
+import { Table, TablePaginationConfig } from 'antd';
 import { SpinProps } from 'antd/es/spin';
 import { TableProps } from 'antd/es/table';
 import { SorterResult } from 'antd/es/table/interface';
@@ -26,22 +26,28 @@ export const handleTableChange = (
   settings: Settings,
   updateSettings: (s: Settings, b: boolean) => void,
 ) => {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  return (tablePagination: any, tableFilters: any, tableSorter: any): void => {
-    if (Array.isArray(tableSorter)) return;
+  return (
+    tablePagination: TablePaginationConfig,
+    tableFilters: unknown,
+    tableSorter: unknown,
+  ): void => {
+    if (Array.isArray(tableSorter) || !tablePagination) return;
 
     const { columnKey, order } = tableSorter as SorterResult<unknown>;
     if (!columnKey || !columns.find(column => column.key === columnKey)) return;
 
+    const tableOffset = tablePagination?.current
+      ? (tablePagination?.current - 1) * (tablePagination?.pageSize ?? 0)
+      : 0;
     const newSettings = {
       sortDesc: order === 'descend',
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      sortKey: columnKey as any,
+      sortKey: columnKey,
       tableLimit: tablePagination.pageSize,
-      tableOffset: (tablePagination.current - 1) * tablePagination.pageSize,
+      tableOffset,
     };
+
     const shouldPush = settings.tableOffset !== newSettings.tableOffset;
-    updateSettings(newSettings, shouldPush);
+    updateSettings(newSettings as Settings, shouldPush);
   };
 };
 

@@ -19,22 +19,18 @@ import { throttle } from 'throttle-debounce';
 
 import useResize from 'hooks/useResize';
 import { UpdateSettings } from 'hooks/useSettings';
+import { Primitive, UnknownRecord } from 'shared/types';
 
 import Spinner from '../shared/components/Spinner/Spinner';
 
 import css from './InteractiveTable.module.scss';
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type Comparable = any;
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type RecordType = any;
 export interface InteractiveTableSettings {
   columnWidths: number[];
   columns: string[];
   row?: number[];
   sortDesc: boolean;
-  sortKey: Comparable;
+  sortKey?: Primitive;
   tableLimit: number;
   tableOffset: number;
 }
@@ -53,8 +49,7 @@ interface ContextMenuProps {
 
 export interface ColumnDef<RecordType> extends ColumnType<RecordType> {
   defaultWidth: number;
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  isFiltered?: (s: any) => boolean; // any extends Settings
+  isFiltered?: (s: unknown) => boolean;
 }
 export type ColumnDefs<ColumnName extends string, RecordType> = Record<
   ColumnName,
@@ -296,7 +291,7 @@ const InteractiveTable: InteractiveTable = ({
         ?.map((col) => ({ [col.dataIndex as string]: col }))
         .reduce((a, b) => ({ ...a, ...b })),
     [ columns ],
-  ) as ColumnDefs<string, RecordType>;
+  ) as ColumnDefs<string, UnknownRecord>;
   const { width: pageWidth } = useResize(containerRef);
   const tableRef = useRef<HTMLDivElement>(null);
   const [ widthData, setWidthData ] = useState({
@@ -350,8 +345,7 @@ const InteractiveTable: InteractiveTable = ({
     pageWidth ]);
 
   const handleChange = useCallback(
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    (tablePagination: any, tableFilters: any, tableSorter: any): void => {
+    (tablePagination, tableFilters, tableSorter): void => {
       if (Array.isArray(tableSorter)) return;
 
       const { columnKey, order } = tableSorter as SorterResult<unknown>;
@@ -359,8 +353,7 @@ const InteractiveTable: InteractiveTable = ({
 
       const newSettings = {
         sortDesc: order === 'descend',
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        sortKey: columnKey as any,
+        sortKey: columnKey,
         tableLimit: tablePagination.pageSize,
         tableOffset: (tablePagination.current - 1) * tablePagination.pageSize,
       };
@@ -471,7 +464,7 @@ const InteractiveTable: InteractiveTable = ({
     ],
   );
 
-  const renderColumns: ColumnsType<RecordType> = useMemo(
+  const renderColumns = useMemo(
     () =>
       [
         ...settings.columns.filter(columnName => columnDefs[columnName])
@@ -489,7 +482,7 @@ const InteractiveTable: InteractiveTable = ({
             };
           }),
         { ...columnDefs.action, width: WIDGET_COLUMN_WIDTH },
-      ] as ColumnsType<RecordType>,
+      ] as ColumnsType<UnknownRecord>,
 
     [ settings.columns, widthData, settings.sortKey, settings.sortDesc, columnDefs, onHeaderCell ],
   );
@@ -506,6 +499,7 @@ const InteractiveTable: InteractiveTable = ({
       <Spinner spinning={spinning}>
         <Table
           bordered
+          /* next one is just so ant doesnt complain */
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           columns={renderColumns as ColumnsType<any>}
           components={components}
