@@ -687,6 +687,7 @@ class PIDServer:
             return e.exit_code or 77
         except det.errors.WorkerError:
             # Worker failed.
+            print(f"Worker failed, executing {on_fail}")
             if on_fail is not None:
                 # Let things finish logging, exiting on their own, etc.
                 time.sleep(grace_period)
