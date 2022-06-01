@@ -557,6 +557,7 @@ func (a *Allocation) ResourcesStateChanged(
 		if a.rendezvous != nil && a.rendezvous.try() {
 			ctx.Log().Info("all containers are connected successfully (task container state changed)")
 		}
+		fmt.Println("pre-registerProxies", a.req.ProxyPort, msg.ResourcesStarted.Addresses)
 		if a.req.ProxyPort != nil && msg.ResourcesStarted.Addresses != nil {
 			a.registerProxies(ctx, msg.ResourcesStarted.Addresses)
 		}
@@ -725,6 +726,7 @@ func (a *Allocation) kill(ctx *actor.Context) {
 }
 
 func (a *Allocation) registerProxies(ctx *actor.Context, addresses []cproto.Address) {
+	fmt.Println("register proxies addresses: ", addresses)
 	cfg := a.req.ProxyPort
 	if cfg == nil {
 		return

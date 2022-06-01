@@ -73,7 +73,7 @@ func (p *Proxy) Receive(ctx *actor.Context) error {
 			URL:                  msg.URL,
 			LastRequested:        time.Now(),
 			ProxyTCP:             msg.ProxyTCP,
-			AllowUnauthenticated: msg.Unauthenticated,
+			AllowUnauthenticated: true,
 		}
 
 		if ctx.ExpectingResponse() {

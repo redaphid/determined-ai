@@ -233,6 +233,16 @@ func (a *apiServer) LaunchCommand(
 	}
 	spec.Base.ExtraEnvVars = map[string]string{"DET_TASK_TYPE": string(model.TaskTypeCommand)}
 
+	fmt.Println("!!!!! LaunchCommand ProxyPort", spec.Config.ProxyPort)
+	if spec.Config.ProxyPort != nil {
+		port := spec.Config.ProxyPort
+		spec.Port = port
+		spec.Config.Environment.Ports = map[string]int{"command": *port}
+		if spec.Config.ProxyTCP != nil {
+			spec.ProxyTCP = *spec.Config.ProxyTCP
+		}
+	}
+
 	// Launch a command actor.
 	var cmdID model.TaskID
 	if err = a.ask(commandsAddr, *spec, &cmdID); err != nil {
@@ -242,15 +252,6 @@ func (a *apiServer) LaunchCommand(
 	var cmd *commandv1.Command
 	if err = a.ask(commandsAddr.Child(cmdID), &commandv1.Command{}, &cmd); err != nil {
 		return nil, err
-	}
-
-	if spec.Config.ProxyPort != nil {
-		port := spec.Config.ProxyPort
-		spec.Port = port
-		spec.Config.Environment.Ports = map[string]int{"command": *port}
-		if spec.Config.ProxyTCP != nil {
-			spec.ProxyTCP = *spec.Config.ProxyTCP
-		}
 	}
 
 	return &apiv1.LaunchCommandResponse{

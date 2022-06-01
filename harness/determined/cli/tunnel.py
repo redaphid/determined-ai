@@ -57,6 +57,21 @@ def copy_to_websocket(
         ws.close()
 
 
+def copy_to_websocket2(
+	ws: lomond.WebSocket, f: socket.socket, ready_sem: threading.Semaphore
+) -> None:
+	ready_sem.acquire()
+
+	try:
+		while True:
+			chunk = f.recv(4096)
+			if not chunk:
+				break
+			ws.send_binary(chunk)
+	finally:
+		f.close()
+		ws.close()
+
 def copy_from_websocket(
     f: io.RawIOBase,
     ws: lomond.WebSocket,
@@ -83,6 +98,36 @@ def copy_from_websocket(
     finally:
         f.close()
 
+
+def copy_from_websocket2(
+	f: socket.socket,
+	ws: lomond.WebSocket,
+	ready_sem: threading.Semaphore,
+	cert_file: Optional[str],
+	cert_name: Optional[str],
+) -> None:
+	try:
+		for event in ws.connect(
+			ping_rate=0,
+			session_class=lambda socket: CustomSSLWebsocketSession(socket, cert_file, cert_name),
+		):
+			if isinstance(event, lomond.events.Binary):
+				f.send(event.data)
+			elif isinstance(event, lomond.events.Ready):
+				ready_sem.release()
+			elif isinstance(
+				event,
+				(lomond.events.ConnectFail, lomond.events.Rejected, lomond.events.ProtocolError),
+			):
+				if isinstance(event, lomond.events.Rejected):
+					print(event.response)
+					import pdb
+					pdb.set_trace()
+				raise Exception("Connection failed: {}".format(event))
+			elif isinstance(event, (lomond.events.Closing, lomond.events.Disconnected)):
+				break
+	finally:
+		f.close()
 
 def http_connect_tunnel(
     master: str, service: str, cert_file: Optional[str], cert_name: Optional[str]
@@ -119,16 +164,16 @@ def http_tunnel_listener(
 
     url = request.make_url(master, "proxy/{}/".format(service))
 
-    class TunnelHandler(socketserver.StreamRequestHandler):
+    class TunnelHandler(socketserver.BaseRequestHandler):
         def handle(self) -> None:
             ws = lomond.WebSocket(request.maybe_upgrade_ws_scheme(url))
             # We can't send data to the WebSocket before the connection becomes ready, which takes a bit of
             # time; this semaphore lets the sending thread wait for that to happen.
             ready_sem = threading.Semaphore(0)
 
-            c1 = threading.Thread(target=copy_to_websocket, args=(ws, self.rfile, ready_sem))
+            c1 = threading.Thread(target=copy_to_websocket2, args=(ws, self.request, ready_sem))
             c2 = threading.Thread(
-                target=copy_from_websocket, args=(self.wfile, ws, ready_sem, cert_file, cert_name)
+                target=copy_from_websocket2, args=(self.request, ws, ready_sem, cert_file, cert_name)
             )
             c1.start()
             c2.start()
