@@ -137,6 +137,10 @@ export const deleteExperiment = generateDetApi<
   Service.ExperimentIdParams, Api.V1DeleteExperimentResponse, void
 >(Config.deleteExperiment);
 
+export const experimentLineage = generateDetApi<
+Service.ExperimentIdParams, Api.V1ExperimentLineageResponse, Api.V1ExperimentLineageResponse
+>(Config.experimentLineage);
+
 export const activateExperiment = generateDetApi<
   Service.ExperimentIdParams, Api.V1ActivateExperimentResponse, void
 >(Config.activateExperiment);

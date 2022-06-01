@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Tree from 'react-d3-tree';
 import {
+  experimentLineage,
   getExperimentDetails,
 } from 'services/api';
 import { ExperimentBase, TrialDetails } from 'types';
@@ -23,38 +24,11 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
   const [ selectedExperiment, setSelectedExperiment ] = useState<ExperimentBase>(experiment);
   const [ previousExperiment, setPreviousExperiment ] = useState<ExperimentBase | null>(null);
 
-  const fetchLineage = async (id: number) => {
-    return {
-      children: [ {
-        children: [
-          {
-            children: [
-              {
-                children: [],
-                name: '3',
-              },
-            ],
-            name: '2',
-          },
-          {
-            children: [
-              {
-                children: [],
-                name: '5',
-              },
-            ],
-            name: '4',
-          },
-        ],
-        name: '1',
-      } ],
-      name: id.toString(),
-    };
-  };
-
-  const getLineage = useCallback(async (id: number) => {
-    const lineageRes = await fetchLineage(id);
-    setLineage(lineageRes);
+  const getLineage = useCallback(async (id) => {
+    const lineageRes = await experimentLineage({ experimentId: id });
+    if (lineageRes) {
+      setLineage(lineageRes.root);
+    }
   }, [ ]);
 
   useEffect(() => {
@@ -67,8 +41,8 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
     setPreviousExperiment(previousExp);
   }, []);
 
-  const nodeClickHandler = useCallback(async ({ name }) => {
-    const selectedExp = await getExperimentDetails({ id: name });
+  const nodeClickHandler = useCallback(async ({ id }) => {
+    const selectedExp = await getExperimentDetails({ id });
     setSelectedExperiment(selectedExp);
   }, [ ]);
 
@@ -81,7 +55,7 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
     toggleNode,
     nodeClickHandler,
   }) => {
-    const fillColor = parseInt(nodeDatum.name) === selectedExperiment.id ? '#3E6FED' : 'black';
+    const fillColor = parseInt(nodeDatum.id) === selectedExperiment.id ? '#3E6FED' : 'black';
     return (
       <g>
         <circle fill={fillColor} r="15" onClick={() => nodeClickHandler(nodeDatum)} />
@@ -112,8 +86,14 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
       <div className={css.DetailsWrapper}>
         #{selectedExperiment.id}<br />
         {selectedExperiment.name}<br />
-        Hyperparameters<br /><br />
-        {JSON.stringify(selectedExperiment.hyperparameters)}
+        Selected Experiment Hyperparameters:<br />
+        {JSON.stringify(selectedExperiment.hyperparameters)}<br /><br />
+        {previousExperiment ?
+          (
+            <div>Previous Experiment Hyperparameters<br /><br />
+              {JSON.stringify(previousExperiment.hyperparameters)}
+            </div>
+          ) : null}
       </div>
     </div>
   );

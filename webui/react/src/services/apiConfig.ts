@@ -272,6 +272,18 @@ export const deleteExperiment: DetApi<
   },
 };
 
+export const experimentLineage: DetApi<
+  Service.ExperimentIdParams, Api.V1ExperimentLineageResponse, Api.V1ExperimentLineageResponse
+> = {
+  name: 'experimentLineage',
+  postProcess: (response: Api.V1ExperimentLineageResponse) => {
+    return response;
+  },
+  request: (params: Service.ExperimentIdParams, options) => {
+    return detApi.Experiments.experimentLineage(params.experimentId, options);
+  },
+};
+
 export const unarchiveExperiment: DetApi<
   Service.ExperimentIdParams, Api.V1UnarchiveExperimentResponse, void
 > = {
