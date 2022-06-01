@@ -761,6 +761,36 @@ class v1CheckpointWorkload:
             "totalBatches": self.totalBatches,
         }
 
+class v1ChildNode:
+    def __init__(
+        self,
+        children: "typing.Optional[typing.Sequence[v1ChildNode]]" = None,
+        id: "typing.Optional[int]" = None,
+        name: "typing.Optional[str]" = None,
+        parentId: "typing.Optional[int]" = None,
+    ):
+        self.id = id
+        self.name = name
+        self.children = children
+        self.parentId = parentId
+
+    @classmethod
+    def from_json(cls, obj: Json) -> "v1ChildNode":
+        return cls(
+            id=obj.get("id", None),
+            name=obj.get("name", None),
+            children=[v1ChildNode.from_json(x) for x in obj["children"]] if obj.get("children", None) is not None else None,
+            parentId=obj.get("parentId", None),
+        )
+
+    def to_json(self) -> typing.Any:
+        return {
+            "id": self.id if self.id is not None else None,
+            "name": self.name if self.name is not None else None,
+            "children": [x.to_json() for x in self.children] if self.children is not None else None,
+            "parentId": self.parentId if self.parentId is not None else None,
+        }
+
 class v1Command:
     def __init__(
         self,
@@ -1075,6 +1105,7 @@ class v1Experiment:
         archived: bool,
         id: int,
         jobId: str,
+        lineage: "typing.Sequence[int]",
         name: str,
         numTrials: int,
         searcherType: str,
@@ -1111,6 +1142,7 @@ class v1Experiment:
         self.jobId = jobId
         self.forkedFrom = forkedFrom
         self.progress = progress
+        self.lineage = lineage
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1Experiment":
@@ -1134,6 +1166,7 @@ class v1Experiment:
             jobId=obj["jobId"],
             forkedFrom=obj.get("forkedFrom", None),
             progress=float(obj["progress"]) if obj.get("progress", None) is not None else None,
+            lineage=obj["lineage"],
         )
 
     def to_json(self) -> typing.Any:
@@ -1157,6 +1190,25 @@ class v1Experiment:
             "jobId": self.jobId,
             "forkedFrom": self.forkedFrom if self.forkedFrom is not None else None,
             "progress": dump_float(self.progress) if self.progress is not None else None,
+            "lineage": self.lineage,
+        }
+
+class v1ExperimentLineageResponse:
+    def __init__(
+        self,
+        root: "typing.Optional[v1ChildNode]" = None,
+    ):
+        self.root = root
+
+    @classmethod
+    def from_json(cls, obj: Json) -> "v1ExperimentLineageResponse":
+        return cls(
+            root=v1ChildNode.from_json(obj["root"]) if obj.get("root", None) is not None else None,
+        )
+
+    def to_json(self) -> typing.Any:
+        return {
+            "root": self.root.to_json() if self.root is not None else None,
         }
 
 class v1ExperimentSimulation:
@@ -5676,6 +5728,25 @@ def post_EnableSlot(
     if _resp.status_code == 200:
         return v1EnableSlotResponse.from_json(_resp.json())
     raise APIHttpError("post_EnableSlot", _resp)
+
+def get_ExperimentLineage(
+    session: "client.Session",
+    *,
+    experimentId: int,
+) -> "v1ExperimentLineageResponse":
+    _params = None
+    _resp = session._do_request(
+        method="GET",
+        path=f"/api/v1/experiments/{experimentId}/lineage",
+        params=_params,
+        json=None,
+        data=None,
+        headers=None,
+        timeout=None,
+    )
+    if _resp.status_code == 200:
+        return v1ExperimentLineageResponse.from_json(_resp.json())
+    raise APIHttpError("get_ExperimentLineage", _resp)
 
 def get_GetAgent(
     session: "client.Session",
