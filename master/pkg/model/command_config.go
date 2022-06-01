@@ -47,6 +47,8 @@ type CommandConfig struct {
 	NotebookIdleType string           `json:"notebook_idle_type"`
 	WorkDir          *string          `json:"work_dir"`
 	Debug            bool             `json:"debug"`
+	ProxyTCP         *bool            `json:"proxy_tcp"`
+	ProxyPort        *int             `json:"proxy_port"`
 }
 
 // Validate implements the check.Validatable interface.

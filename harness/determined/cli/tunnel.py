@@ -10,6 +10,7 @@ import socket
 import ssl
 import sys
 import threading
+import socketserver
 from typing import Optional
 
 import lomond
@@ -110,12 +111,44 @@ def http_connect_tunnel(
     c2.join()
 
 
+def http_tunnel_listener(
+    master: str, service: str, cert_file: Optional[str], cert_name: Optional[str]
+) -> None:
+    parsed_master = request.parse_master_address(master)
+    assert parsed_master.hostname is not None, "Failed to parse master address: {}".format(master)
+
+    url = request.make_url(master, "proxy/{}/".format(service))
+
+    class TunnelHandler(socketserver.StreamRequestHandler):
+        def handle(self) -> None:
+            ws = lomond.WebSocket(request.maybe_upgrade_ws_scheme(url))
+            # We can't send data to the WebSocket before the connection becomes ready, which takes a bit of
+            # time; this semaphore lets the sending thread wait for that to happen.
+            ready_sem = threading.Semaphore(0)
+
+            c1 = threading.Thread(target=copy_to_websocket, args=(ws, self.rfile, ready_sem))
+            c2 = threading.Thread(
+                target=copy_from_websocket, args=(self.wfile, ws, ready_sem, cert_file, cert_name)
+            )
+            c1.start()
+            c2.start()
+            c1.join()
+            c2.join()
+
+    with socketserver.ThreadingTCPServer(("0.0.0.0", 8081), TunnelHandler) as server:
+        server.serve_forever()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tunnel through a Determined master")
     parser.add_argument("master_addr")
     parser.add_argument("service_uuid")
     parser.add_argument("--cert-file")
     parser.add_argument("--cert-name")
+    parser.add_argument("--listener", action="store_true")
     args = parser.parse_args()
 
-    http_connect_tunnel(args.master_addr, args.service_uuid, args.cert_file, args.cert_name)
+    if args.listener:
+        http_tunnel_listener(args.master_addr, args.service_uuid, args.cert_file, args.cert_name)
+    else:
+        http_connect_tunnel(args.master_addr, args.service_uuid, args.cert_file, args.cert_name)

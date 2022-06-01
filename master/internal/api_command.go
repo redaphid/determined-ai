@@ -244,6 +244,15 @@ func (a *apiServer) LaunchCommand(
 		return nil, err
 	}
 
+	if spec.Config.ProxyPort != nil {
+		port := spec.Config.ProxyPort
+		spec.Port = port
+		spec.Config.Environment.Ports = map[string]int{"command": *port}
+		if spec.Config.ProxyTCP != nil {
+			spec.ProxyTCP = *spec.Config.ProxyTCP
+		}
+	}
+
 	return &apiv1.LaunchCommandResponse{
 		Command: cmd,
 		Config:  protoutils.ToStruct(spec.Config),

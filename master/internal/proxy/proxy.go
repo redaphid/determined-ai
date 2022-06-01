@@ -122,6 +122,7 @@ func (p *Proxy) newProxyHandler(serviceID string) echo.HandlerFunc {
 		serviceName := c.Param(serviceID)
 		service := p.getService(serviceName)
 
+		fmt.Printf("PROXY HANDLER: %s %v\n", serviceName, service)
 		if service == nil {
 			return echo.NewHTTPError(http.StatusNotFound,
 				fmt.Sprintf("service not found: %s", serviceName))
