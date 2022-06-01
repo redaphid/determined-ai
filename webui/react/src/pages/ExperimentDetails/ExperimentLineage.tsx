@@ -1,3 +1,4 @@
+import { Descriptions, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import Tree from 'react-d3-tree';
 import {
@@ -18,6 +19,40 @@ interface RawNodeDatum {
   children?: RawNodeDatum[];
   name: string;
 }
+
+interface TableProps {
+  previousExperiment: ExperimentBase | null;
+  selectedExperiment: ExperimentBase;
+}
+const HyperparametersTable: React.FC<TableProps> =
+({ selectedExperiment, previousExperiment }: TableProps) => {
+  let hyperparameterKeys = Object.keys(selectedExperiment.hyperparameters);
+  if (previousExperiment) {
+    const prevKeys = Object.keys(previousExperiment.hyperparameters);
+    hyperparameterKeys = hyperparameterKeys.concat(prevKeys);
+  }
+  hyperparameterKeys = Array.from(new Set(hyperparameterKeys));
+
+  const columns = [
+    { dataIndex: 'parameterName', title: 'Hyperparameter' },
+    { dataIndex: 'selectedParameter', title: `#${selectedExperiment.id}` },
+  ];
+  if (previousExperiment) {
+    columns.push({ dataIndex: 'previousParameter', title: `#${previousExperiment.id}` });
+  }
+
+  const dataSource = hyperparameterKeys.map(key => {
+    return {
+      parameterName: key,
+      previousParameter: previousExperiment?.hyperparameters[key]?.val,
+      selectedParameter: selectedExperiment?.hyperparameters[key]?.val,
+    };
+  });
+
+  return (
+    <Table columns={columns} dataSource={dataSource} pagination={false} rowKey="parameterName" />
+  );
+};
 
 const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
   const [ lineage, setLineage ] = useState<RawNodeDatum>();
@@ -86,14 +121,10 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
       <div className={css.DetailsWrapper}>
         #{selectedExperiment.id}<br />
         {selectedExperiment.name}<br />
-        Selected Experiment Hyperparameters:<br />
-        {JSON.stringify(selectedExperiment.hyperparameters)}<br /><br />
-        {previousExperiment ?
-          (
-            <div>Previous Experiment Hyperparameters<br /><br />
-              {JSON.stringify(previousExperiment.hyperparameters)}
-            </div>
-          ) : null}
+        <HyperparametersTable
+          previousExperiment={previousExperiment}
+          selectedExperiment={selectedExperiment}
+        />
       </div>
     </div>
   );
