@@ -1,0 +1,25 @@
+.base {
+  display: flex;
+  .TreeWrapper {
+    height: 600px;
+    width: 50%;
+    background: white;
+  }
+  .DetailsWrapper{
+    color: white;
+    width: 50%;
+  }
+}
+:global(.node__root) > circle {
+  // fill: ;
+}
+
+:global(.node__branch) > circle {
+  // fill: yellow;
+}
+
+:global(.node__leaf) > circle {
+  // fill: green;
+  // /* Let's also make the radius of leaf nodes larger */
+  // r: 40;
+}
