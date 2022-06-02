@@ -1,4 +1,4 @@
-import { Descriptions, Table } from 'antd';
+import { Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import Tree from 'react-d3-tree';
 import {
@@ -24,6 +24,40 @@ interface TableProps {
   previousExperiment: ExperimentBase | null;
   selectedExperiment: ExperimentBase;
 }
+
+const AboutTable: React.FC<TableProps> =
+({ selectedExperiment, previousExperiment }: TableProps) => {
+  const columns = [
+    { dataIndex: 'field', title: 'About', width: 200 },
+    {
+      className: css.selectedColumn,
+      dataIndex: 'selectedValue',
+      title: `#${selectedExperiment.id}`,
+      width: 250,
+    },
+  ];
+  if (previousExperiment) {
+    columns.push({
+      dataIndex: 'previousValue',
+      title: `#${previousExperiment.id}`,
+      width: 250,
+    });
+  }
+
+  const dataSource = [ {
+    field: 'startTime',
+    previousValue: selectedExperiment.startTime,
+    selectedValue: selectedExperiment.startTime,
+  },
+  {
+    field: 'endTime',
+    previousValue: selectedExperiment.endTime,
+    selectedValue: selectedExperiment.endTime,
+  } ];
+
+  return <Table columns={columns} dataSource={dataSource} pagination={false} rowKey="field" />;
+};
+
 const HyperparametersTable: React.FC<TableProps> =
 ({ selectedExperiment, previousExperiment }: TableProps) => {
   let hyperparameterKeys = Object.keys(selectedExperiment.hyperparameters);
@@ -34,11 +68,20 @@ const HyperparametersTable: React.FC<TableProps> =
   hyperparameterKeys = Array.from(new Set(hyperparameterKeys));
 
   const columns = [
-    { dataIndex: 'parameterName', title: 'Hyperparameter' },
-    { dataIndex: 'selectedParameter', title: `#${selectedExperiment.id}` },
+    { dataIndex: 'parameterName', title: 'Hyperparameter', width: 200 },
+    {
+      className: css.selectedColumn,
+      dataIndex: 'selectedParameter',
+      title: `#${selectedExperiment.id}`,
+      width: 250,
+    },
   ];
   if (previousExperiment) {
-    columns.push({ dataIndex: 'previousParameter', title: `#${previousExperiment.id}` });
+    columns.push({
+      dataIndex: 'previousParameter',
+      title: `#${previousExperiment.id}`,
+      width: 250,
+    });
   }
 
   const dataSource = hyperparameterKeys.map(key => {
@@ -95,7 +138,7 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
       <g>
         <circle fill={fillColor} r="15" onClick={() => nodeClickHandler(nodeDatum)} />
         <text fill="black" strokeWidth="1" x="20" onClick={toggleNode}>
-          {nodeDatum.name}
+          {nodeDatum.id}
         </text>
       </g>
     );
@@ -119,12 +162,22 @@ const ExperimentLineage: React.FC<Props> = ({ experiment }: Props) => {
         ) : null}
       </div>
       <div className={css.DetailsWrapper}>
-        #{selectedExperiment.id}<br />
-        {selectedExperiment.name}<br />
-        <HyperparametersTable
-          previousExperiment={previousExperiment}
-          selectedExperiment={selectedExperiment}
-        />
+        <div className={css.section}>
+          #{selectedExperiment.id}<br />
+          {selectedExperiment.name}<br />
+        </div>
+        <div className={css.section}>
+          <AboutTable
+            previousExperiment={previousExperiment}
+            selectedExperiment={selectedExperiment}
+          />
+        </div>
+        <div className={css.section}>
+          <HyperparametersTable
+            previousExperiment={previousExperiment}
+            selectedExperiment={selectedExperiment}
+          />
+        </div>
       </div>
     </div>
   );

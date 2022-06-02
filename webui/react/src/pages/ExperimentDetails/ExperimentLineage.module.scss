@@ -8,18 +8,12 @@
   .DetailsWrapper{
     color: white;
     width: 50%;
+    padding: 2em;
+    .section{
+      margin: 1em;
+    }
   }
-}
-:global(.node__root) > circle {
-  // fill: ;
-}
-
-:global(.node__branch) > circle {
-  // fill: yellow;
-}
-
-:global(.node__leaf) > circle {
-  // fill: green;
-  // /* Let's also make the radius of leaf nodes larger */
-  // r: 40;
+  th.selectedColumn{
+    color: #3E6FED;
+  }
 }
