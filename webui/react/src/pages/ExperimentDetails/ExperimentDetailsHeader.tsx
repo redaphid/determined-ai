@@ -236,6 +236,14 @@ const ExperimentDetailsHeader: React.FC<Props> = ({
           }
         },
       },
+      testDrive: {
+        icon: <Icon name="steering-wheel" size="small" />,
+        key: 'test-drive',
+        label: 'Test Drive',
+        onClick: (e) => {
+          handlePath(e, { path: paths.testDrive(experiment.id) });
+        },
+      },
       unarchive: {
         isLoading: isRunningUnarchive,
         key: 'archive',
@@ -252,6 +260,7 @@ const ExperimentDetailsHeader: React.FC<Props> = ({
       },
     };
     return [
+      options.testDrive,
       options.fork,
       trial?.id && options.continueTrial,
       options.tensorboard,

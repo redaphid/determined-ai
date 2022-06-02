@@ -17,6 +17,7 @@ import SignIn from 'pages/SignIn';
 import SignOut from 'pages/SignOut';
 import TaskList from 'pages/TaskList';
 import { TaskLogsWrapper } from 'pages/TaskLogs';
+import TestDrive from 'pages/TestDrive';
 import TrialDetails from 'pages/TrialDetails';
 import Wait from 'pages/Wait';
 
@@ -42,6 +43,7 @@ const routeComponentMap: Record<string, FC> = {
   signOut: SignOut,
   taskList: TaskList,
   taskLogs: TaskLogsWrapper,
+  testDrive: TestDrive,
   trialDetails: TrialDetails,
   wait: Wait,
 };

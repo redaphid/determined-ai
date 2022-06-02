@@ -20,6 +20,12 @@ const routes: RouteConfig[] = [
     title: 'Trial',
   },
   {
+    id: 'testDrive',
+    needAuth: true,
+    path: '/experiments/:experimentId/test-drive',
+    title: 'TestDrive',
+  },
+  {
     id: 'experimentDetails',
     needAuth: true,
     path: '/experiments/:experimentId/:tab/:viz',

@@ -133,6 +133,9 @@ export const paths = {
   taskLogs: (task: CommandTask): string => {
     return`/${task.type}/${task.id}/logs?id=${task.name}`;
   },
+  testDrive: (experimentId: number): string => {
+    return `/experiments/${experimentId}/test-drive`;
+  },
   trialDetails: (trialId: number | string, experimentId?: number | string): string => {
     if (!experimentId) {
       return `/trials/${trialId}`;
