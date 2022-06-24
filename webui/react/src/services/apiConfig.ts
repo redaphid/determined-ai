@@ -81,6 +81,13 @@ export const commandToEndpoint: Record<Type.CommandType, string> = {
   [Type.CommandType.Shell]: '/shells',
 };
 
+export const getUserIds = (users: string[] = []): number[] | undefined => {
+  const userIds = users
+    .map(user => parseInt(user))
+    .filter(user => !isNaN(user));
+  return userIds.length !== 0 ? userIds : undefined;
+};
+
 /* Authentication */
 
 export const login: Service.DetApi<
@@ -222,7 +229,7 @@ export const getExperiments: Service.DetApi<
       params.archived,
       params.states,
       undefined,
-      params.users?.map(u => parseInt(u)),
+      getUserIds(params.users),
       options,
     );
   },
@@ -452,7 +459,7 @@ export const getModels: Service.DetApi<
     params.labels,
     params.archived,
     undefined,
-    params.users?.map(u => parseInt(u)),
+    getUserIds(params.users),
   ),
 };
 
@@ -617,7 +624,7 @@ export const getCommands: Service.DetApi<
     params.offset,
     params.limit ?? TASK_LIMIT,
     undefined,
-    params.users?.map(u => parseInt(u)),
+    getUserIds(params.users),
   ),
 };
 
@@ -633,7 +640,7 @@ export const getJupyterLabs: Service.DetApi<
     params.offset,
     params.limit ?? TASK_LIMIT,
     undefined,
-    params.users?.map(u => parseInt(u)),
+    getUserIds(params.users),
   ),
 };
 
@@ -649,7 +656,7 @@ export const getShells: Service.DetApi<
     params.offset,
     params.limit ?? TASK_LIMIT,
     undefined,
-    params.users?.map(u => parseInt(u)),
+    getUserIds(params.users),
   ),
 };
 
@@ -665,7 +672,7 @@ export const getTensorBoards: Service.DetApi<
     params.offset,
     params.limit ?? TASK_LIMIT,
     undefined,
-    params.users?.map(u => parseInt(u)),
+    getUserIds(params.users),
   ),
 };
 
