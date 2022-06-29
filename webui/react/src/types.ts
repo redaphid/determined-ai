@@ -291,7 +291,6 @@ export enum ExperimentAction {
   Activate = 'Activate',
   Archive = 'Archive',
   Cancel = 'Cancel',
-  CompareExperiments = 'Compare',
   CompareTrials = 'Compare Trials',
   ContinueTrial = 'Continue Trial',
   Delete = 'Delete',
