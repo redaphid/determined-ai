@@ -907,6 +907,7 @@ func (m *Master) Run(ctx context.Context) error {
 		return err
 	}
 
+	time.Sleep(5 * time.Second)
 	command.RegisterAPIHandler(
 		m.system,
 		m.echo,
