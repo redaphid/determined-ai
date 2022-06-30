@@ -27,8 +27,9 @@ import (
 func Initialize(
 	system *actor.System, e *echo.Echo, opts *aproto.MasterSetAgentOptions,
 ) {
-	_, ok := system.ActorOf(sproto.AgentsAddr, &agents{opts: opts})
+	agentsRef, ok := system.ActorOf(sproto.AgentsAddr, &agents{opts: opts})
 	check.Panic(check.True(ok, "agents address already taken"))
+	system.Ask(agentsRef, actor.Ping{}).Get()
 	// Route /agents and /agents/<agent id>/slots to the agents actor and slots actors.
 	e.Any("/agents*", api.Route(system, nil))
 	e.PATCH("/agents*", api.Route(system, nil),
