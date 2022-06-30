@@ -57,12 +57,15 @@ func (a *agents) Receive(ctx *actor.Context) error {
 
 			for agentID := range agentStates {
 				agentState := agentStates[agentID]
-				_, err := a.createAgentActor(
+				agentRef, err := a.createAgentActor(
 					ctx, agentID, agentState.resourcePoolName, a.opts, &agentState)
 				if err != nil {
 					ctx.Log().WithError(err).Warnf("failed to create agent %s", agentID)
 					badAgentIds = append(badAgentIds, agentID)
+					continue
 				}
+				ctx.Log().Debugf("restored agent state: %s", agentID)
+				ctx.Ask(agentRef, actor.Ping{})
 			}
 
 			if len(badAgentIds) > 0 {
