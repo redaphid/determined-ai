@@ -65,8 +65,8 @@ func (a *agents) Receive(ctx *actor.Context) error {
 					badAgentIds = append(badAgentIds, agentID)
 					continue
 				}
+				ctx.Ask(agentRef, actor.Ping{}).Get()
 				ctx.Log().Debugf("restored agent state: %s", agentID)
-				ctx.Ask(agentRef, actor.Ping{})
 			}
 
 			if len(badAgentIds) > 0 {
