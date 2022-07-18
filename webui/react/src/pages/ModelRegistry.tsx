@@ -282,7 +282,7 @@ const ModelRegistry: React.FC = () => {
     );
 
     const overflowRenderer = (_:string, record: ModelItem) => {
-      const isDeletable = user?.isAdmin || user?.username === record.username;
+      const isDeletable = user?.isAdmin || user?.id === record.userId;
       return (
         <Dropdown
           overlay={(
@@ -380,6 +380,7 @@ const ModelRegistry: React.FC = () => {
       {
         filterDropdown: userFilterDropdown,
         filters: users.map(user => ({ text: getDisplayName(user), value: user.id })),
+        key: 'user',
         onHeaderCell: () => settings.archived != null ? { className: tableCss.headerFilterOn } : {},
         render: userRenderer,
         title: 'User',
