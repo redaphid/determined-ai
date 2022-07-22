@@ -32,7 +32,10 @@ const SettingsContent: React.FC = () => {
 
   const handleTabChange = useCallback((key) => {
     setTabKey(key);
-    history.replace(key === DEFAULT_TAB_KEY ? basePath : `${basePath}/${key}`);
+
+    const query = queryString.stringify({ rbac });
+    const newPath = key === DEFAULT_TAB_KEY ? basePath : `${basePath}/${key}`;
+    history.replace(`${newPath}?${query}`);
   }, [ basePath, history ]);
 
   return rbac ? (
@@ -44,7 +47,9 @@ const SettingsContent: React.FC = () => {
         User Management
       </TabPane>
     </Tabs>
-  ) : <SettingsAccount />;
+  ) : (
+    <SettingsAccount />
+  );
 };
 
 const Settings: React.FC = () => (
