@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/determined-ai/determined/master/internal/config/provconfig"
 	"github.com/determined-ai/determined/master/pkg/actor"
@@ -400,6 +401,7 @@ func (c *awsCluster) launchInstances(instanceNum int, dryRun bool) (*ec2.Reserva
 		}
 	}
 
+	log.Debug("AWS launchInstances", input)
 	return c.client.RunInstances(input)
 }
 
