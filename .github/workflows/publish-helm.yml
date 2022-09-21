@@ -17,6 +17,8 @@ jobs:
   debug_actions:
     name: debug_actions
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - run: |
           gh api rate_limit -q '.rate | (.reset |= todate)'
