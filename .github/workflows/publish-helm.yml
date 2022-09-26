@@ -17,8 +17,12 @@ jobs:
   debug_actions:
     name: debug_actions
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - run: |
+      - name: default token
+        run: |
+          gh api rate_limit -q '.rate | (.reset |= todate)'
+      - name: circleci account token
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
           gh api rate_limit -q '.rate | (.reset |= todate)'
