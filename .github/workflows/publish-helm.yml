@@ -19,10 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: default token
-        run: |
-          gh api rate_limit -q '.rate | (.reset |= todate)'
-      - name: circleci account token
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api rate_limit -q '.rate | (.reset |= todate)'
+      - name: determined account token
+        env:
+          GH_TOKEN: ${{ secrets.DETERMINED_TOKEN }}
         run: |
           gh api rate_limit -q '.rate | (.reset |= todate)'
