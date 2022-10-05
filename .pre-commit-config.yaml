@@ -23,5 +23,5 @@ repos:
         name: Sanity checks for changes to shared code
         entry: sh ./pre-commit/web_lint_check.sh shared
         language: system
-        # stages: [push, commit]
+        stages: [push]
         files: '^webui/react/src/shared/'
