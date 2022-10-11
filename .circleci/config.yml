@@ -41,7 +41,7 @@ parameters:
   # the old build may be cached, and you may need to invalidate it.
   cache-buster:
     type: string
-    default: v1dev14
+    default: v1dev15-dzhu-rc0
   gke-version:
     type: string
     default: "1.21.14"
@@ -334,12 +334,12 @@ commands:
                 command: |
                   sudo bash /tmp/install_python.sh <<parameters.python-version>>
 
-            - run:
-                name: Setup venv
-                command: |
-                  python3 -m venv /tmp/venv
-                  echo 'export PATH=/tmp/venv/bin:$PATH' >> $BASH_ENV
-                  /tmp/venv/bin/python -m pip install --upgrade pip wheel setuptools
+      - run:
+          name: Set up venv
+          command: |
+            python3 -m venv /tmp/venv
+            echo 'export PATH=/tmp/venv/bin:$PATH' >> $BASH_ENV
+            /tmp/venv/bin/python -m pip install --upgrade pip wheel setuptools
 
       - run:
           name: Write cache key
