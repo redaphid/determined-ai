@@ -1556,11 +1556,11 @@ export const launchJupyterLab: DetApi<
 > = {
   name: 'launchJupyterLab',
   postProcess: (response) => {
-  return { 
-    command: decoder.mapV1Notebook(response.notebook), 
-    maxSlotsExceeded: response.maxCurrentSlotsExceeded
-  }
-},
+    return {
+      command: decoder.mapV1Notebook(response.notebook),
+      maxSlotsExceeded: response.maxCurrentSlotsExceeded,
+    };
+  },
   request: (params: Service.LaunchJupyterLabParams) => detApi.Notebooks.launchNotebook(params),
 };
 
@@ -1580,12 +1580,12 @@ export const launchTensorBoard: DetApi<
   Type.CommandResponse
 > = {
   name: 'launchTensorBoard',
-  postProcess: (response) => { return { 
-    command: decoder.mapV1TensorBoard(response.tensorboard), 
-    maxSlotsExceeded: response.maxCurrentSlotsExceeded
-  }
-}
-    ,
+  postProcess: (response) => {
+    return {
+      command: decoder.mapV1TensorBoard(response.tensorboard),
+      maxSlotsExceeded: response.maxCurrentSlotsExceeded,
+    };
+  },
   request: (params: Service.LaunchTensorBoardParams) =>
     detApi.TensorBoards.launchTensorboard(params),
 };

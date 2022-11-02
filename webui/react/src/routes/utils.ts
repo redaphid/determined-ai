@@ -98,9 +98,11 @@ export const paths = {
   experimentModelDef: (experimentId: number | string): string => {
     return `/experiments/${experimentId}/model_def`;
   },
-  interactive: (command: CommandTask, maxSlotsExceeded: boolean = false): string => {
+  interactive: (command: CommandTask, maxSlotsExceeded = false): string => {
     return `/interactive/${command.id}/${command.type}/
-      ${command.name}/${command.resourcePool}/${encodeURIComponent(waitPageUrl(command))}/${maxSlotsExceeded}`;
+      ${command.name}/${command.resourcePool}/${encodeURIComponent(
+      waitPageUrl(command),
+    )}/${maxSlotsExceeded}`;
   },
   jobs: (): string => {
     return routeById.jobs.path;

@@ -33,12 +33,11 @@ import { validateDetApiEnum, validateDetApiEnumList } from 'shared/utils/service
 import {
   ExperimentAction as Action,
   CheckpointWorkloadExtended,
-  CommandTask,
+  CommandResponse,
   ExperimentBase,
   MetricsWorkload,
   RunState,
   TrialItem,
-  CommandResponse,
 } from 'types';
 import handleError from 'utils/error';
 import { getMetricValue } from 'utils/metric';

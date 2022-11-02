@@ -29,7 +29,12 @@ export const openCommand = (command: CommandTask): void => {
 };
 
 export const openCommandResponse = (commandResponse: CommandResponse): void => {
-  openBlank(`${process.env.PUBLIC_URL}${paths.interactive(commandResponse.command, commandResponse.maxSlotsExceeded)}`);
+  openBlank(
+    `${process.env.PUBLIC_URL}${paths.interactive(
+      commandResponse.command,
+      commandResponse.maxSlotsExceeded,
+    )}`,
+  );
 };
 
 export const CANNOT_OPEN_COMMAND_ERROR = 'Command cannot be opened.';

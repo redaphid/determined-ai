@@ -299,7 +299,9 @@ const ExperimentDetailsHeader: React.FC<Props> = ({
         onClick: async () => {
           setIsRunningTensorBoard(true);
           try {
-            const commandResponse = await openOrCreateTensorBoard({ experimentIds: [experiment.id] });
+            const commandResponse = await openOrCreateTensorBoard({
+              experimentIds: [experiment.id],
+            });
             openCommandResponse(commandResponse);
             setIsRunningTensorBoard(false);
           } catch (e) {

@@ -685,7 +685,7 @@ export const openOrCreateTensorBoard = async (
       !terminalCommandStates.has(tensorboard.state) &&
       tensorBoardMatchesSource(tensorboard, params),
   );
-  if (match) return {command: match, maxSlotsExceeded: false};
+  if (match) return { command: match, maxSlotsExceeded: false };
   return launchTensorBoard(params);
 };
 

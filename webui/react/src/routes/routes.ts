@@ -4,7 +4,7 @@ const routes: RouteConfig[] = [
   {
     id: 'interactive',
     needAuth: true,
-    path: '/interactive/:taskId/:taskType/:taskName/:taskResourcePool/:taskUrl',
+    path: '/interactive/:taskId/:taskType/:taskName/:taskResourcePool/:taskUrl/:maxSlotsExceeded',
     title: 'Interactive Task',
   },
   {

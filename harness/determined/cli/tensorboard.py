@@ -29,7 +29,9 @@ def start_tensorboard(args: Namespace) -> None:
 
     req_body["files"] = context.read_legacy_context(args.context, args.include)
 
-    resp = api.post(args.master, "api/v1/tensorboards", json=req_body).json()["tensorboard"]
+    api_resp = api.post(args.master, "api/v1/tensorboards", json=req_body).json()
+    maxSlotsExceeded = api_resp["maxCurrentSlotsExceeded"]
+    resp = api_resp["tensorboard"]
 
     if args.detach:
         print(resp["id"])
@@ -56,9 +58,13 @@ def start_tensorboard(args: Namespace) -> None:
                             resource_pool=resp["resourcePool"],
                             description=resp["description"],
                             task_type="tensorboard",
+                            maxSlotsExceeded= api_resp["maxCurrentSlotsExceeded"]
                         ),
                     )
-
+                if maxSlotsExceeded:
+                    warning = ("The requested job requires more slots than currently available. ", 
+                    "You may need to increase cluster resources in order for the job to run." ) 
+                    print(colored(warning), "yellow")
                 print(colored("TensorBoard is running at: {}".format(url), "green"))
                 command.render_event_stream(msg)
                 break
@@ -80,6 +86,7 @@ def open_tensorboard(args: Namespace) -> None:
             resource_pool=resp["resourcePool"],
             description=resp["description"],
             task_type="tensorboard",
+            maxSlotsExceeded=False
         ),
     )
 

@@ -18,13 +18,13 @@ import { ErrorLevel, ErrorType } from 'shared/utils/error';
 import { isNewTabClickEvent, openBlank, routeToReactUrl } from 'shared/utils/routes';
 import {
   ExperimentAction as Action,
+  CommandResponse,
   ExperimentBase,
   Hyperparameter,
   Metric,
   metricTypeParamMap,
   RunState,
   Scale,
-  CommandResponse,
 } from 'types';
 import handleError from 'utils/error';
 import { openCommandResponse } from 'utils/wait';

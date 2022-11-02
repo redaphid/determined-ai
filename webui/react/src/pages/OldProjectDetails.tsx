@@ -78,6 +78,7 @@ import { validateDetApiEnum, validateDetApiEnumList } from 'shared/utils/service
 import { alphaNumericSorter } from 'shared/utils/sort';
 import {
   ExperimentAction as Action,
+  CommandResponse,
   CommandTask,
   ExperimentItem,
   ExperimentPagination,
@@ -85,7 +86,6 @@ import {
   Project,
   ProjectExperiment,
   RunState,
-  CommandResponse,
 } from 'types';
 import handleError from 'utils/error';
 import {
