@@ -144,7 +144,11 @@ func (a AgentResourceManager) ResolveResourcePool(
 			agents, _ := a.GetAgents(ctx, &apiv1.GetAgentsRequest{})
 			maxSlots := 0
 			for _, agent := range agents.Agents {
-				maxSlots += len(agent.Slots)
+				for _, resPool := range agent.ResourcePools {
+					if resPool == name {
+						maxSlots += len(agent.Slots)
+					}
+				}
 			}
 			if slots > maxSlots {
 				rp.CurrentMaxSlotsExceeded = true
