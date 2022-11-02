@@ -102,4 +102,6 @@ message LaunchShellResponse {
   determined.shell.v1.Shell shell = 1;
   // The config;
   google.protobuf.Struct config = 2;
+
+  bool currentMaxSlotsExceeded = 3;
 }

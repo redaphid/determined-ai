@@ -661,7 +661,7 @@ export const getTaskTemplates = generateDetApi<
 export const launchJupyterLab = generateDetApi<
   Service.LaunchJupyterLabParams,
   Api.V1LaunchNotebookResponse,
-  Type.CommandTask
+  Type.CommandResponse
 >(Config.launchJupyterLab);
 
 export const previewJupyterLab = generateDetApi<
@@ -673,19 +673,19 @@ export const previewJupyterLab = generateDetApi<
 export const launchTensorBoard = generateDetApi<
   Service.LaunchTensorBoardParams,
   Api.V1LaunchTensorboardResponse,
-  Type.CommandTask
+  Type.CommandResponse
 >(Config.launchTensorBoard);
 
 export const openOrCreateTensorBoard = async (
   params: Service.LaunchTensorBoardParams,
-): Promise<Type.CommandTask> => {
+): Promise<Type.CommandResponse> => {
   const tensorboards = await getTensorBoards({});
   const match = tensorboards.find(
     (tensorboard) =>
       !terminalCommandStates.has(tensorboard.state) &&
       tensorBoardMatchesSource(tensorboard, params),
   );
-  if (match) return match;
+  if (match) return {command: match, maxSlotsExceeded: false};
   return launchTensorBoard(params);
 };
 

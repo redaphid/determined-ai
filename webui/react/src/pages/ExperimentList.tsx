@@ -73,6 +73,7 @@ import {
   Project,
   ProjectExperiment,
   RunState,
+  CommandResponse
 } from 'types';
 import handleError from 'utils/error';
 import {
@@ -81,7 +82,7 @@ import {
   getProjectExperimentForExperimentItem,
 } from 'utils/experiment';
 import { getDisplayName } from 'utils/user';
-import { openCommand } from 'utils/wait';
+import { openCommandResponse } from 'utils/wait';
 
 import settingsConfig, {
   DEFAULT_COLUMN_WIDTHS,
@@ -645,7 +646,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
     useModalExperimentMove({ onClose: handleActionComplete, user });
 
   const sendBatchActions = useCallback(
-    (action: Action): Promise<void[] | CommandTask> | void => {
+    (action: Action): Promise<void[] | CommandTask | CommandResponse> | void => {
       if (!settings.row) return;
       if (action === Action.OpenTensorBoard) {
         return openOrCreateTensorBoard({ experimentIds: settings.row });
@@ -693,7 +694,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
       try {
         const result = await sendBatchActions(action);
         if (action === Action.OpenTensorBoard && result) {
-          openCommand(result as CommandTask);
+          openCommandResponse(result as CommandResponse);
         }
 
         /*

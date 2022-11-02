@@ -1834,6 +1834,12 @@ export interface V1CreateExperimentResponse {
      * @memberof V1CreateExperimentResponse
      */
     config: any;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof V1CreateExperimentResponse
+     */
+    maxCurrentSlotsExceeded?: boolean;
 }
 
 /**
@@ -4428,6 +4434,12 @@ export interface V1LaunchCommandResponse {
      * @memberof V1LaunchCommandResponse
      */
     config: any;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof V1LaunchCommandResponse
+     */
+    currentMaxSlotsExceeded?: boolean;
 }
 
 /**
@@ -4480,6 +4492,12 @@ export interface V1LaunchNotebookResponse {
      * @memberof V1LaunchNotebookResponse
      */
     config: any;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof V1LaunchNotebookResponse
+     */
+    maxCurrentSlotsExceeded?: boolean;
 }
 
 /**
@@ -4532,6 +4550,12 @@ export interface V1LaunchShellResponse {
      * @memberof V1LaunchShellResponse
      */
     config: any;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof V1LaunchShellResponse
+     */
+    currentMaxSlotsExceeded?: boolean;
 }
 
 /**
@@ -4590,6 +4614,12 @@ export interface V1LaunchTensorboardResponse {
      * @memberof V1LaunchTensorboardResponse
      */
     config: any;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof V1LaunchTensorboardResponse
+     */
+    maxCurrentSlotsExceeded?: boolean;
 }
 
 /**

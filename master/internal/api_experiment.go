@@ -1152,7 +1152,7 @@ func (a *apiServer) CreateExperiment(
 		}
 	}
 
-	e, err := newExperiment(a.m, dbExp, taskSpec)
+	e, maxCurrentSlotsExceeded, err := newExperiment(a.m, dbExp, taskSpec)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create experiment: %s", err)
 	}
@@ -1170,7 +1170,9 @@ func (a *apiServer) CreateExperiment(
 		return nil, err
 	}
 	return &apiv1.CreateExperimentResponse{
-		Experiment: protoExp, Config: protoutils.ToStruct(e.Config),
+		Experiment:              protoExp,
+		Config:                  protoutils.ToStruct(e.Config),
+		MaxCurrentSlotsExceeded: maxCurrentSlotsExceeded,
 	}, nil
 }
 

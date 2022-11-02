@@ -160,7 +160,7 @@ func (a *apiServer) LaunchTensorboard(
 		return nil, status.Error(codes.InvalidArgument, "no experiments found")
 	}
 
-	spec, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
+	spec, maxCurrentSlotsExceeded, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
 		TemplateName: req.TemplateName,
 		Config:       req.Config,
 		Files:        req.Files,
@@ -388,8 +388,9 @@ func (a *apiServer) LaunchTensorboard(
 	}
 
 	return &apiv1.LaunchTensorboardResponse{
-		Tensorboard: tb,
-		Config:      protoutils.ToStruct(spec.Config),
+		Tensorboard:             tb,
+		Config:                  protoutils.ToStruct(spec.Config),
+		MaxCurrentSlotsExceeded: maxCurrentSlotsExceeded,
 	}, err
 }
 

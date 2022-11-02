@@ -1287,21 +1287,25 @@ class v1CreateExperimentResponse:
         *,
         config: "typing.Dict[str, typing.Any]",
         experiment: "v1Experiment",
+        maxCurrentSlotsExceeded: "typing.Optional[bool]" = None,
     ):
         self.experiment = experiment
         self.config = config
+        self.maxCurrentSlotsExceeded = maxCurrentSlotsExceeded
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1CreateExperimentResponse":
         return cls(
             experiment=v1Experiment.from_json(obj["experiment"]),
             config=obj["config"],
+            maxCurrentSlotsExceeded=obj.get("maxCurrentSlotsExceeded", None),
         )
 
     def to_json(self) -> typing.Any:
         return {
             "experiment": self.experiment.to_json(),
             "config": self.config,
+            "maxCurrentSlotsExceeded": self.maxCurrentSlotsExceeded if self.maxCurrentSlotsExceeded is not None else None,
         }
 
 class v1CreateGroupRequest:
@@ -3948,21 +3952,25 @@ class v1LaunchCommandResponse:
         *,
         command: "v1Command",
         config: "typing.Dict[str, typing.Any]",
+        currentMaxSlotsExceeded: "typing.Optional[bool]" = None,
     ):
         self.command = command
         self.config = config
+        self.currentMaxSlotsExceeded = currentMaxSlotsExceeded
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1LaunchCommandResponse":
         return cls(
             command=v1Command.from_json(obj["command"]),
             config=obj["config"],
+            currentMaxSlotsExceeded=obj.get("currentMaxSlotsExceeded", None),
         )
 
     def to_json(self) -> typing.Any:
         return {
             "command": self.command.to_json(),
             "config": self.config,
+            "currentMaxSlotsExceeded": self.currentMaxSlotsExceeded if self.currentMaxSlotsExceeded is not None else None,
         }
 
 class v1LaunchNotebookRequest:
@@ -4002,21 +4010,25 @@ class v1LaunchNotebookResponse:
         *,
         config: "typing.Dict[str, typing.Any]",
         notebook: "v1Notebook",
+        maxCurrentSlotsExceeded: "typing.Optional[bool]" = None,
     ):
         self.notebook = notebook
         self.config = config
+        self.maxCurrentSlotsExceeded = maxCurrentSlotsExceeded
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1LaunchNotebookResponse":
         return cls(
             notebook=v1Notebook.from_json(obj["notebook"]),
             config=obj["config"],
+            maxCurrentSlotsExceeded=obj.get("maxCurrentSlotsExceeded", None),
         )
 
     def to_json(self) -> typing.Any:
         return {
             "notebook": self.notebook.to_json(),
             "config": self.config,
+            "maxCurrentSlotsExceeded": self.maxCurrentSlotsExceeded if self.maxCurrentSlotsExceeded is not None else None,
         }
 
 class v1LaunchShellRequest:
@@ -4056,21 +4068,25 @@ class v1LaunchShellResponse:
         *,
         config: "typing.Dict[str, typing.Any]",
         shell: "v1Shell",
+        currentMaxSlotsExceeded: "typing.Optional[bool]" = None,
     ):
         self.shell = shell
         self.config = config
+        self.currentMaxSlotsExceeded = currentMaxSlotsExceeded
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1LaunchShellResponse":
         return cls(
             shell=v1Shell.from_json(obj["shell"]),
             config=obj["config"],
+            currentMaxSlotsExceeded=obj.get("currentMaxSlotsExceeded", None),
         )
 
     def to_json(self) -> typing.Any:
         return {
             "shell": self.shell.to_json(),
             "config": self.config,
+            "currentMaxSlotsExceeded": self.currentMaxSlotsExceeded if self.currentMaxSlotsExceeded is not None else None,
         }
 
 class v1LaunchTensorboardRequest:
@@ -4114,21 +4130,25 @@ class v1LaunchTensorboardResponse:
         *,
         config: "typing.Dict[str, typing.Any]",
         tensorboard: "v1Tensorboard",
+        maxCurrentSlotsExceeded: "typing.Optional[bool]" = None,
     ):
         self.tensorboard = tensorboard
         self.config = config
+        self.maxCurrentSlotsExceeded = maxCurrentSlotsExceeded
 
     @classmethod
     def from_json(cls, obj: Json) -> "v1LaunchTensorboardResponse":
         return cls(
             tensorboard=v1Tensorboard.from_json(obj["tensorboard"]),
             config=obj["config"],
+            maxCurrentSlotsExceeded=obj.get("maxCurrentSlotsExceeded", None),
         )
 
     def to_json(self) -> typing.Any:
         return {
             "tensorboard": self.tensorboard.to_json(),
             "config": self.config,
+            "maxCurrentSlotsExceeded": self.maxCurrentSlotsExceeded if self.maxCurrentSlotsExceeded is not None else None,
         }
 
 class v1ListRolesRequest:

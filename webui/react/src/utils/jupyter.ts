@@ -18,7 +18,7 @@ interface JupyterLabLaunchOptions extends JupyterLabOptions {
 
 export const launchJupyterLab = async (options: JupyterLabLaunchOptions = {}): Promise<void> => {
   try {
-    const jupyterLab = await apiLaunchJupyterLab({
+    const {command, maxSlotsExceeded} = await apiLaunchJupyterLab({
       config: options.config || {
         description: options.name === '' ? undefined : options.name,
         resources: {
@@ -28,7 +28,9 @@ export const launchJupyterLab = async (options: JupyterLabLaunchOptions = {}): P
       },
       templateName: options.template === '' ? undefined : options.template,
     });
-    openCommand(jupyterLab);
+    console.log("jupyterLab");
+    console.log(command);
+    openCommand(command);
   } catch (e) {
     handleError(e, {
       level: ErrorLevel.Error,

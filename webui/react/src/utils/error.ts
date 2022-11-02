@@ -21,7 +21,7 @@ const errorLevelMap = {
   [ErrorLevel.Warn]: 'warn',
 };
 
-const openNotification = (e: DetError) => {
+export const openNotification = (e: DetError) => {
   const key = errorLevelMap[e.level] as keyof NotificationApi;
   const notification = antdNotification[key] as (args: ArgsProps) => void;
 

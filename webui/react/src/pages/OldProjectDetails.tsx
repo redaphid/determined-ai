@@ -85,6 +85,7 @@ import {
   Project,
   ProjectExperiment,
   RunState,
+  CommandResponse,
 } from 'types';
 import handleError from 'utils/error';
 import {
@@ -672,7 +673,7 @@ const ProjectDetails: React.FC = () => {
     useModalExperimentMove({ onClose: handleActionComplete, user });
 
   const sendBatchActions = useCallback(
-    (action: Action): Promise<void[] | CommandTask> | void => {
+    (action: Action): Promise<void[] | CommandTask | CommandResponse> | void => {
       if (!settings.row) return;
       if (action === Action.OpenTensorBoard) {
         return openOrCreateTensorBoard({ experimentIds: settings.row });

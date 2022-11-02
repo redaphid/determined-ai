@@ -119,18 +119,18 @@ type (
 // and log. If the input object has no ID set, also create a new experiment in the database and set
 // the returned object's ID appropriately.
 func newExperiment(m *Master, expModel *model.Experiment, taskSpec *tasks.TaskSpec) (
-	*experiment, error,
+	*experiment, bool, error,
 ) {
 	conf := &expModel.Config
 
 	resources := conf.Resources()
-	poolName, err := m.rm.ResolveResourcePool(
+	resolvedResourcePool, err := m.rm.ResolveResourcePool(
 		m.system, resources.ResourcePool(), resources.SlotsPerTrial(), false,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create an experiment: %w", err)
+		return nil, false, fmt.Errorf("cannot create an experiment: %w", err)
 	}
-
+	poolName := resolvedResourcePool.Name
 	resources.SetResourcePool(poolName)
 	conf.SetResources(resources)
 
@@ -143,19 +143,19 @@ func newExperiment(m *Master, expModel *model.Experiment, taskSpec *tasks.TaskSp
 	checkpoint, err := checkpointFromTrialIDOrUUID(
 		m.db, conf.Searcher().SourceTrialID(), conf.Searcher().SourceCheckpointUUID())
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if expModel.ID == 0 {
 		if err = m.db.AddExperiment(expModel); err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		telemetry.ReportExperimentCreated(m.system, expModel)
 	}
 
 	agentUserGroup, err := user.GetAgentUserGroup(*expModel.OwnerID, expModel)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	taskSpec.AgentUserGroup = agentUserGroup
@@ -181,7 +181,7 @@ func newExperiment(m *Master, expModel *model.Experiment, taskSpec *tasks.TaskSp
 			"job-id":        expModel.JobID,
 			"experiment-id": expModel.ID,
 		},
-	}, nil
+	}, resolvedResourcePool.CurrentMaxSlotsExceeded, nil
 }
 
 func (e *experiment) Receive(ctx *actor.Context) error {
@@ -843,9 +843,10 @@ func (e *experiment) setWeight(ctx *actor.Context, weight float64) error {
 func (e *experiment) setRP(ctx *actor.Context, msg sproto.SetResourcePool) error {
 	resources := e.Config.Resources()
 	oldRP := resources.ResourcePool()
-	rp, err := e.rm.ResolveResourcePool(
+	resolvedResourcePool, err := e.rm.ResolveResourcePool(
 		ctx, msg.ResourcePool, e.Config.Resources().SlotsPerTrial(), false,
 	)
+	rp := resolvedResourcePool.Name
 	switch {
 	case err != nil:
 		return fmt.Errorf("invalid resource pool name %s", msg.ResourcePool)

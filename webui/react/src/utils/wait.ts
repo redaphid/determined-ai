@@ -1,7 +1,7 @@
 import { serverAddress } from 'routes/utils';
 import { paths } from 'routes/utils';
 import { openBlank } from 'shared/utils/routes';
-import { Command, CommandState, CommandTask, CommandType } from 'types';
+import { Command, CommandResponse, CommandState, CommandTask, CommandType } from 'types';
 import { isCommandTask } from 'utils/task';
 
 export interface WaitStatus {
@@ -25,7 +25,11 @@ export const commandToEventUrl = (command: Command | CommandTask): string => {
 };
 
 export const openCommand = (command: CommandTask): void => {
-  openBlank(`${process.env.PUBLIC_URL}${paths.interactive(command)}`);
+  openBlank(`${process.env.PUBLIC_URL}${paths.interactive(command, false)}`);
+};
+
+export const openCommandResponse = (commandResponse: CommandResponse): void => {
+  openBlank(`${process.env.PUBLIC_URL}${paths.interactive(commandResponse.command, commandResponse.maxSlotsExceeded)}`);
 };
 
 export const CANNOT_OPEN_COMMAND_ERROR = 'Command cannot be opened.';

@@ -84,8 +84,8 @@ func (k KubernetesResourceManager) ResolveResourcePool(
 	name string,
 	slots int,
 	command bool,
-) (string, error) {
-	return KubernetesDummyResourcePool, k.ValidateResourcePool(ctx, name)
+) (ResolvedResourcePool, error) {
+	return ResolvedResourcePool{Name: KubernetesDummyResourcePool}, k.ValidateResourcePool(ctx, name)
 }
 
 // ValidateResourcePool validates a resource pool is none or the k8s dummy pool.

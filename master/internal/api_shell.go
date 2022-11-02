@@ -115,7 +115,7 @@ func (a *apiServer) SetShellPriority(
 func (a *apiServer) LaunchShell(
 	ctx context.Context, req *apiv1.LaunchShellRequest,
 ) (*apiv1.LaunchShellResponse, error) {
-	spec, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
+	spec, maxCurrentSlotsExceeded, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
 		TemplateName: req.TemplateName,
 		Config:       req.Config,
 		Files:        req.Files,
@@ -200,7 +200,8 @@ func (a *apiServer) LaunchShell(
 	}
 
 	return &apiv1.LaunchShellResponse{
-		Shell:  shell,
-		Config: protoutils.ToStruct(spec.Config),
+		Shell:                   shell,
+		Config:                  protoutils.ToStruct(spec.Config),
+		CurrentMaxSlotsExceeded: maxCurrentSlotsExceeded,
 	}, nil
 }

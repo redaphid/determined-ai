@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom';
 
 import TaskBar from 'components/TaskBar';
 import { getTask } from 'services/api';
+import { DetError, ErrorLevel, ErrorType } from 'shared/utils/error';
 import useUI from 'shared/contexts/stores/UI';
 import { ValueOf } from 'shared/types';
 import { CommandState, CommandType } from 'types';
 import handleError from 'utils/error';
-
+import { openNotification } from 'utils/error';
 import css from './InteractiveTask.module.scss';
 import TaskLogs from './TaskLogs';
 
@@ -18,6 +19,7 @@ type Params = {
   taskResourcePool: string;
   taskType: CommandType;
   taskUrl: string;
+  currentMaxSlotsExceeded: string;
 };
 
 const PageView = {
@@ -57,6 +59,7 @@ export const InteractiveTask: React.FC = () => {
     taskResourcePool: tResourcePool,
     taskType: tType,
     taskUrl: tUrl,
+    currentMaxSlotsExceeded: maxSlotsExceeded
   } = useParams<Params>();
   const [taskState, setTaskState] = useState<CommandState>();
   const { actions: uiActions, ui } = useUI();
@@ -66,7 +69,8 @@ export const InteractiveTask: React.FC = () => {
   const taskResourcePool = tResourcePool ?? '';
   const taskType = tType as CommandType;
   const taskUrl = tUrl ?? '';
-
+  const currentMaxSlotsExceeded = maxSlotsExceeded === "true" ? true : false;
+  console.log("max exc: ", currentMaxSlotsExceeded);
   useEffect(() => {
     uiActions.hideChrome();
     return uiActions.showChrome;
@@ -95,7 +99,19 @@ export const InteractiveTask: React.FC = () => {
   }, [taskId]);
 
   const title = ui.isPageHidden ? getTitleState(taskState, taskName) : taskName;
-
+  if(
+    currentMaxSlotsExceeded
+  ){
+    console.log("YEA WE EXCEEDED")
+    const detError = new DetError(
+    {
+      level: ErrorLevel.Warn,
+      publicSubject: "Slot WArning",
+      publicMessage: "Slots might be messued us",
+      silent: false,
+    })
+    openNotification(detError)
+  }
   return (
     <>
       <Helmet defer={false}>

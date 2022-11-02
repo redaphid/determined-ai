@@ -131,7 +131,7 @@ func (a *apiServer) SetNotebookPriority(
 func (a *apiServer) LaunchNotebook(
 	ctx context.Context, req *apiv1.LaunchNotebookRequest,
 ) (*apiv1.LaunchNotebookResponse, error) {
-	spec, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
+	spec, maxCurrentSlotsExceeded, err := a.getCommandLaunchParams(ctx, &protoCommandParams{
 		TemplateName: req.TemplateName,
 		Config:       req.Config,
 		Files:        req.Files,
@@ -221,7 +221,8 @@ func (a *apiServer) LaunchNotebook(
 	}
 
 	return &apiv1.LaunchNotebookResponse{
-		Notebook: notebook,
-		Config:   protoutils.ToStruct(spec.Config),
+		Notebook:                notebook,
+		Config:                  protoutils.ToStruct(spec.Config),
+		MaxCurrentSlotsExceeded: maxCurrentSlotsExceeded,
 	}, nil
 }

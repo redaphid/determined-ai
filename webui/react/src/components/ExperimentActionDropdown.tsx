@@ -102,8 +102,8 @@ const ExperimentActionDropdown: React.FC<Props> = ({
             if (onComplete) onComplete(action);
             break;
           case Action.OpenTensorBoard: {
-            const tensorboard = await openOrCreateTensorBoard({ experimentIds: [id] });
-            openCommand(tensorboard);
+            const {command, maxSlotsExceeded} = await openOrCreateTensorBoard({ experimentIds: [id] });
+            openCommand(command);
             break;
           }
           case Action.SwitchPin: {

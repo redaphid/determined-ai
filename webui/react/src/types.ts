@@ -660,6 +660,11 @@ export interface ExperimentTask extends Task {
   workspaceId: number;
 }
 
+export interface CommandResponse {
+  command: CommandTask;
+  maxSlotsExceeded?: boolean;
+}
+
 export interface CommandTask extends Task {
   displayName?: string;
   misc?: CommandMisc;

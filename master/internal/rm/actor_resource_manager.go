@@ -35,8 +35,8 @@ func (r *ActorResourceManager) ResolveResourcePool(
 	name string,
 	slots int,
 	command bool,
-) (string, error) {
-	return name, nil
+) (ResolvedResourcePool, error) {
+	return ResolvedResourcePool{Name: name}, nil
 }
 
 // ValidateResourcePool is a default implementation to satisfy the interface, mostly for tests.
@@ -86,6 +86,7 @@ func (r *ActorResourceManager) ValidateCommandResources(
 	ctx actor.Messenger,
 	msg sproto.ValidateCommandResourcesRequest,
 ) (resp sproto.ValidateCommandResourcesResponse, err error) {
+	fmt.Printf("Validating resources for %v", &msg)
 	return resp, r.ask(ctx, msg, &resp)
 }
 

@@ -107,4 +107,5 @@ message LaunchTensorboardResponse {
   determined.tensorboard.v1.Tensorboard tensorboard = 1;
   // The config;
   google.protobuf.Struct config = 2;
+  bool maxCurrentSlotsExceeded = 3;
 }

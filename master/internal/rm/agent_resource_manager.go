@@ -33,6 +33,11 @@ type AgentResourceManager struct {
 	*ActorResourceManager
 }
 
+type ResolvedResourcePool struct {
+	Name                    string
+	CurrentMaxSlotsExceeded bool
+}
+
 // NewAgentResourceManager returns a new AgentResourceManager, which manages communicating with
 // and scheduling on Determined agents.
 func NewAgentResourceManager(
@@ -98,42 +103,58 @@ func (a AgentResourceManager) IsReattachEnabledForRP(ctx actor.Messenger, rpName
 // ResolveResourcePool fully resolves the resource pool name.
 func (a AgentResourceManager) ResolveResourcePool(
 	ctx actor.Messenger, name string, slots int, command bool,
-) (string, error) {
+) (ResolvedResourcePool, error) {
+	var rp ResolvedResourcePool
+	fmt.Printf("Resolving resources for %v %v %v", name, command, slots)
 	// If the resource pool isn't set, fill in the default at creation time.
 	if name == "" && slots == 0 {
 		req := sproto.GetDefaultAuxResourcePoolRequest{}
 		resp, err := a.GetDefaultAuxResourcePool(ctx, req)
 		if err != nil {
-			return "", fmt.Errorf("defaulting to aux pool: %w", err)
+			return rp, fmt.Errorf("defaulting to aux pool: %w", err)
 		}
-		return resp.PoolName, nil
+		rp.Name = resp.PoolName
+		return rp, nil
 	}
 
 	if name == "" && slots >= 0 {
 		req := sproto.GetDefaultComputeResourcePoolRequest{}
 		resp, err := a.GetDefaultComputeResourcePool(ctx, req)
 		if err != nil {
-			return "", fmt.Errorf("defaulting to compute pool: %w", err)
+			return rp, fmt.Errorf("defaulting to compute pool: %w", err)
 		}
-		return resp.PoolName, nil
+		rp.Name = resp.PoolName
+		return rp, nil
 	}
 
 	if err := a.ValidateResourcePool(ctx, name); err != nil {
-		return "", fmt.Errorf("validating pool: %w", err)
+		return rp, fmt.Errorf("validating pool: %w", err)
 	}
-
-	if slots > 0 && command {
+	if slots > 0 {
 		switch resp, err := a.ValidateCommandResources(ctx, sproto.ValidateCommandResourcesRequest{
 			ResourcePool: name,
 			Slots:        slots,
 		}); {
 		case err != nil:
-			return "", fmt.Errorf("validating request for (%s, %d): %w", name, slots, err)
+			return rp, fmt.Errorf("validating request for (%s, %d): %w", name, slots, err)
 		case !resp.Fulfillable:
-			return "", errors.New("request unfulfillable, please try requesting less slots")
+			return rp, errors.New("request unfulfillable, please try requesting less slots")
+		default:
+			rp.Name = name
+			agents, _ := a.GetAgents(ctx, &apiv1.GetAgentsRequest{})
+			maxSlots := 0
+			for _, agent := range agents.Agents {
+				fmt.Println(agent)
+				maxSlots += len(agent.Slots)
+			}
+			if slots > maxSlots {
+				rp.CurrentMaxSlotsExceeded = true
+			}
+			return rp, nil
 		}
 	}
-	return name, nil
+	rp.Name = name
+	return rp, nil
 }
 
 // GetAgents gets the state of connected agents. Go around the RM and directly to the agents actor

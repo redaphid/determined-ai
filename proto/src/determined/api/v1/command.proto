@@ -103,4 +103,5 @@ message LaunchCommandResponse {
   determined.command.v1.Command command = 1;
   // The config;
   google.protobuf.Struct config = 2;
+  bool currentMaxSlotsExceeded = 3;
 }
