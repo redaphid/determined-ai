@@ -53,7 +53,11 @@ type ResourceManager interface {
 		sproto.GetDefaultAuxResourcePoolRequest,
 	) (sproto.GetDefaultAuxResourcePoolResponse, error)
 	ValidateResourcePool(ctx actor.Messenger, name string) error
-	ResolveResourcePool(ctx actor.Messenger, name string, slots int, command bool) (ResolvedResourcePool, error)
+	ResolveResourcePool(
+		ctx actor.Messenger,
+		name string,
+		slots int,
+		command bool) (ResolvedResourcePool, error)
 
 	// Agents
 	GetAgents(actor.Messenger, *apiv1.GetAgentsRequest) (*apiv1.GetAgentsResponse, error)

@@ -86,7 +86,6 @@ func (r *ActorResourceManager) ValidateCommandResources(
 	ctx actor.Messenger,
 	msg sproto.ValidateCommandResourcesRequest,
 ) (resp sproto.ValidateCommandResourcesResponse, err error) {
-	fmt.Printf("Validating resources for %v", &msg)
 	return resp, r.ask(ctx, msg, &resp)
 }
 

@@ -33,6 +33,7 @@ type AgentResourceManager struct {
 	*ActorResourceManager
 }
 
+// ResolvedResourcePool represents the result of validating a resource pool.
 type ResolvedResourcePool struct {
 	Name                    string
 	CurrentMaxSlotsExceeded bool
@@ -105,7 +106,6 @@ func (a AgentResourceManager) ResolveResourcePool(
 	ctx actor.Messenger, name string, slots int, command bool,
 ) (ResolvedResourcePool, error) {
 	var rp ResolvedResourcePool
-	fmt.Printf("Resolving resources for %v %v %v", name, command, slots)
 	// If the resource pool isn't set, fill in the default at creation time.
 	if name == "" && slots == 0 {
 		req := sproto.GetDefaultAuxResourcePoolRequest{}
@@ -144,7 +144,6 @@ func (a AgentResourceManager) ResolveResourcePool(
 			agents, _ := a.GetAgents(ctx, &apiv1.GetAgentsRequest{})
 			maxSlots := 0
 			for _, agent := range agents.Agents {
-				fmt.Println(agent)
 				maxSlots += len(agent.Slots)
 			}
 			if slots > maxSlots {
