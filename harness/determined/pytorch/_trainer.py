@@ -111,6 +111,7 @@ class Trainer:
                 min_validation_period=min_validation_period,
                 average_training_metrics=average_training_metrics,
                 checkpoint_policy=checkpoint_policy,
+                latest_checkpoint=self._cluster_info.latest_checkpoint,
                 smaller_is_better=smaller_is_better,
                 searcher_metric_name=self._cluster_info.trial._config["searcher"]["metric"],
                 local_training=False,
