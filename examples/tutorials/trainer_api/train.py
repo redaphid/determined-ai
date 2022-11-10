@@ -1,3 +1,5 @@
+import os
+
 from determined import pytorch
 import torch
 from typing import Any, Dict, Tuple, cast
@@ -20,6 +22,8 @@ class MNistTrial(pytorch.PyTorchTrial):
     def __init__(self, context: PyTorchTrialContext) -> None:
         self.context = context
         self.download_directory = f"/tmp/mnist-data"
+        os.makedirs(self.download_directory, exist_ok=True)
+
         self.model = context.wrap_model(nn.Sequential(
             nn.Conv2d(1, 32, 3, 1),
             nn.ReLU(),
@@ -75,7 +79,6 @@ class MNistTrial(pytorch.PyTorchTrial):
         return {"validation_loss": validation_loss, "accuracy": accuracy}
 
     def build_training_data_loader(self) -> DataLoader:
-        import os
         import filelock
         with filelock.FileLock(os.path.join(self.download_directory, "lock")):
             train_set = datasets.MNIST(
@@ -95,7 +98,6 @@ class MNistTrial(pytorch.PyTorchTrial):
         return DataLoader(train_set, batch_size=self.batch_size)
 
     def build_validation_data_loader(self) -> DataLoader:
-        import os
         import filelock
         with filelock.FileLock(os.path.join(self.download_directory, "lock")):
             validation_set = datasets.MNIST(
