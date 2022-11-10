@@ -604,7 +604,7 @@ class PyTorchTrialController:
             except ShouldExit as e:
                 # Checkpoint unsaved work and exit.
                 if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
-                    yield from self._checkpoint(already_exiting=True)
+                    self._checkpoint(already_exiting=True)
 
     # XXX: maybe/probably better if train_steps is passed in individually instead of as a list
     # XXX: return only the reached limits instead of all passed in steps?
