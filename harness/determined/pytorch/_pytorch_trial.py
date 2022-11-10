@@ -633,8 +633,7 @@ class PyTorchTrialController:
 
     def _train_for_local(
         self, train_steps: List[_TrainStep], training_enumerator: iter
-    ) -> Dict[str, Any]:
-        result = {}
+    ):
         max_length_reached = False
 
         while not max_length_reached:
@@ -676,7 +675,15 @@ class PyTorchTrialController:
                 # After checkpoint/validation steps, check preemption and upload to tensorboard
                 self._upload_tb_files()
                 self._stop_requested()
-        return result
+
+        # Finished training for op. Perform final checkpoint/validation if necessary.
+        # XXX: is this actually necessary? there's no searcher mandate, but still seems useful to
+        # do a last checkpoint before finish
+        if not self._validation_is_current():
+            self._validate()
+
+        if not self._checkpoint_is_current():
+            self._checkpoint(already_exiting=False)
 
     def _validate_for_op(self, op: SearcherOperation, searcher_length: TrainUnit):
         val_metrics = self._validate()
@@ -745,13 +752,13 @@ class PyTorchTrialController:
         if not self._validation_is_current():
             self._validate_for_op(op, searcher_length)
 
-        if not self._checkpoint_is_current() and self._is_chief:
+        if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
 
         if self._is_chief:
             assert op._completed, "logic error; op was never completed"
 
-    def _validate_searcher_metric(self, val_metrics):
+    def _validate_searcher_metric(self, val_metrics: Dict):
         if self._searcher_metric_name not in val_metrics:
             raise RuntimeError(
                 f"Search method is configured to use metric '{self._searcher_metric_name}' but model "
