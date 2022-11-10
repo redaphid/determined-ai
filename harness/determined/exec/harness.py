@@ -243,6 +243,7 @@ def _run_pytorch_trial(
                 steps_completed=info.trial._steps_completed,
                 latest_checkpoint=info.latest_checkpoint,
                 debug=info.trial._debug,
+                step_zero_validation=info.trial._config["perform_initial_validation"]
             )
             controller.run()
     return 0

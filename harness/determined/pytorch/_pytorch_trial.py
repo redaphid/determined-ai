@@ -143,6 +143,7 @@ class PyTorchTrialController:
         searcher_metric_name: Optional[str] = None,
         debug: Optional[bool] = False,
         checkpoint_policy: Optional[str] = "best",
+        step_zero_validation: Optional[bool] = False,
     ) -> None:
 
         if not isinstance(trial_inst, PyTorchTrial):
@@ -177,6 +178,7 @@ class PyTorchTrialController:
         self._state = _TrialState(trial_id=self._trial_id, batches_trained=steps_completed)
         self._start_from_batch = steps_completed
         self._val_from_previous_run = self._core_context.train._get_last_validation()
+        self._step_zero_validation = step_zero_validation
 
         # Training configs
         self._latest_checkpoint = latest_checkpoint
@@ -580,6 +582,13 @@ class PyTorchTrialController:
 
             searcher_unit = self._core_context.searcher.get_configured_units()
             try:
+                if (
+                    self._step_zero_validation
+                    and self._val_from_previous_run is None
+                    and self._state.steps_completed == 0
+                ):
+                    self._validate()
+
                 for op in self._core_context.searcher.operations():
                     self._train_for_op(
                         op=op,
