@@ -40,9 +40,7 @@ class Trainer:
 
     def train(
         self,
-        max_epochs: Optional[int] = None,
-        # OR
-        max_batches: Optional[int] = None,
+        max_length: pytorch.TrainUnit = None,
         min_checkpoint_period: Union[pytorch.TrainUnit, int] = 1,
         min_validation_period: Union[pytorch.TrainUnit, int] = 1,
         average_training_metrics: Optional[bool] = True,
@@ -53,11 +51,9 @@ class Trainer:
     ):
 
         if self._local_training:
-            assert (max_epochs is None) ^ (
-                max_batches is None
-            ), "Either max_batches or max_epochs must be defined in local training mode"
+            assert max_length, "max_length must be defined in local training mode"
         else:
-            if max_batches or max_epochs:
+            if max_length:
                 logging.warning(
                     "max_batches and max_epochs is ignored in when training on cluster. "
                     "Please configure the searcher length instead."
@@ -66,12 +62,6 @@ class Trainer:
         # Set context and training variables
         self._context._aggregation_frequency = aggregation_frequency
         self._context._average_aggregated_gradients = average_aggregated_gradients
-
-        max_length = None
-        if max_batches:
-            max_length = pytorch.Batch(max_batches)
-        elif max_epochs:
-            max_length = pytorch.Epoch(max_epochs)
 
         # Convert validation/checkpoint periods to training units.
         # Without a specified training unit, periods will be assumed to be same as max_length in local training mode,
@@ -116,6 +106,7 @@ class Trainer:
                 local_training=False,
                 det_profiler=self._det_profiler,
                 steps_completed=self._cluster_info.trial._steps_completed,
+                step_zero_validation=self._cluster_info.trial._config["perform_initial_validation"]
             )
 
         self._trial_controller.run()

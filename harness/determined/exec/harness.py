@@ -145,83 +145,22 @@ def _run_pytorch_trial(
     logging.debug("Starting harness.")
 
     with maybe_periodic_stacktraces(info.trial._debug):
-        # Step 1: Load user code.
-        # We can't build a core.Context without rank information, and we can't gather rank
-        # information until the distributed backend is initialized, and we can't initialize the
-        # correct distributed backend until we know which Trial class the user implemented.
-        if info.container_rank == 0:
-            try:
-                analytics.send_analytics("trial_loaded", analytics.get_trial_analytics(trial_class))
-            except Exception as e:
-                logging.debug(f"Cannot send analytics: {e}")
-
-        # Step 2: Initialize framework-specific details (dtrain framework, random seeds, etc).
-        distributed_backend = det._DistributedBackend()
-        pytorch.PyTorchTrialController.pre_execute_hook(info.trial.trial_seed, distributed_backend)
-
-        # Step 3: Now that the dtrain framework is initialized, build the DistributedContext object.
-        # For harness.py, we only support a fixed set of Determined-provided launch layers, since
-        # the TrialControllers only support a fixed set of launch layers.
-        distributed = None
-        if distributed_backend.use_horovod():
-            distributed = core.DistributedContext.from_horovod(horovod.hvd)
-        elif distributed_backend.use_deepspeed():
-            distributed = core.DistributedContext.from_deepspeed()
-        elif distributed_backend.use_torch():
-            distributed = core.DistributedContext.from_torch_distributed()
-        elif len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
-            raise ValueError(
-                "In multi-slot tasks, the determined.exec.harness module must not be invoked "
-                "directly.  Instead, it must be wrapped in one of the following launch layers: "
-                "determined.launch.horovod, determined.launch.deepspeed"
-            )
-
-        # Step 4: Let core.init() create the core.Context.
-        with core.init(
-            distributed=distributed,
-            preempt_mode=core.PreemptMode.ChiefOnly,
-            tensorboard_mode=core.TensorboardMode.MANUAL,
-        ) as core_context:
-            trial_context = pytorch.PyTorchTrialContext(
-                core_context=core_context,
-                trial_seed=info.trial.trial_seed,
-                hparams=info.trial.hparams,
-                slots_per_trial=info.trial._config["resources"]["slots_per_trial"],
-                num_gpus=len(info.gpu_uuids),
-                exp_conf=info.trial._config,
-                aggregation_frequency=info.trial._config["optimizations"]["aggregation_frequency"],
-                fp16_compression=info.trial._config["optimizations"]["gradient_compression"],
-                average_aggregated_gradients=cast(
-                    bool, info.trial._config["optimizations"]["average_aggregated_gradients"]
-                ),
-                steps_completed=info.trial._steps_completed,
-                managed_training=True,
-            )
-
-            # Step 4: Instantiate the user's Trial.
-            trial_inst = trial_class(trial_context)
-
-            # Step 5: Create a TrialController and execute training
+        with pytorch.init() as train_context:
+            trial_inst = trial_class(train_context)
             logging.info(
                 f"Creating {pytorch.PyTorchTrialController.__name__} with {trial_class.__name__}."
             )
 
-            profiling_enabled = cast(bool, info.trial._config["profiling"]["enabled"])
-            det_profiler = ProfilerAgent(
-                trial_id=str(info.trial.trial_id),
-                agent_id=info.agent_id,
-                master_url=info.master_url,
-                profiling_is_enabled=profiling_enabled,
-                global_rank=core_context.distributed.rank,
-                local_rank=core_context.distributed.local_rank,
-                begin_on_batch=cast(int, info.trial._config["profiling"]["begin_on_batch"]),
-                end_after_batch=cast(int, info.trial._config["profiling"]["end_after_batch"]),
+            trainer = pytorch.Trainer(trial_inst, train_context)
+
+            trainer.configure_profiler(
                 sync_timings=cast(bool, info.trial._config["profiling"]["sync_timings"]),
+                enabled=cast(bool, info.trial._config["profiling"]["enabled"]),
+                begin_on_batch=info.trial._config["profiling"]["begin_on_batch"],
+                end_after_batch=info.trial._config["profiling"]["end_after_batch"]
             )
 
-            controller = pytorch.PyTorchTrialController(
-                trial_inst=trial_inst,
-                context=trial_context,
+            trainer.train(
                 min_checkpoint_period=pytorch.TrainUnit._from_values(
                     **info.trial._config["min_checkpoint_period"]
                 ),
@@ -233,15 +172,12 @@ def _run_pytorch_trial(
                 ),
                 checkpoint_policy=info.trial._config["checkpoint_policy"],
                 smaller_is_better=cast(bool, info.trial._config["searcher"]["smaller_is_better"]),
-                searcher_metric_name=info.trial._config["searcher"]["metric"],
-                local_training=False,
-                det_profiler=det_profiler,
-                steps_completed=info.trial._steps_completed,
-                latest_checkpoint=info.latest_checkpoint,
-                debug=info.trial._debug,
-                step_zero_validation=info.trial._config["perform_initial_validation"]
+                average_aggregated_gradients=cast(
+                    bool, info.trial._config["optimizations"]["average_aggregated_gradients"]
+                ),
+                aggregation_frequency=info.trial._config["optimizations"]["aggregation_frequency"],
             )
-            controller.run()
+
     return 0
 
 
