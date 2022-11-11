@@ -7,9 +7,8 @@ import torch
 import torch.distributed as dist
 
 import determined as det
-from determined import core, horovod, pytorch
+from determined import core, horovod, profiler, pytorch
 from determined.horovod import hvd
-from determined.profiler import DummyProfilerAgent, ProfilerAgent
 
 
 class Trainer:
@@ -19,7 +18,7 @@ class Trainer:
         self._cluster_info = det.get_cluster_info()
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
-        self._det_profiler = DummyProfilerAgent()
+        self._det_profiler = profiler.DummyProfilerAgent()
         self._trial_controller = None
         self._local_training = self._cluster_info is None
 
@@ -27,7 +26,7 @@ class Trainer:
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
     ):
         assert self._cluster_info, "Determined profiler must be run on cluster"
-        self._det_profiler = ProfilerAgent(
+        self._det_profiler = profiler.ProfilerAgent(
             trial_id=str(self._cluster_info.trial.trial_id),
             agent_id=self._cluster_info.agent_id,
             master_url=self._cluster_info.master_url,

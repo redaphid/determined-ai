@@ -3,7 +3,7 @@ import contextlib
 import faulthandler
 import logging
 import sys
-from typing import Iterator, cast
+from typing import Iterator, cast, Type
 
 import determined as det
 from determined import core, horovod, load
@@ -48,7 +48,7 @@ def main(train_entrypoint: str) -> int:
     # TFKerasTrialController or EstimatorTrialController to add that functionality, so for now we
     # continue with the legacy strategy.
 
-    if isinstance(trial_class, pytorch.PyTorchTrial):
+    if issubclass(trial_class, pytorch.PyTorchTrial):
         return _run_pytorch_trial(trial_class, info)
 
     env = det.EnvContext(
@@ -138,7 +138,7 @@ def main(train_entrypoint: str) -> int:
 
 
 def _run_pytorch_trial(
-    trial_class: pytorch.PyTorchTrial,
+    trial_class: Type[pytorch.PyTorchTrial],
     info: det.ClusterInfo,
 ):
     det.common.set_logger(info.trial._debug)
@@ -214,12 +214,8 @@ def _run_pytorch_trial(
                 profiling_is_enabled=profiling_enabled,
                 global_rank=core_context.distributed.rank,
                 local_rank=core_context.distributed.local_rank,
-                begin_on_batch=profiling_enabled
-                and cast(int, info.trial._config["profiling"]["begin_on_batch"])
-                or 0,
-                end_after_batch=profiling_enabled
-                and cast(int, info.trial._config["profiling"]["end_after_batch"])
-                or 0,
+                begin_on_batch=cast(int, info.trial._config["profiling"]["begin_on_batch"]),
+                end_after_batch=cast(int, info.trial._config["profiling"]["end_after_batch"]),
                 sync_timings=cast(bool, info.trial._config["profiling"]["sync_timings"]),
             )
 

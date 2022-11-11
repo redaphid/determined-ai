@@ -1204,6 +1204,7 @@ class PyTorchTrialController:
             return
 
         self._state = _TrialState(**state)
+        print(f"Loaded state from trial {self._trial_id}, {self._state}")
 
         # Detect the case where the final validation we made was against this exact checkpoint.  In
         # that case, the master will know about the validation, but it would not appear in the
