@@ -8,7 +8,6 @@ from typing import Iterator, cast, Type
 import determined as det
 from determined import core, horovod, load
 from determined.common.api import analytics, certs
-from determined.profiler import ProfilerAgent
 
 try:
     from determined import pytorch

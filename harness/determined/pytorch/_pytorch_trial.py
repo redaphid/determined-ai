@@ -1035,11 +1035,9 @@ class PyTorchTrialController:
                     det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
                 )
             self._metric_writer.on_validation_step_end(self._state.batches_trained, metrics)
-
-        if self._is_chief:
             return metrics
-        else:
-            return {}
+
+        return {}
 
     def _load(self, load_path: pathlib.Path) -> None:
         # Backwards compat with older checkpoint formats. List is of the newest to
