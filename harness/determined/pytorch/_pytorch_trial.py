@@ -104,7 +104,7 @@ class _TrialState:
         last_ckpt: int = 0,
         # steps_completed is a legacy field kept to support loading from older checkpoints.
         # checkpoints should only persist batches_trained and epochs_trained
-        steps_completed: int = 0,
+        steps_completed: int = None,
         step_id: int = 0,
         last_val: int = 0,
         batches_trained: int = 0,
