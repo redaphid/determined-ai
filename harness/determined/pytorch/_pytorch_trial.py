@@ -15,6 +15,9 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import numpy as np
 import torch
 
+# Import torch.distributed separately as it isn't guaranteed to be included in torch
+import torch.distributed as dist
+
 import determined as det
 from determined import common, core, profiler, pytorch, tensorboard, util
 from determined.horovod import hvd
@@ -240,9 +243,9 @@ class PyTorchTrialController:
             hvd.init()
         if distributed_backend.use_torch():
             if torch.cuda.is_available():
-                torch.distributed.init_process_group(backend="nccl")  # type: ignore
+                dist.init_process_group(backend="nccl")  # type: ignore
             else:
-                torch.distributed.init_process_group(backend="gloo")  # type: ignore
+                dist.init_process_group(backend="gloo")  # type: ignore
 
         cls._set_random_seeds(trial_seed)
 
