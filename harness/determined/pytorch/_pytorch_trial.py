@@ -17,11 +17,8 @@ import torch
 import torch.distributed as dist
 
 import determined as det
-from determined import core, pytorch, tensorboard, util
-from determined.common import check
-from determined.core import SearcherOperation
+from determined import common, core, profiler, pytorch, tensorboard, util
 from determined.horovod import hvd
-from determined.profiler import DummyProfilerAgent, ProfilerAgent
 
 # Apex is included only for GPU trials.
 try:
@@ -139,7 +136,7 @@ class PyTorchTrialController:
         test_mode: Optional[bool] = False,
         # XXX: should default be maxsize or 100?
         scheduling_unit: Optional[int] = sys.maxsize,
-        det_profiler: Optional[ProfilerAgent] = DummyProfilerAgent(),
+        det_profiler: Optional[profiler.ProfilerAgent] = profiler.DummyProfilerAgent(),
         searcher_metric_name: Optional[str] = None,
         debug: Optional[bool] = False,
         checkpoint_policy: Optional[str] = "best",
@@ -704,7 +701,7 @@ class PyTorchTrialController:
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
 
-    def _validate_for_op(self, op: SearcherOperation, searcher_length: TrainUnit):
+    def _validate_for_op(self, op: core.SearcherOperation, searcher_length: TrainUnit):
         val_metrics = self._validate()
 
         # Validation step complete. Chief must:
@@ -731,7 +728,7 @@ class PyTorchTrialController:
                     self._checkpoint(already_exiting=False)
 
     def _train_for_op(
-        self, op: SearcherOperation, searcher_unit: core.Unit, train_steps: List[_TrainStep]
+        self, op: core.SearcherOperation, searcher_unit: core.Unit, train_steps: List[_TrainStep]
     ):
         searcher_length = TrainUnit._from_searcher_unit(op.length, searcher_unit)
 
@@ -888,7 +885,7 @@ class PyTorchTrialController:
         samples_per_second *= self._context.distributed.size
         self._prof.record_metric("samples_per_second", samples_per_second)
 
-        check.is_instance(
+        common.check.is_instance(
             training_metrics,
             dict,
             "train_batch() must return a dictionary "
