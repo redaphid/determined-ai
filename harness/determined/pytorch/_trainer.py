@@ -38,11 +38,11 @@ class Trainer:
             sync_timings=sync_timings,
         )
 
-    def train(
+    def fit(
         self,
         max_length: pytorch.TrainUnit = None,
-        min_checkpoint_period: Union[pytorch.TrainUnit, int] = 1,
-        min_validation_period: Union[pytorch.TrainUnit, int] = 1,
+        checkpoint_period: Union[pytorch.TrainUnit, int] = 1,
+        validation_period: Union[pytorch.TrainUnit, int] = 1,
         average_training_metrics: Optional[bool] = True,
         average_aggregated_gradients: Optional[bool] = True,
         aggregation_frequency: Optional[int] = 1,
@@ -66,14 +66,14 @@ class Trainer:
         # Convert validation/checkpoint periods to training units.
         # Without a specified training unit, periods will be assumed to be same as max_length in local training mode,
         # and the searcher unit when training on-cluster
-        if isinstance(min_checkpoint_period, int):
-            min_checkpoint_period = self._convert_period_to_train_unit(
-                min_checkpoint_period, max_length
+        if isinstance(checkpoint_period, int):
+            checkpoint_period = self._convert_period_to_train_unit(
+                checkpoint_period, max_length
             )
 
-        if isinstance(min_validation_period, int):
-            min_validation_period = self._convert_period_to_train_unit(
-                min_validation_period, max_length
+        if isinstance(validation_period, int):
+            validation_period = self._convert_period_to_train_unit(
+                validation_period, max_length
             )
 
         if self._local_training:
@@ -85,8 +85,8 @@ class Trainer:
                 trial_inst=self._trial,
                 context=self._context,
                 max_length=max_length,
-                min_validation_period=min_validation_period,
-                min_checkpoint_period=min_checkpoint_period,
+                min_validation_period=validation_period,
+                min_checkpoint_period=checkpoint_period,
                 average_training_metrics=average_training_metrics,
                 checkpoint_policy=checkpoint_policy,
                 smaller_is_better=smaller_is_better,
@@ -96,8 +96,8 @@ class Trainer:
             self._trial_controller = pytorch.PyTorchTrialController(
                 trial_inst=self._trial,
                 context=self._context,
-                min_checkpoint_period=min_checkpoint_period,
-                min_validation_period=min_validation_period,
+                min_checkpoint_period=checkpoint_period,
+                min_validation_period=validation_period,
                 average_training_metrics=average_training_metrics,
                 checkpoint_policy=checkpoint_policy,
                 latest_checkpoint=self._cluster_info.latest_checkpoint,

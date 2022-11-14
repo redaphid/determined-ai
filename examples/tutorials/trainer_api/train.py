@@ -125,10 +125,10 @@ def main():
         #                            sync_timings=True,
         #                            begin_on_batch=0,
         #                            end_after_batch=10)
-        trainer.train(
-            max_epochs=1,
-            min_checkpoint_period=pytorch.Batch(100),
-            min_validation_period=pytorch.Batch(100),
+        trainer.fit(
+            max_length=pytorch.Epoch(1),
+            checkpoint_period=pytorch.Batch(100),
+            validation_period=pytorch.Batch(100),
         )
 
 

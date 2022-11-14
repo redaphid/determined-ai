@@ -159,11 +159,11 @@ def _run_pytorch_trial(
                 end_after_batch=info.trial._config["profiling"]["end_after_batch"]
             )
 
-            trainer.train(
-                min_checkpoint_period=pytorch.TrainUnit._from_values(
+            trainer.fit(
+                checkpoint_period=pytorch.TrainUnit._from_values(
                     **info.trial._config["min_checkpoint_period"]
                 ),
-                min_validation_period=pytorch.TrainUnit._from_values(
+                validation_period=pytorch.TrainUnit._from_values(
                     **info.trial._config["min_validation_period"]
                 ),
                 average_training_metrics=cast(
