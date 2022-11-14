@@ -581,7 +581,7 @@ class PyTorchTrialController:
                 if (
                     self._step_zero_validation
                     and self._val_from_previous_run is None
-                    and self._state.steps_completed == 0
+                    and self._state.batches_trained == 0
                 ):
                     self._validate()
 
@@ -1187,7 +1187,7 @@ class PyTorchTrialController:
             wlsq_path = load_path.joinpath("workload_sequencer.pkl")
             if wlsq_path.exists():
                 with wlsq_path.open("rb") as f:
-                    self._load_state(pickle.load(f))
+                    self._load_wlsq_state(pickle.load(f))
 
     def _load_state(self, state: Any) -> None:
         # Load our state from the checkpoint if we are continuing training after a pause or restart.
@@ -1204,6 +1204,19 @@ class PyTorchTrialController:
         # checkpoint state.  If the validation was before the last checkpoint, the checkpoint state
         # is already correct, while any validations after the last checkpoint aren't valid anymore
         # and can be safely ignored.
+        if self._state.batches_trained == self._val_from_previous_run:
+            self._state.last_val = self._state.batches_trained
+
+    def _load_wlsq_state(self, state: Any) -> None:
+        if state.get("trial_id") != self._trial_id:
+            return
+
+        self._state = _TrialState(**state)
+
+        # Convert legacy steps_completed to batches_trained and epochs_trained
+        self._state.batches_trained = self._state.steps_completed
+        self._state.epochs_trained = self._get_epoch_idx(self._state.batches_trained)
+
         if self._state.batches_trained == self._val_from_previous_run:
             self._state.last_val = self._state.batches_trained
 
