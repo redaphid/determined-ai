@@ -556,66 +556,69 @@ class PyTorchTrialController:
                 ):
                     callback.on_training_start()
 
-            if self._local_training:
-                try:
-                    self._train_for_local(
-                        training_enumerator=self.training_enumerator,
-                        train_steps=[
-                            _TrainStep(step_type=_TrainStepType.TRAIN, unit=self._max_length),
-                            _TrainStep(
-                                step_type=_TrainStepType.CHECKPOINT,
-                                unit=self._min_checkpoint_period,
-                            ),
-                            # Scheduling unit is always configured in batches
-                            _TrainStep(
-                                step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
-                            ),
-                            _TrainStep(
-                                step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period
-                            ),
-                        ],
-                    )
-                except ShouldExit as e:
-                    if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
-                        self._checkpoint(already_exiting=True)
+            self._run()
 
-                return
-
-            searcher_unit = self._core_context.searcher.get_configured_units()
+    def _run(self) -> None:
+        if self._local_training:
             try:
-                if (
-                    self._step_zero_validation
-                    and self._val_from_previous_run is None
-                    and self._state.batches_trained == 0
-                ):
-                    self._validate()
-
-                for op in self._core_context.searcher.operations():
-                    self._train_for_op(
-                        op=op,
-                        searcher_unit=searcher_unit,
-                        train_steps=[
-                            _TrainStep(
-                                step_type=_TrainStepType.TRAIN,
-                                unit=TrainUnit._from_searcher_unit(op.length, searcher_unit),
-                            ),
-                            _TrainStep(
-                                step_type=_TrainStepType.CHECKPOINT,
-                                unit=self._min_checkpoint_period,
-                            ),
-                            # Scheduling unit is always configured in batches
-                            _TrainStep(
-                                step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
-                            ),
-                            _TrainStep(
-                                step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period
-                            ),
-                        ],
-                    )
+                self._train_for_local(
+                    training_enumerator=self.training_enumerator,
+                    train_steps=[
+                        _TrainStep(step_type=_TrainStepType.TRAIN, unit=self._max_length),
+                        _TrainStep(
+                            step_type=_TrainStepType.CHECKPOINT,
+                            unit=self._min_checkpoint_period,
+                        ),
+                        # Scheduling unit is always configured in batches
+                        _TrainStep(
+                            step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
+                        ),
+                        _TrainStep(
+                            step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period
+                        ),
+                    ],
+                )
             except ShouldExit as e:
-                # Checkpoint unsaved work and exit.
                 if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
                     self._checkpoint(already_exiting=True)
+
+            return
+
+        searcher_unit = self._core_context.searcher.get_configured_units()
+        try:
+            if (
+                self._step_zero_validation
+                and self._val_from_previous_run is None
+                and self._state.batches_trained == 0
+            ):
+                self._validate()
+
+            for op in self._core_context.searcher.operations():
+                self._train_for_op(
+                    op=op,
+                    searcher_unit=searcher_unit,
+                    train_steps=[
+                        _TrainStep(
+                            step_type=_TrainStepType.TRAIN,
+                            unit=TrainUnit._from_searcher_unit(op.length, searcher_unit),
+                        ),
+                        _TrainStep(
+                            step_type=_TrainStepType.CHECKPOINT,
+                            unit=self._min_checkpoint_period,
+                        ),
+                        # Scheduling unit is always configured in batches
+                        _TrainStep(
+                            step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
+                        ),
+                        _TrainStep(
+                            step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period
+                        ),
+                    ],
+                )
+        except ShouldExit as e:
+            # Checkpoint unsaved work and exit.
+            if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
+                self._checkpoint(already_exiting=True)
 
     # XXX: maybe/probably better if train_steps is passed in individually instead of as a list
     # XXX: return only the reached limits instead of all passed in steps?
