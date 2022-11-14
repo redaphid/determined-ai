@@ -14,7 +14,6 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 
 import numpy as np
 import torch
-import torch.distributed as dist
 
 import determined as det
 from determined import common, core, profiler, pytorch, tensorboard, util
@@ -82,7 +81,6 @@ class _TrainStepType(enum.Enum):
     TRAIN = "TRAIN"
 
 
-# XXX: should this be private? will be returned from .train() but is only used internally
 class _TrainStep:
     def __init__(self, step_type: _TrainStepType, unit: TrainUnit):
         self.step_type = step_type
@@ -240,9 +238,9 @@ class PyTorchTrialController:
             hvd.init()
         if distributed_backend.use_torch():
             if torch.cuda.is_available():
-                dist.init_process_group(backend="nccl")  # type: ignore
+                torch.distributed.init_process_group(backend="nccl")  # type: ignore
             else:
-                dist.init_process_group(backend="gloo")  # type: ignore
+                torch.distributed.init_process_group(backend="gloo")  # type: ignore
 
         cls._set_random_seeds(trial_seed)
 
@@ -560,7 +558,8 @@ class PyTorchTrialController:
                         train_steps=[
                             _TrainStep(step_type=_TrainStepType.TRAIN, unit=self._max_length),
                             _TrainStep(
-                                step_type=_TrainStepType.CHECKPOINT, unit=self._min_checkpoint_period
+                                step_type=_TrainStepType.CHECKPOINT,
+                                unit=self._min_checkpoint_period,
                             ),
                             # Scheduling unit is always configured in batches
                             _TrainStep(
@@ -596,7 +595,8 @@ class PyTorchTrialController:
                                 unit=TrainUnit._from_searcher_unit(op.length, searcher_unit),
                             ),
                             _TrainStep(
-                                step_type=_TrainStepType.CHECKPOINT, unit=self._min_checkpoint_period
+                                step_type=_TrainStepType.CHECKPOINT,
+                                unit=self._min_checkpoint_period,
                             ),
                             # Scheduling unit is always configured in batches
                             _TrainStep(
@@ -647,9 +647,7 @@ class PyTorchTrialController:
 
         # True epoch end
 
-    def _train_for_local(
-        self, train_steps: List[_TrainStep], training_enumerator: iter
-    ):
+    def _train_for_local(self, train_steps: List[_TrainStep], training_enumerator: iter):
         max_length_reached = False
 
         while not max_length_reached:

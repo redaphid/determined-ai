@@ -67,14 +67,10 @@ class Trainer:
         # Without a specified training unit, periods will be assumed to be same as max_length in local training mode,
         # and the searcher unit when training on-cluster
         if isinstance(checkpoint_period, int):
-            checkpoint_period = self._convert_period_to_train_unit(
-                checkpoint_period, max_length
-            )
+            checkpoint_period = self._convert_period_to_train_unit(checkpoint_period, max_length)
 
         if isinstance(validation_period, int):
-            validation_period = self._convert_period_to_train_unit(
-                validation_period, max_length
-            )
+            validation_period = self._convert_period_to_train_unit(validation_period, max_length)
 
         if self._local_training:
             if checkpoint_policy != "all":
@@ -106,7 +102,7 @@ class Trainer:
                 local_training=False,
                 det_profiler=self._det_profiler,
                 steps_completed=self._cluster_info.trial._steps_completed,
-                step_zero_validation=self._cluster_info.trial._config["perform_initial_validation"]
+                step_zero_validation=self._cluster_info.trial._config["perform_initial_validation"],
             )
 
         self._trial_controller.run()
@@ -147,9 +143,7 @@ def _generate_local_seed():
 
 
 @contextlib.contextmanager
-def init(
-    hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None
-):
+def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
 
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None
@@ -191,7 +185,9 @@ def init(
                 slots_per_trial=int(exp_conf["resources"]["slots_per_trial"]),
                 aggregation_frequency=bool(exp_conf["optimizations"]["aggregation_frequency"]),
                 fp16_compression=bool(exp_conf["optimizations"]["gradient_compression"]),
-                average_aggregated_gradients=bool(exp_conf["optimizations"]["average_aggregated_gradients"]),
+                average_aggregated_gradients=bool(
+                    exp_conf["optimizations"]["average_aggregated_gradients"]
+                ),
                 steps_completed=cluster_info.trial._steps_completed,
                 managed_training=True,
             )
