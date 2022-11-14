@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import random
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -148,14 +148,14 @@ def _generate_local_seed():
 
 @contextlib.contextmanager
 def init(
-    hparams: Optional[Dict] = None, distributed_context: Optional[core.DistributedContext] = None
+    hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None
 ):
 
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None
 
     # Pre-execute steps: initialize distributed backend and set trial seeds
-    distributed_context = distributed_context or _initialize_distributed_backend()
+    distributed_context = distributed or _initialize_distributed_backend()
     if local_training:
         trial_seed = _generate_local_seed()
     else:
@@ -188,14 +188,10 @@ def init(
                 trial_seed=trial_seed,
                 num_gpus=len(cluster_info.gpu_uuids),
                 exp_conf=exp_conf,
-                slots_per_trial=cast(int, exp_conf["resources"]["slots_per_trial"]),
-                aggregation_frequency=cast(
-                    bool, exp_conf["optimizations"]["aggregation_frequency"]
-                ),
-                fp16_compression=cast(bool, exp_conf["optimizations"]["gradient_compression"]),
-                average_aggregated_gradients=cast(
-                    bool, exp_conf["optimizations"]["average_aggregated_gradients"]
-                ),
+                slots_per_trial=int(exp_conf["resources"]["slots_per_trial"]),
+                aggregation_frequency=bool(exp_conf["optimizations"]["aggregation_frequency"]),
+                fp16_compression=bool(exp_conf["optimizations"]["gradient_compression"]),
+                average_aggregated_gradients=bool(exp_conf["optimizations"]["average_aggregated_gradients"]),
                 steps_completed=cluster_info.trial._steps_completed,
                 managed_training=True,
             )

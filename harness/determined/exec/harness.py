@@ -3,7 +3,7 @@ import contextlib
 import faulthandler
 import logging
 import sys
-from typing import Iterator, cast, Type
+from typing import Iterator, Type
 
 import determined as det
 from determined import core, horovod, load
@@ -153,8 +153,8 @@ def _run_pytorch_trial(
             trainer = pytorch.Trainer(trial_inst, train_context)
 
             trainer.configure_profiler(
-                sync_timings=cast(bool, info.trial._config["profiling"]["sync_timings"]),
-                enabled=cast(bool, info.trial._config["profiling"]["enabled"]),
+                sync_timings=bool(info.trial._config["profiling"]["sync_timings"]),
+                enabled=bool(info.trial._config["profiling"]["enabled"]),
                 begin_on_batch=info.trial._config["profiling"]["begin_on_batch"],
                 end_after_batch=info.trial._config["profiling"]["end_after_batch"]
             )
@@ -166,14 +166,10 @@ def _run_pytorch_trial(
                 validation_period=pytorch.TrainUnit._from_values(
                     **info.trial._config["min_validation_period"]
                 ),
-                average_training_metrics=cast(
-                    bool, info.trial._config["optimizations"]["average_training_metrics"]
-                ),
+                average_training_metrics=bool(info.trial._config["optimizations"]["average_training_metrics"]),
                 checkpoint_policy=info.trial._config["checkpoint_policy"],
-                smaller_is_better=cast(bool, info.trial._config["searcher"]["smaller_is_better"]),
-                average_aggregated_gradients=cast(
-                    bool, info.trial._config["optimizations"]["average_aggregated_gradients"]
-                ),
+                smaller_is_better=bool(info.trial._config["searcher"]["smaller_is_better"]),
+                average_aggregated_gradients=bool(info.trial._config["optimizations"]["average_aggregated_gradients"]),
                 aggregation_frequency=info.trial._config["optimizations"]["aggregation_frequency"],
             )
 
