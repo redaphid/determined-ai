@@ -130,20 +130,20 @@ class PyTorchTrialController:
         context: pytorch.PyTorchTrialContext,
         min_checkpoint_period: TrainUnit,
         min_validation_period: TrainUnit,
-        average_training_metrics: Optional[bool] = True,
-        smaller_is_better: Optional[bool] = True,
-        max_length: Optional[TrainUnit] = None,
-        steps_completed: Optional[int] = 0,
-        latest_checkpoint: Optional[str] = None,
-        local_training: Optional[bool] = False,
-        test_mode: Optional[bool] = False,
+        max_length: Optional[TrainUnit],
+        det_profiler: Optional[profiler.ProfilerAgent],
+        average_training_metrics: bool = True,
+        smaller_is_better: bool = True,
+        steps_completed: int = 0,
+        latest_checkpoint: str = None,
+        local_training: bool = False,
+        test_mode: bool = False,
         # XXX: should default be maxsize or 100?
-        scheduling_unit: Optional[int] = sys.maxsize,
-        det_profiler: Optional[profiler.ProfilerAgent] = profiler.DummyProfilerAgent(),
-        searcher_metric_name: Optional[str] = None,
-        debug: Optional[bool] = False,
-        checkpoint_policy: Optional[str] = "best",
-        step_zero_validation: Optional[bool] = False,
+        scheduling_unit: int = sys.maxsize,
+        searcher_metric_name: str = None,
+        debug: bool = False,
+        checkpoint_policy: str = "best",
+        step_zero_validation: bool = False,
     ) -> None:
 
         if not isinstance(trial_inst, PyTorchTrial):
@@ -151,7 +151,7 @@ class PyTorchTrialController:
         self._trial = trial_inst
         self._context = context
         self._core_context = self._context._core
-        self._prof = det_profiler
+        self._prof = det_profiler or profiler.DummyProfilerAgent()
         self._context._set_determined_profiler(self._prof)
 
         self._local_training = local_training
