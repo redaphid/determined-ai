@@ -861,29 +861,24 @@ class TestPyTorchTrial:
             hparams=hparams,
             trial_seed=self.trial_seed,
             max_batches=steps[0],
-            min_validation_batches=sys.maxsize,
+            min_validation_batches=steps[0],
             min_checkpoint_batches=steps[0],
             checkpoint_dir=checkpoint_dir,
         )
 
-        train_steps, metrics = trial_controller_A._train_with_steps(
-            enumerate(trial_controller_A.training_iterator),
-            [
-                pytorch._TrainStep(pytorch._TrainStepType.TRAIN, pytorch.Batch(steps[0])),
-                pytorch._TrainStep(pytorch._TrainStepType.CHECKPOINT, pytorch.Batch(steps[0])),
-            ],
-        )
+        trial_controller_A.run()
 
         metrics_callback = trial_A.metrics_callback
         checkpoint_callback = trial_A.checkpoint_callback
 
         training_metrics["A"] = metrics_callback.training_metrics
+        assert len(training_metrics["A"]) == steps[0], "training metrics did not match expected length"
         validation_metrics["A"] = metrics_callback.validation_metrics
 
         assert checkpoint_callback.uuid is not None, "trial did not return a checkpoint UUID"
 
         # Trial A: restore from checkpoint and train for 100 more batches
-        trial_controller_A, trial_A = run_pytorch_trial_controller_from_trial_impl(
+        trial_A, trial_controller_A = create_trial_and_trial_controller(
             trial_class=pytorch_onevar_model.OneVarTrialWithLRScheduler,
             hparams=hparams,
             trial_seed=self.trial_seed,
@@ -894,16 +889,18 @@ class TestPyTorchTrial:
             latest_checkpoint=checkpoint_callback.uuid,
             steps_completed=trial_controller_A._state.batches_trained,
         )
+        trial_controller_A.run()
 
         metrics_callback = trial_A.metrics_callback
         training_metrics["A"] += metrics_callback.training_metrics
         validation_metrics["A"] += metrics_callback.validation_metrics
+
         assert (
             len(training_metrics["A"]) == steps[0] + steps[1]
         ), "training metrics returned did not match expected length"
 
         # Trial B: run for 200 steps
-        trial_controller_B, trial_B = run_pytorch_trial_controller_from_trial_impl(
+        trial_B, trial_controller_B = create_trial_and_trial_controller(
             trial_class=pytorch_onevar_model.OneVarTrialWithLRScheduler,
             hparams=hparams,
             trial_seed=self.trial_seed,
@@ -912,6 +909,7 @@ class TestPyTorchTrial:
             min_checkpoint_batches=sys.maxsize,
             checkpoint_dir=checkpoint_dir,
         )
+        trial_controller_B.run()
 
         metrics_callback = trial_B.metrics_callback
 
@@ -920,7 +918,7 @@ class TestPyTorchTrial:
 
         for A, B in zip(training_metrics["A"], training_metrics["B"]):
             utils.assert_equivalent_metrics(A, B)
-
+        print(validation_metrics)
         for A, B in zip(validation_metrics["A"], validation_metrics["B"]):
             utils.assert_equivalent_metrics(A, B)
 

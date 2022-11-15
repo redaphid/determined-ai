@@ -526,7 +526,7 @@ class PyTorchTrialController:
 
             # XXX: remove training_iterator
             self.training_iterator = iter(self.training_loader)
-            self.training_enumerator = enumerate(self.training_iterator)
+            self.training_enumerator = enumerate(self.training_iterator, start=self._start_from_batch)
 
             def cleanup_iterator() -> None:
                 # Explicitly trigger the training iterator's shutdown (which happens in __del__).
@@ -698,7 +698,7 @@ class PyTorchTrialController:
                 self._upload_tb_files()
                 self._stop_requested()
 
-        # Finished training for op. Perform final checkpoint/validation if necessary.
+        # Finished training. Perform final checkpoint/validation if necessary.
         # XXX: is this actually necessary? there's no searcher mandate, but still seems useful to
         # do a last checkpoint before finish
         if not self._validation_is_current():
@@ -1205,7 +1205,6 @@ class PyTorchTrialController:
             return
 
         self._state = _TrialState(**state)
-        print(f"Loaded state from trial {self._trial_id}, {self._state}")
 
         # Detect the case where the final validation we made was against this exact checkpoint.  In
         # that case, the master will know about the validation, but it would not appear in the
