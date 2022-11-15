@@ -1029,18 +1029,18 @@ class PyTorchTrialController:
 
         self._state.last_val = self._state.batches_trained
 
-        if self._is_chief:
-            # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
-            # than evaluate_batch() and we can't know how the user processed their validation data.
-            if self._evaluate_batch_defined():
-                step_duration = time.time() - step_start_time
-                logging.info(
-                    det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
-                )
-            self._metric_writer.on_validation_step_end(self._state.batches_trained, metrics)
-            return metrics
+        if not self._is_chief:
+            return {}
 
-        return {}
+        # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
+        # than evaluate_batch() and we can't know how the user processed their validation data.
+        if self._evaluate_batch_defined():
+            step_duration = time.time() - step_start_time
+            logging.info(
+                det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
+            )
+        self._metric_writer.on_validation_step_end(self._state.batches_trained, metrics)
+        return metrics
 
     def _load(self, load_path: pathlib.Path) -> None:
         # Backwards compat with older checkpoint formats. List is of the newest to
