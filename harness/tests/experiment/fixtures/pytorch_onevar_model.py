@@ -114,8 +114,7 @@ class MetricsCallback(pytorch.PyTorchCallback):
         self.training_metrics = []
 
     def on_validation_end(self, metrics: Dict[str, Any]) -> None:
-        self.validation_metrics += metrics
-        print(f"validation {self.validation_metrics}")
+        self.validation_metrics.append(metrics)
 
     def on_training_workload_end(
         self, avg_metrics: Dict[str, Any], batch_metrics: Dict[str, Any]
