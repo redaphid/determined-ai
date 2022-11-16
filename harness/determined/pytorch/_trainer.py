@@ -152,7 +152,7 @@ def _generate_local_seed():
 def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
 
     cluster_info = det.get_cluster_info()
-    local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
+    local_training = cluster_info is None
 
     # Pre-execute steps: initialize distributed backend and set trial seeds
     distributed_context = distributed or _initialize_distributed_backend()
