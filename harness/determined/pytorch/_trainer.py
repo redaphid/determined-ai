@@ -20,7 +20,7 @@ class Trainer:
         self._distributed_backend = det._DistributedBackend()
         self._det_profiler = profiler.DummyProfilerAgent()
         self._trial_controller = None
-        self._local_training = self._cluster_info is None
+        self._local_training = self._cluster_info is None or self._cluster_info.task_type != "TRIAL"
 
     def configure_profiler(
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
@@ -43,11 +43,11 @@ class Trainer:
         max_length: pytorch.TrainUnit = None,
         checkpoint_period: Union[pytorch.TrainUnit, int] = 1,
         validation_period: Union[pytorch.TrainUnit, int] = 1,
-        average_training_metrics: Optional[bool] = True,
-        average_aggregated_gradients: Optional[bool] = True,
-        aggregation_frequency: Optional[int] = 1,
-        checkpoint_policy: Optional[str] = "best",
-        smaller_is_better: Optional[bool] = True,
+        average_training_metrics: bool = True,
+        average_aggregated_gradients: bool = True,
+        aggregation_frequency: int = 1,
+        checkpoint_policy: str = "best",
+        smaller_is_better: bool = True,
     ):
 
         if self._local_training:
@@ -158,6 +158,7 @@ def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedC
     distributed_context = distributed or _initialize_distributed_backend()
     if local_training:
         trial_seed = _generate_local_seed()
+        hparams = hparams or {}
     else:
         if hparams and cluster_info.trial.hparams:
             logging.warning(

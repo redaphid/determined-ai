@@ -1,4 +1,5 @@
 import logging
+import sys
 import tempfile
 from typing import Any, Dict, Optional, Type
 
@@ -6,6 +7,11 @@ import determined as det
 from determined import workload
 from determined.common import check
 
+try:
+    from determined import pytorch
+except ImportError:
+    pytorch = None
+    pass
 
 def _make_test_workloads(config: det.ExperimentConfig) -> workload.Stream:
     interceptor = workload.WorkloadResponseInterceptor()
@@ -70,4 +76,28 @@ def test_one_batch(
         logging.info("The test experiment passed.")
         logging.info(
             "Note: to submit an experiment to the cluster, change local parameter to False"
+        )
+
+
+def test_one_batch_pytorch(trial_class, config):
+    with pytorch.init(hparams=config["hyperparameters"]) as trial_context:
+        # XXX: this is not ideal, but it's to avoid changing the trainer init API to accommodate this use case
+        trial_context._exp_conf = config
+        trial_inst = trial_class(trial_context)
+        trainer = pytorch.Trainer(trial_inst, trial_context)
+        trainer.fit(
+            max_length=pytorch.Batch(1),
+            checkpoint_period=pytorch.TrainUnit._from_values(
+                config.get("min_checkpoint_period", sys.maxsize)
+            ),
+            validation_period=pytorch.TrainUnit._from_values(
+                config.get("min_validation_period", sys.maxsize)
+            ),
+            average_training_metrics=bool(
+                config.get("optimizations", {}).get("average_training_metrics")
+            ),
+            checkpoint_policy=config.get("checkpoint_policy", "all"),
+            smaller_is_better=config.get("searcher", {}).get("smaller_is_better"),
+            average_aggregated_gradients=config.get("optimizations", {}).get("average_aggregated_gradients"),
+            aggregation_frequency=config.get("optimizations", {}).get("aggregation_frequency", 1),
         )

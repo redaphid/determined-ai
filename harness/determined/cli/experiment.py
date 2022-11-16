@@ -24,6 +24,12 @@ from determined.common.api import authentication, bindings
 from determined.common.declarative_argparse import Arg, Cmd, Group
 from determined.common.experimental import Determined
 
+try:
+    from determined import pytorch
+except ImportError:
+    pytorch = None
+    pass
+
 from .checkpoint import render_checkpoint
 from .project import project_by_name
 from .trial import logs_args_description
@@ -194,7 +200,10 @@ def local_experiment(args: Namespace) -> None:
 
     with det._local_execution_manager(args.model_def.resolve()):
         trial_class = determined.load.trial_class_from_entrypoint(entrypoint)
-        determined.experimental.test_one_batch(trial_class=trial_class, config=experiment_config)
+        if issubclass(trial_class, pytorch.PyTorchTrial):
+            determined.experimental.test_one_batch_pytorch(trial_class=trial_class, config=experiment_config)
+        else:
+            determined.experimental.test_one_batch(trial_class=trial_class, config=experiment_config)
 
 
 def create(args: Namespace) -> None:
