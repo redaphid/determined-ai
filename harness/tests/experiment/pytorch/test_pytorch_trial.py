@@ -961,7 +961,7 @@ def create_trial_and_trial_controller(
     max_batches: int = 100,
     min_checkpoint_batches: int = sys.maxsize,
     min_validation_batches: int = sys.maxsize,
-) -> typing.Tuple[pytorch.PyTorchTrial, pytorch.PyTorchTrialController]:
+) -> typing.Tuple[pytorch.PyTorchTrial, pytorch._PyTorchTrialController]:
     assert issubclass(
         trial_class, pytorch.PyTorchTrial
     ), "pytorch test method called for non-pytorch trial"
@@ -984,7 +984,7 @@ def create_trial_and_trial_controller(
         else:
             gpu_uuids = []
 
-        pytorch.PyTorchTrialController.pre_execute_hook(trial_seed, distributed_backend)
+        pytorch._PyTorchTrialController.pre_execute_hook(trial_seed, distributed_backend)
         trial_context = pytorch.PyTorchTrialContext(
             core_context=core_context,
             trial_seed=trial_seed,
@@ -1000,7 +1000,7 @@ def create_trial_and_trial_controller(
 
         trial_inst = trial_class(trial_context)
 
-        trial_controller = pytorch.PyTorchTrialController(
+        trial_controller = pytorch._PyTorchTrialController(
             trial_inst=trial_inst,
             context=trial_context,
             max_length=pytorch.Batch(max_batches),

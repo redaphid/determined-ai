@@ -77,7 +77,7 @@ class Trainer:
                 logging.warning("Checkpoint policy set to 'all' in local training mode.")
                 checkpoint_policy = "all"
 
-            self._trial_controller = pytorch.PyTorchTrialController(
+            self._trial_controller = pytorch._PyTorchTrialController(
                 trial_inst=self._trial,
                 context=self._context,
                 max_length=max_length,
@@ -89,7 +89,7 @@ class Trainer:
                 local_training=True,
             )
         else:
-            self._trial_controller = pytorch.PyTorchTrialController(
+            self._trial_controller = pytorch._PyTorchTrialController(
                 trial_inst=self._trial,
                 context=self._context,
                 min_checkpoint_period=checkpoint_period,
@@ -100,10 +100,16 @@ class Trainer:
                 smaller_is_better=smaller_is_better,
                 searcher_metric_name=self._cluster_info.trial._config["searcher"]["metric"],
                 local_training=False,
+                test_mode=False,
                 det_profiler=self._det_profiler,
                 steps_completed=self._cluster_info.trial._steps_completed,
                 step_zero_validation=self._cluster_info.trial._config["perform_initial_validation"],
+                scheduling_unit=self._cluster_info.trial._config["scheduling_unit"],
             )
+
+        if self._context.distributed.size > 1 and not self._context.distributed.rank == 0:
+            log_level = logging.DEBUG if self._cluster_info.trial._debug else logging.WARNING
+            logging.getLogger().setLevel(log_level)
 
         self._trial_controller.run()
 
@@ -160,7 +166,7 @@ def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedC
         hparams = cluster_info.trial.hparams
         trial_seed = cluster_info.trial.trial_seed
 
-    pytorch.PyTorchTrialController._set_random_seeds(trial_seed)
+    pytorch._PyTorchTrialController._set_random_seeds(trial_seed)
 
     with core.init(
         distributed=distributed_context,

@@ -147,7 +147,7 @@ def _run_pytorch_trial(
         with pytorch.init() as train_context:
             trial_inst = trial_class(train_context)
             logging.info(
-                f"Creating {pytorch.PyTorchTrialController.__name__} with {trial_class.__name__}."
+                f"Creating {pytorch._PyTorchTrialController.__name__} with {trial_class.__name__}."
             )
 
             trainer = pytorch.Trainer(trial_inst, train_context)

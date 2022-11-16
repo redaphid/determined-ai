@@ -27,7 +27,7 @@ from determined.pytorch._experimental import PyTorchExperimentalContext
 from determined.pytorch._pytorch_context import PyTorchTrialContext
 from determined.pytorch._pytorch_trial import (
     PyTorchTrial,
-    PyTorchTrialController,
+    _PyTorchTrialController,
     TrainUnit,
     # XXX: do these belong here? should only be used in tests
     _TrainStep,

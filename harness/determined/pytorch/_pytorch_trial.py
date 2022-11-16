@@ -123,7 +123,7 @@ class _TrialState:
         self.epochs_trained = epochs_trained
 
 
-class PyTorchTrialController:
+class _PyTorchTrialController:
     def __init__(
         self,
         trial_inst: det.Trial,
@@ -138,10 +138,8 @@ class PyTorchTrialController:
         latest_checkpoint: str = None,
         local_training: bool = False,
         test_mode: bool = False,
-        # XXX: should default be maxsize or 100?
         scheduling_unit: int = sys.maxsize,
         searcher_metric_name: str = None,
-        debug: bool = False,
         checkpoint_policy: str = "best",
         step_zero_validation: bool = False,
     ) -> None:
@@ -217,14 +215,12 @@ class PyTorchTrialController:
             assert (
                 self._use_horovod or self._use_torch
             ), "Must use horovod or torch for distributed training"
-        if context.distributed.size > 1 and not self._is_chief:
-            log_level = logging.DEBUG if debug else logging.WARNING
-            logging.getLogger().setLevel(log_level)
+
         self._metric_writer = self._create_metric_writer()
 
     @classmethod
     def _create_metric_writer(
-        cls: Type["PyTorchTrialController"],
+        cls: Type["_PyTorchTrialController"],
     ) -> tensorboard.BatchMetricWriter:
         from determined.tensorboard.metric_writers.pytorch import TorchWriter
 
@@ -233,7 +229,7 @@ class PyTorchTrialController:
 
     @classmethod
     def pre_execute_hook(
-        cls: Type["PyTorchTrialController"],
+        cls: Type["_PyTorchTrialController"],
         trial_seed: int,
         distributed_backend: det._DistributedBackend,
     ) -> None:
@@ -737,8 +733,9 @@ class PyTorchTrialController:
         self, op: core.SearcherOperation, searcher_unit: core.Unit, train_steps: List[_TrainStep]
     ):
         searcher_length = TrainUnit._from_searcher_unit(op.length, searcher_unit)
+        searcher_complete = op._completed
 
-        while self._steps_until_complete(searcher_length) > 0:
+        while not searcher_complete:
             train_steps, training_metrics = self._train_with_steps(
                 self.training_enumerator, train_steps
             )
@@ -746,6 +743,10 @@ class PyTorchTrialController:
             self._report_training_metrics(training_metrics)
 
             for train_step in train_steps:
+                # Check train step status to determine whether to keep training
+                if train_step.step_type == _TrainStepType.TRAIN:
+                    searcher_complete = train_step.limit_reached
+
                 if not train_step.limit_reached:
                     continue
 
@@ -1353,7 +1354,7 @@ class PyTorchTrial(det.Trial):
        :class:`~determined.pytorch.PyTorchTrialContext`.
     """
 
-    trial_controller_class = PyTorchTrialController
+    trial_controller_class = _PyTorchTrialController
     trial_context_class = pytorch.PyTorchTrialContext
 
     @abstractmethod
