@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple, Type, cast
 import torch
 
 import determined as det
-from determined import errors, load, pytorch, util
+from determined import common, core, errors, load, pytorch, util
 
 
 def load_trial_from_checkpoint_path(path: str, **kwargs: Any) -> pytorch.PyTorchTrial:
@@ -123,28 +123,30 @@ def _load_pytorch_trial_for_checkpoint_export(
 ) -> Tuple[pytorch.PyTorchTrial, pytorch.PyTorchTrialContext]:
     with det._local_execution_manager(context_dir):
         trial_class = cast(pytorch.PyTorchTrial, load.trial_class_from_entrypoint(trial_cls_spec))
-        core_context, env = det._make_local_execution_env(
-            managed_training=managed_training,
-            test_mode=False,
-            config=config,
-            checkpoint_dir="/tmp",
-            hparams=hparams,
+
+        config = det.ExperimentConfig(
+            det._make_local_execution_exp_config(
+                config, "/tmp", managed_training=managed_training, test_mode=False
+            )
         )
+        hparams = hparams or common.api.generate_random_hparam_values(config.get("hyperparameters", {}))
+        use_gpu, container_gpus, slot_ids = det._get_gpus(limit_gpus=False)
+
         trial_context = pytorch.PyTorchTrialContext(
-            core_context=core_context,
-            trial_seed=env.trial_seed,
+            core_context=core._dummy_init(),
+            trial_seed=config.experiment_seed(),
             hparams=hparams,
-            slots_per_trial=env.experiment_config.slots_per_trial(),
-            num_gpus=len(env.container_gpus),
-            exp_conf=env.experiment_config,
-            aggregation_frequency=env.experiment_config.get_optimizations_config().get(
+            slots_per_trial=config.slots_per_trial(),
+            num_gpus=len(container_gpus),
+            exp_conf=config,
+            aggregation_frequency=config.get_optimizations_config().get(
                 "aggregation_frequency"
             ),
-            fp16_compression=env.experiment_config.get_optimizations_config().get(
+            fp16_compression=config.get_optimizations_config().get(
                 "gradient_compression"
             ),
-            average_aggregated_gradients=env.experiment_config.average_training_metrics_enabled(),
-            steps_completed=env.steps_completed,
+            average_aggregated_gradients=config.average_training_metrics_enabled(),
+            steps_completed=0,
         )
 
     return trial_class, trial_context
