@@ -311,7 +311,6 @@ class PyTorchTrialController:
                 batch_metrics=batch_metrics,
             )
 
-        self._context.reset_reducers()
 
     def _is_best_validation(self, now: float, before: Optional[float]) -> bool:
         if before is None:
@@ -632,6 +631,7 @@ class PyTorchTrialController:
         self._core_context.train.set_status("training")
         for model in self._context.models:
             model.train()
+        self._context.reset_reducers()
 
         for batch_idx, batch in training_enumerator:
             epoch_idx = self._get_epoch_idx(batch_idx)

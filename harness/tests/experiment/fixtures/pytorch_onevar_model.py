@@ -119,7 +119,7 @@ class MetricsCallback(pytorch.PyTorchCallback):
     def on_training_workload_end(
         self, avg_metrics: Dict[str, Any], batch_metrics: Dict[str, Any]
     ) -> None:
-        self.training_metrics += batch_metrics
+        self.training_metrics.append(avg_metrics)
 
 
 class CheckpointCallback(pytorch.PyTorchCallback):
