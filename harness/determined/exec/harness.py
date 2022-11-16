@@ -47,7 +47,7 @@ def main(train_entrypoint: str) -> int:
     # TFKerasTrialController or EstimatorTrialController to add that functionality, so for now we
     # continue with the legacy strategy.
 
-    if issubclass(trial_class, pytorch.PyTorchTrial):
+    if pytorch and issubclass(trial_class, pytorch.PyTorchTrial):
         return _run_pytorch_trial(trial_class, info)
 
     env = det.EnvContext(

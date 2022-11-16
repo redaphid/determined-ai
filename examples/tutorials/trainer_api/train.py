@@ -129,6 +129,7 @@ def main():
             max_length=pytorch.Epoch(1),
             checkpoint_period=pytorch.Batch(100),
             validation_period=pytorch.Batch(100),
+            test_mode=True,
         )
 
 

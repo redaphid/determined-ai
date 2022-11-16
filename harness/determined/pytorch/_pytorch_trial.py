@@ -187,6 +187,8 @@ class _PyTorchTrialController:
         self._smaller_is_better = smaller_is_better
         self._global_batch_size = self._context.get_global_batch_size()
 
+        self._searcher_unit = self._core_context.searcher.get_configured_units()
+
         if torch.cuda.is_available():
             self._prof._set_sync_device(self._sync_device)
         self._callbacks = self._trial.build_callbacks()
@@ -579,7 +581,6 @@ class _PyTorchTrialController:
 
             return
 
-        searcher_unit = self._core_context.searcher.get_configured_units()
         try:
             if (
                 self._step_zero_validation
@@ -591,11 +592,10 @@ class _PyTorchTrialController:
             for op in self._core_context.searcher.operations():
                 self._train_for_op(
                     op=op,
-                    searcher_unit=searcher_unit,
                     train_steps=[
                         _TrainStep(
                             step_type=_TrainStepType.TRAIN,
-                            unit=TrainUnit._from_searcher_unit(op.length, searcher_unit),
+                            unit=TrainUnit._from_searcher_unit(op.length, self._searcher_unit),
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
@@ -703,36 +703,9 @@ class _PyTorchTrialController:
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
 
-    def _validate_for_op(self, op: core.SearcherOperation, searcher_length: TrainUnit):
-        val_metrics = self._validate()
-
-        # Validation step complete. Chief must:
-        # Report metrics to searcher API
-        # Report metrics to core API
-        # Checkpoint if policy dictates
-        if self._is_chief:
-            searcher_metric = self._validate_searcher_metric(val_metrics)
-            if self._steps_until_complete(searcher_length) < 1:
-                op.report_completed(searcher_metric)
-
-            if self._ckpt_policy == "best" and not self._checkpoint_is_current():
-                best_validation_before = self._core_context.train.get_experiment_best_validation()
-
-            self._core_context.train.report_validation_metrics(
-                self._state.batches_trained, val_metrics
-            )
-
-            if not self._checkpoint_is_current():
-                if self._ckpt_policy == "all" or (
-                    self._ckpt_policy == "best"
-                    and self._is_best_validation(now=searcher_metric, before=best_validation_before)
-                ):
-                    self._checkpoint(already_exiting=False)
-
     def _train_for_op(
-        self, op: core.SearcherOperation, searcher_unit: core.Unit, train_steps: List[_TrainStep]
+        self, op: core.SearcherOperation, train_steps: List[_TrainStep]
     ):
-        searcher_length = TrainUnit._from_searcher_unit(op.length, searcher_unit)
         searcher_complete = op._completed
 
         while not searcher_complete:
@@ -754,11 +727,11 @@ class _PyTorchTrialController:
                 # Report metrics and searcher progress before validation/checkpoint
                 # Because of this, no extra logic is needed for scheduling_unit step
                 if not op._completed and self._is_chief:
-                    self._report_searcher_progress(op, searcher_unit)
+                    self._report_searcher_progress(op, self._searcher_unit)
 
                 if train_step.step_type == _TrainStepType.VALIDATE:
                     if not self._validation_is_current():
-                        self._validate_for_op(op, searcher_length)
+                        self._validate(op)
 
                 elif train_step.step_type == _TrainStepType.CHECKPOINT:
                     if not self._checkpoint_is_current():
@@ -773,7 +746,7 @@ class _PyTorchTrialController:
 
         # Finished training for op. Perform final checkpoint/validation if necessary.
         if not self._validation_is_current():
-            self._validate_for_op(op, searcher_length)
+            self._validate(op)
 
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
@@ -902,7 +875,7 @@ class _PyTorchTrialController:
         return training_metrics
 
     @torch.no_grad()  # type: ignore
-    def _validate(self):
+    def _validate(self, searcher_op: core.SearcherOperation = None):
         # Report a validation step is starting.
         if self._is_chief:
             self._core_context.train.set_status("validating")
@@ -1041,6 +1014,27 @@ class _PyTorchTrialController:
                 det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
             )
         self._metric_writer.on_validation_step_end(self._state.batches_trained, metrics)
+
+        if searcher_op:
+            searcher_length = TrainUnit._from_searcher_unit(searcher_op.length, self._searcher_unit)
+            searcher_metric = self._validate_searcher_metric(metrics)
+            if self._steps_until_complete(searcher_length) < 1:
+                searcher_op.report_completed(searcher_metric)
+
+            if self._ckpt_policy == "best" and not self._checkpoint_is_current():
+                best_validation_before = self._core_context.train.get_experiment_best_validation()
+
+            self._core_context.train.report_validation_metrics(
+                self._state.batches_trained, metrics
+            )
+
+            if not self._checkpoint_is_current():
+                if self._ckpt_policy == "all" or (
+                    self._ckpt_policy == "best"
+                    and self._is_best_validation(now=searcher_metric, before=best_validation_before)
+                ):
+                    self._checkpoint(already_exiting=False)
+
         return metrics
 
     def _load(self, load_path: pathlib.Path) -> None:

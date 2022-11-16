@@ -48,6 +48,7 @@ class Trainer:
         aggregation_frequency: int = 1,
         checkpoint_policy: str = "best",
         smaller_is_better: bool = True,
+        test_mode: bool = False,
     ):
 
         if self._local_training:
@@ -58,6 +59,7 @@ class Trainer:
                     "max_batches and max_epochs is ignored in when training on cluster. "
                     "Please configure the searcher length instead."
                 )
+            assert not test_mode, "test_mode is only supported in local training mode"
 
         # Set context and training variables
         self._context._aggregation_frequency = aggregation_frequency
@@ -87,6 +89,7 @@ class Trainer:
                 checkpoint_policy=checkpoint_policy,
                 smaller_is_better=smaller_is_better,
                 local_training=True,
+                test_mode=test_mode,
             )
         else:
             self._trial_controller = pytorch._PyTorchTrialController(
@@ -152,7 +155,7 @@ def _generate_local_seed():
 def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
 
     cluster_info = det.get_cluster_info()
-    local_training = cluster_info is None
+    local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
     # Pre-execute steps: initialize distributed backend and set trial seeds
     distributed_context = distributed or _initialize_distributed_backend()
