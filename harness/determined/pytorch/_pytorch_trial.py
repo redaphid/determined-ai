@@ -105,9 +105,6 @@ class _TrialState:
         self,
         trial_id: int = 0,
         last_ckpt: int = 0,
-        # steps_completed is a legacy field kept to support loading from older checkpoints.
-        # checkpoints should only persist batches_trained and epochs_trained
-        steps_completed: int = None,
         step_id: int = 0,
         last_val: int = 0,
         batches_trained: int = 0,
@@ -116,7 +113,6 @@ class _TrialState:
         # Store TrialID to distinguish between e.g. pause/restart and continue training.
         self.trial_id = trial_id
         self.last_ckpt = last_ckpt
-        self.steps_completed = steps_completed
         self.step_id = step_id
         self.last_val = last_val
         self.batches_trained = batches_trained
@@ -1213,11 +1209,16 @@ class _PyTorchTrialController:
         if state.get("trial_id") != self._trial_id:
             return
 
-        self._state = _TrialState(**state)
-
-        # Convert legacy steps_completed to batches_trained and epochs_trained
-        self._state.batches_trained = self._state.steps_completed
-        self._state.epochs_trained = self._get_epoch_idx(self._state.batches_trained)
+        self._state = _TrialState(
+            trial_id=state.get("trial_id"),
+            last_ckpt=state.get("last_ckpt"),
+            last_val=state.get("last_val"),
+            step_id=state.get("step_id"),
+            # steps_completed is a legacy field kept to support loading from older checkpoints.
+            # checkpoints should only persist batches_trained and epochs_trained
+            batches_trained=state.get("steps_completed"),
+            epochs_trained=self._get_epoch_idx(state.get("steps_completed"))
+        )
 
         if self._state.batches_trained == self._val_from_previous_run:
             self._state.last_val = self._state.batches_trained
