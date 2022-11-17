@@ -141,7 +141,9 @@ def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.Distribut
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
     # Pre-execute steps: initialize distributed backend and set trial seeds
-    distributed_context = distributed or (not local_training and _initialize_distributed_backend())
+    distributed_context = distributed
+    if not local_training:
+        distributed_context = _initialize_distributed_backend()
 
     # Initialize default values
     slots_per_trial = 0
