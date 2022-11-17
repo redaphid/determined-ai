@@ -573,7 +573,11 @@ class _PyTorchTrialController:
             except ShouldExit as e:
                 if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
                     self._checkpoint(already_exiting=True)
-
+            except det.InvalidHP as e:
+                # Catch InvalidHP to checkpoint before exiting and re-raise for cleanup by core.init()
+                if not self._checkpoint_is_current():
+                    self._checkpoint(already_exiting=True)
+                raise e
             return
 
         try:

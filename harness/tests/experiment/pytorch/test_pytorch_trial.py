@@ -996,6 +996,7 @@ def create_trial_and_trial_controller(
             fp16_compression=False,
             average_aggregated_gradients=True,
             steps_completed=steps_completed,
+            managed_training=False
         )
 
         trial_inst = trial_class(trial_context)
@@ -1007,7 +1008,7 @@ def create_trial_and_trial_controller(
             min_checkpoint_period=pytorch.Batch(min_checkpoint_batches),
             min_validation_period=pytorch.Batch(min_validation_batches),
             searcher_metric_name=trial_class._searcher_metric,  # type: ignore
-            scheduling_unit=scheduling_unit,
+            reporting_period=pytorch.Batch(scheduling_unit),
             local_training=True,
             latest_checkpoint=latest_checkpoint,
             steps_completed=steps_completed,

@@ -148,6 +148,7 @@ def _load_pytorch_trial_for_checkpoint_export(
             ),
             average_aggregated_gradients=config.average_training_metrics_enabled(),
             steps_completed=0,
+            managed_training=managed_training
         )
 
     return trial_class, trial_context

@@ -19,6 +19,7 @@ class Trainer:
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
         self._det_profiler = None
+        self._trial_controller = None
         cluster_info = det.get_cluster_info()
         self._local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
@@ -92,7 +93,7 @@ class Trainer:
             reporting_period = reporting_period or pytorch.Batch(int(cluster_info.trial._config["scheduling_unit"]))
             step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])
 
-        trial_controller = pytorch._PyTorchTrialController(
+        self._trial_controller = pytorch._PyTorchTrialController(
             trial_inst=self._trial,
             context=self._context,
             min_checkpoint_period=checkpoint_period,
@@ -111,21 +112,7 @@ class Trainer:
             det_profiler=self._det_profiler,
         )
 
-        trial_controller.run()
-
-    def _convert_period_to_train_unit(self, period: int, train_unit: pytorch.TrainUnit):
-        # Local training will assume same period as max_length
-        if self._local_training:
-            if isinstance(train_unit, pytorch.Batch):
-                return pytorch.Batch(period)
-            elif isinstance(train_unit, pytorch.Epoch):
-                return pytorch.Epoch(period)
-            elif isinstance(train_unit, pytorch.Record):
-                return pytorch.Record(period)
-
-        # On-cluster training assumes period lengths with the searcher
-        searcher_unit = self._core.searcher.get_configured_units()
-        return pytorch.TrainUnit._from_searcher_unit(period, searcher_unit)
+        self._trial_controller.run()
 
 
 def _initialize_distributed_backend():
@@ -149,7 +136,7 @@ def _generate_local_seed():
 
 
 @contextlib.contextmanager
-def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
+def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
