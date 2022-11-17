@@ -24,12 +24,6 @@ from determined.common.api import authentication, bindings
 from determined.common.declarative_argparse import Arg, Cmd, Group
 from determined.common.experimental import Determined
 
-try:
-    from determined import pytorch
-except ImportError:
-    pytorch = None
-    pass
-
 from .checkpoint import render_checkpoint
 from .project import project_by_name
 from .trial import logs_args_description
@@ -199,6 +193,8 @@ def local_experiment(args: Namespace) -> None:
     set_logger(bool(experiment_config.get("debug", False)))
 
     with det._local_execution_manager(args.model_def.resolve()):
+        # XXX fix this import
+        from determined import pytorch
         trial_class = determined.load.trial_class_from_entrypoint(entrypoint)
         if issubclass(trial_class, pytorch.PyTorchTrial):
             determined.experimental.test_one_batch_pytorch(trial_class=trial_class, config=experiment_config)

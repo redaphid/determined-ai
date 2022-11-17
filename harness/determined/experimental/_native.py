@@ -7,12 +7,6 @@ import determined as det
 from determined import workload
 from determined.common import check
 
-try:
-    from determined import pytorch
-except ImportError:
-    pytorch = None
-    pass
-
 def _make_test_workloads(config: det.ExperimentConfig) -> workload.Stream:
     interceptor = workload.WorkloadResponseInterceptor()
 
@@ -80,6 +74,12 @@ def test_one_batch(
 
 
 def test_one_batch_pytorch(trial_class, config):
+    try:
+        from determined import pytorch
+    except ImportError:
+        logging.error("unable to import determined.pytorch module")
+        return
+
     with pytorch.init(hparams=config["hyperparameters"]) as trial_context:
         # XXX: this is not ideal, but it's to avoid changing the trainer init API to accommodate this use case
         trial_context._exp_conf = config
