@@ -181,6 +181,8 @@ def _run_pytorch_trial(
                 average_aggregated_gradients=bool(
                     info.trial._config["optimizations"]["average_aggregated_gradients"]
                 ),
+                metric_name=info.trial._config["searcher"]["metric"],
+                test_mode=False,
                 aggregation_frequency=info.trial._config["optimizations"]["aggregation_frequency"],
             )
 

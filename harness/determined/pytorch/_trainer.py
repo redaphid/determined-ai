@@ -41,9 +41,9 @@ class Trainer:
 
     def fit(
         self,
+        checkpoint_period: pytorch.TrainUnit,
+        validation_period: pytorch.TrainUnit,
         max_length: pytorch.TrainUnit = None,
-        checkpoint_period: pytorch.TrainUnit = None,
-        validation_period: pytorch.TrainUnit = None,
         reporting_period: pytorch.TrainUnit = None,
         average_training_metrics: bool = None,
         average_aggregated_gradients: bool = None,
