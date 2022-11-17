@@ -15,8 +15,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import numpy as np
 import torch
 
-# Import torch.distributed separately as it isn't guaranteed to be included in torch
-import torch.distributed as dist
+from torch import distributed as dist
 
 import determined as det
 from determined import common, core, profiler, pytorch, tensorboard, util
@@ -126,18 +125,18 @@ class _PyTorchTrialController:
         context: pytorch.PyTorchTrialContext,
         min_checkpoint_period: TrainUnit,
         min_validation_period: TrainUnit,
-        max_length: Optional[TrainUnit] = None,
-        det_profiler: Optional[profiler.ProfilerAgent] = None,
-        average_training_metrics: bool = True,
-        smaller_is_better: bool = True,
-        steps_completed: int = 0,
-        latest_checkpoint: str = None,
-        local_training: bool = False,
-        test_mode: bool = False,
-        scheduling_unit: int = sys.maxsize,
-        searcher_metric_name: str = None,
-        checkpoint_policy: str = "best",
-        step_zero_validation: bool = False,
+        reporting_period: TrainUnit,
+        average_training_metrics: bool,
+        smaller_is_better: bool,
+        steps_completed: int,
+        latest_checkpoint: str,
+        local_training: bool,
+        test_mode: bool,
+        searcher_metric_name: str,
+        checkpoint_policy: str,
+        step_zero_validation: bool,
+        max_length: Optional[TrainUnit],
+        det_profiler: Optional[profiler.ProfilerAgent],
     ) -> None:
 
         if not isinstance(trial_inst, PyTorchTrial):
@@ -159,7 +158,7 @@ class _PyTorchTrialController:
         self._max_length = max_length
         self._min_checkpoint_period = min_checkpoint_period
         self._min_validation_period = min_validation_period
-        self._scheduling_unit = scheduling_unit
+        self._reporting_period = reporting_period
 
         # Training loop state
         if local_training:
@@ -564,7 +563,7 @@ class _PyTorchTrialController:
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(
-                            step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
+                            step_type=_TrainStepType.REPORT, unit=self._reporting_period
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period
@@ -599,7 +598,7 @@ class _PyTorchTrialController:
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(
-                            step_type=_TrainStepType.REPORT, unit=Batch(self._scheduling_unit)
+                            step_type=_TrainStepType.REPORT, unit=self._reporting_period
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.VALIDATE, unit=self._min_validation_period

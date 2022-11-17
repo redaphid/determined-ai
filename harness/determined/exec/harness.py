@@ -141,11 +141,17 @@ def _run_pytorch_trial(
     info: det.ClusterInfo,
 ):
     det.common.set_logger(info.trial._debug)
+
     logging.debug("Starting harness.")
 
     with maybe_periodic_stacktraces(info.trial._debug):
         with pytorch.init() as train_context:
             trial_inst = trial_class(train_context)
+
+            if train_context.distributed.size > 1 and not train_context.distributed.rank == 0:
+                log_level = logging.DEBUG if info.trial._debug else logging.WARNING
+            logging.getLogger().setLevel(log_level)
+
             logging.info(
                 f"Creating {pytorch._PyTorchTrialController.__name__} with {trial_class.__name__}."
             )
@@ -166,6 +172,7 @@ def _run_pytorch_trial(
                 validation_period=pytorch.TrainUnit._from_values(
                     **info.trial._config["min_validation_period"]
                 ),
+                reporting_period=pytorch.Batch(info.trial._config["scheduling_unit"]),
                 average_training_metrics=bool(
                     info.trial._config["optimizations"]["average_training_metrics"]
                 ),

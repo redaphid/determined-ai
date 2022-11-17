@@ -130,6 +130,7 @@ def main():
             checkpoint_period=pytorch.Batch(100),
             validation_period=pytorch.Batch(100),
             test_mode=True,
+            metric_name="validation_loss"
         )
 
 

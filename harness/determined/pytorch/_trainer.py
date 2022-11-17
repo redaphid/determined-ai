@@ -1,7 +1,8 @@
 import contextlib
 import logging
 import random
-from typing import Dict, Optional, Union
+import sys
+from typing import Dict, Optional
 
 import torch
 import torch.distributed as dist
@@ -15,21 +16,21 @@ class Trainer:
     def __init__(self, trial: pytorch.PyTorchTrial, context: pytorch.PyTorchTrialContext):
         self._trial = trial
         self._context = context
-        self._cluster_info = det.get_cluster_info()
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
-        self._det_profiler = profiler.DummyProfilerAgent()
-        self._trial_controller = None
-        self._local_training = self._cluster_info is None or self._cluster_info.task_type != "TRIAL"
+        self._det_profiler = None
+        cluster_info = det.get_cluster_info()
+        self._local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
     def configure_profiler(
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
     ):
-        assert self._cluster_info, "Determined profiler must be run on cluster"
+        cluster_info = det.get_cluster_info()
+        assert cluster_info, "Determined profiler must be run on cluster"
         self._det_profiler = profiler.ProfilerAgent(
-            trial_id=str(self._cluster_info.trial.trial_id),
-            agent_id=self._cluster_info.agent_id,
-            master_url=self._cluster_info.master_url,
+            trial_id=str(cluster_info.trial.trial_id),
+            agent_id=cluster_info.agent_id,
+            master_url=cluster_info.master_url,
             profiling_is_enabled=enabled,
             global_rank=self._core.distributed.get_rank(),
             local_rank=self._core.distributed.get_local_rank(),
@@ -41,18 +42,41 @@ class Trainer:
     def fit(
         self,
         max_length: pytorch.TrainUnit = None,
-        checkpoint_period: Union[pytorch.TrainUnit, int] = 1,
-        validation_period: Union[pytorch.TrainUnit, int] = 1,
-        average_training_metrics: bool = True,
-        average_aggregated_gradients: bool = True,
-        aggregation_frequency: int = 1,
-        checkpoint_policy: str = "best",
-        smaller_is_better: bool = True,
-        test_mode: bool = False,
+        checkpoint_period: pytorch.TrainUnit = None,
+        validation_period: pytorch.TrainUnit = None,
+        reporting_period: pytorch.TrainUnit = None,
+        average_training_metrics: bool = None,
+        average_aggregated_gradients: bool = None,
+        aggregation_frequency: int = None,
+        checkpoint_policy: str = None,
+        smaller_is_better: bool = None,
+        test_mode: bool = None,
+        metric_name: str = None,
     ):
+        cluster_info = det.get_cluster_info()
+
+        # Set context and training variables
+        self._context._aggregation_frequency = aggregation_frequency or 1
+        self._context._average_aggregated_gradients = average_aggregated_gradients or True
+
+        # XXX: default to True?
+        average_training_metrics = average_training_metrics or True
+        latest_checkpoint = None
+        checkpoint_policy = checkpoint_policy or "best"
 
         if self._local_training:
+            if checkpoint_policy == "best":
+                assert metric_name, "metric_name must be specified if using checkpoint policy 'best'"
             assert max_length, "max_length must be defined in local training mode"
+            if self._det_profiler:
+                logging.warning(f"Determined profiler will be ignored in local training mode")
+
+            smaller_is_better = smaller_is_better or True
+            searcher_metric_name = metric_name
+            steps_completed = 0
+            reporting_period = reporting_period or pytorch.Batch(sys.maxsize)
+            step_zero_validation = False
+
         else:
             if max_length:
                 logging.warning(
@@ -61,60 +85,33 @@ class Trainer:
                 )
             assert not test_mode, "test_mode is only supported in local training mode"
 
-        # Set context and training variables
-        self._context._aggregation_frequency = aggregation_frequency
-        self._context._average_aggregated_gradients = average_aggregated_gradients
+            latest_checkpoint = cluster_info.latest_checkpoint
+            smaller_is_better = smaller_is_better or bool(cluster_info.trial._config["searcher"]["smaller_is_better"])
+            searcher_metric_name = metric_name or cluster_info.trial._config["searcher"]["metric"]
+            steps_completed = int(cluster_info.trial._steps_completed)
+            reporting_period = reporting_period or pytorch.Batch(int(cluster_info.trial._config["scheduling_unit"]))
+            step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])
 
-        # Convert validation/checkpoint periods to training units.
-        # Without a specified training unit, periods will be assumed to be same as max_length in local training mode,
-        # and the searcher unit when training on-cluster
-        if isinstance(checkpoint_period, int):
-            checkpoint_period = self._convert_period_to_train_unit(checkpoint_period, max_length)
+        trial_controller = pytorch._PyTorchTrialController(
+            trial_inst=self._trial,
+            context=self._context,
+            min_checkpoint_period=checkpoint_period,
+            min_validation_period=validation_period,
+            average_training_metrics=average_training_metrics,
+            smaller_is_better=smaller_is_better,
+            steps_completed=steps_completed,
+            latest_checkpoint=latest_checkpoint,
+            local_training=self._local_training,
+            test_mode=test_mode,
+            reporting_period=reporting_period,
+            searcher_metric_name=searcher_metric_name,
+            checkpoint_policy=checkpoint_policy,
+            step_zero_validation=step_zero_validation,
+            max_length=max_length,
+            det_profiler=self._det_profiler,
+        )
 
-        if isinstance(validation_period, int):
-            validation_period = self._convert_period_to_train_unit(validation_period, max_length)
-
-        if self._local_training:
-            if checkpoint_policy != "all":
-                logging.warning("Checkpoint policy set to 'all' in local training mode.")
-                checkpoint_policy = "all"
-
-            self._trial_controller = pytorch._PyTorchTrialController(
-                trial_inst=self._trial,
-                context=self._context,
-                max_length=max_length,
-                min_validation_period=validation_period,
-                min_checkpoint_period=checkpoint_period,
-                average_training_metrics=average_training_metrics,
-                checkpoint_policy=checkpoint_policy,
-                smaller_is_better=smaller_is_better,
-                local_training=True,
-                test_mode=test_mode,
-            )
-        else:
-            self._trial_controller = pytorch._PyTorchTrialController(
-                trial_inst=self._trial,
-                context=self._context,
-                min_checkpoint_period=checkpoint_period,
-                min_validation_period=validation_period,
-                average_training_metrics=average_training_metrics,
-                checkpoint_policy=checkpoint_policy,
-                latest_checkpoint=self._cluster_info.latest_checkpoint,
-                smaller_is_better=smaller_is_better,
-                searcher_metric_name=self._cluster_info.trial._config["searcher"]["metric"],
-                local_training=False,
-                test_mode=False,
-                det_profiler=self._det_profiler,
-                steps_completed=self._cluster_info.trial._steps_completed,
-                step_zero_validation=self._cluster_info.trial._config["perform_initial_validation"],
-                scheduling_unit=self._cluster_info.trial._config["scheduling_unit"],
-            )
-
-        if self._context.distributed.size > 1 and not self._context.distributed.rank == 0:
-            log_level = logging.DEBUG if self._cluster_info.trial._debug else logging.WARNING
-            logging.getLogger().setLevel(log_level)
-
-        self._trial_controller.run()
+        trial_controller.run()
 
     def _convert_period_to_train_unit(self, period: int, train_unit: pytorch.TrainUnit):
         # Local training will assume same period as max_length
@@ -144,7 +141,7 @@ def _initialize_distributed_backend():
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
     else:
-        print(f"Backend {distributed_backend} not supported")
+        logging.warning(f"Backend {distributed_backend} not supported")
 
 
 def _generate_local_seed():
@@ -153,15 +150,26 @@ def _generate_local_seed():
 
 @contextlib.contextmanager
 def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
-
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
     # Pre-execute steps: initialize distributed backend and set trial seeds
-    distributed_context = distributed or _initialize_distributed_backend()
+    distributed_context = distributed or (not local_training and _initialize_distributed_backend())
+
+    # Initialize default values
+    slots_per_trial = 0
+    num_gpus = 0
+    exp_conf = None
+    aggregation_frequency = 1
+    fp16_compression = False
+    average_aggregated_gradients = False
+    steps_completed = 0
+    managed_training = True
+
     if local_training:
         trial_seed = _generate_local_seed()
         hparams = hparams or {}
+        managed_training = False
     else:
         if hparams and cluster_info.trial.hparams:
             logging.warning(
@@ -169,6 +177,15 @@ def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedC
             )
         hparams = cluster_info.trial.hparams
         trial_seed = cluster_info.trial.trial_seed
+        exp_conf = cluster_info.trial._config
+        num_gpus = len(cluster_info.gpu_uuids)
+        slots_per_trial = int(exp_conf["resources"]["slots_per_trial"])
+        aggregation_frequency = bool(exp_conf["optimizations"]["aggregation_frequency"])
+        fp16_compression = bool(exp_conf["optimizations"]["gradient_compression"])
+        average_aggregated_gradients = bool(
+            exp_conf["optimizations"]["average_aggregated_gradients"]
+        )
+        steps_completed = cluster_info.trial._steps_completed
 
     pytorch._PyTorchTrialController._set_random_seeds(trial_seed)
 
@@ -177,28 +194,17 @@ def init(hparams: Optional[Dict] = None, distributed: Optional[core.DistributedC
         preempt_mode=core.PreemptMode.ChiefOnly,
         tensorboard_mode=core.TensorboardMode.MANUAL,
     ) as core_context:
-        if local_training:
-            context = pytorch.PyTorchTrialContext(
-                hparams=hparams,
-                core_context=core_context,
-                trial_seed=trial_seed,
-                managed_training=False,
-            )
-        else:
-            exp_conf = cluster_info.trial._config
-            context = pytorch.PyTorchTrialContext(
-                hparams=hparams,
-                core_context=core_context,
-                trial_seed=trial_seed,
-                num_gpus=len(cluster_info.gpu_uuids),
-                exp_conf=exp_conf,
-                slots_per_trial=int(exp_conf["resources"]["slots_per_trial"]),
-                aggregation_frequency=bool(exp_conf["optimizations"]["aggregation_frequency"]),
-                fp16_compression=bool(exp_conf["optimizations"]["gradient_compression"]),
-                average_aggregated_gradients=bool(
-                    exp_conf["optimizations"]["average_aggregated_gradients"]
-                ),
-                steps_completed=cluster_info.trial._steps_completed,
-                managed_training=True,
-            )
+        context = pytorch.PyTorchTrialContext(
+            core_context=core_context,
+            trial_seed=trial_seed,
+            hparams=hparams,
+            slots_per_trial=slots_per_trial,
+            num_gpus=num_gpus,
+            exp_conf=exp_conf,
+            aggregation_frequency=aggregation_frequency,
+            fp16_compression=fp16_compression,
+            average_aggregated_gradients=average_aggregated_gradients,
+            steps_completed=steps_completed,
+            managed_training=managed_training
+        )
         yield context
