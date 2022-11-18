@@ -11,8 +11,10 @@ from determined.common.api import analytics, certs
 
 try:
     from determined import pytorch
+    from determined.pytorch import lightning
 except ImportError:
     pytorch = None
+    lightning = None
     pass
 
 
@@ -47,7 +49,7 @@ def main(train_entrypoint: str) -> int:
     # TFKerasTrialController or EstimatorTrialController to add that functionality, so for now we
     # continue with the legacy strategy.
 
-    if pytorch and issubclass(trial_class, pytorch.PyTorchTrial):
+    if pytorch and issubclass(trial_class, pytorch.PyTorchTrial) or lightning and issubclass(trial_class, lightning.LightningAdapter):
         return _run_pytorch_trial(trial_class, info)
 
     env = det.EnvContext(
