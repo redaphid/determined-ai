@@ -250,7 +250,6 @@ def create_trial_and_trial_controller(
             local_training=True,
             latest_checkpoint=latest_checkpoint,
             steps_completed=steps_completed,
-            average_training_metrics=bool(exp_config["optimizations"]["average_training_metrics"]),
             smaller_is_better=bool(exp_config["searcher"]["smaller_is_better"]),
             test_mode=False,
             checkpoint_policy=exp_config["checkpoint_policy"],

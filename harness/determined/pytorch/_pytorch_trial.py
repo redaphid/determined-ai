@@ -126,7 +126,6 @@ class _PyTorchTrialController:
         checkpoint_period: TrainUnit,
         validation_period: TrainUnit,
         reporting_period: TrainUnit,
-        average_training_metrics: bool,
         smaller_is_better: bool,
         steps_completed: int,
         latest_checkpoint: str,
@@ -175,7 +174,6 @@ class _PyTorchTrialController:
 
         # Training configs
         self.latest_checkpoint = latest_checkpoint
-        self.average_training_metrics = average_training_metrics
         self.test_mode = test_mode
         self.searcher_metric_name = searcher_metric_name
         self.ckpt_policy = checkpoint_policy
@@ -263,7 +261,7 @@ class _PyTorchTrialController:
 
     def _report_training_metrics(self, training_metrics: List[Dict]):
         # Aggregate and reduce training metrics from all the training processes.
-        if self.context.distributed.size > 1 and self.average_training_metrics:
+        if self.context.distributed.size > 1:
             with self.prof.record_timing("average_training_metrics"):
                 batch_metrics = pytorch._combine_and_average_training_metrics(
                     self.context.distributed, training_metrics

@@ -98,9 +98,8 @@ class Trainer:
         self._trial_controller = pytorch._PyTorchTrialController(
             trial_inst=self._trial,
             context=self._context,
-            min_checkpoint_period=checkpoint_period,
-            min_validation_period=validation_period,
-            average_training_metrics=average_training_metrics,
+            checkpoint_period=checkpoint_period,
+            validation_period=validation_period,
             smaller_is_better=smaller_is_better,
             steps_completed=steps_completed,
             latest_checkpoint=latest_checkpoint,
