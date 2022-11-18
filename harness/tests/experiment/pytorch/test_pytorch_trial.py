@@ -189,7 +189,7 @@ class TestPyTorchTrial:
 
         trial_controller_A.run()
 
-        assert trial_A.checkpoint_callback.uuid is not None, "trial did not return a checkpoint UUID"
+        assert len(trial_A.checkpoint_callback.uuids) == 1, "trial did not return a checkpoint UUID"
 
         # Trial A: restore from checkpoint with invalid hparams
         invalid_hparams = {**self.hparams, "features": 2}
@@ -204,7 +204,7 @@ class TestPyTorchTrial:
                 min_validation_batches=100,
                 min_checkpoint_batches=sys.maxsize,
                 checkpoint_dir=checkpoint_dir,
-                latest_checkpoint=trial_A.checkpoint_callback.uuid,
+                latest_checkpoint=trial_A.checkpoint_callback.uuids[0],
                 steps_completed=trial_controller_A._state.batches_trained,
             )
             trial_controller_A.run()
@@ -369,8 +369,6 @@ class TestPyTorchTrial:
 
     def test_callbacks(self, tmp_path: pathlib.Path) -> None:
         checkpoint_dir = tmp_path.joinpath("checkpoint")
-        latest_checkpoint = None
-        steps_completed = 0
 
         hparams1 = dict(self.hparams)
         hparams1["global_batch_size"] = 2
@@ -500,20 +498,13 @@ class TestPyTorchTrial:
             min_validation_batches=10,
             min_checkpoint_batches=sys.maxsize,
         )
-        controller.run()
-
-        trial, trial_controller = create_trial_and_trial_controller(
-            trial_class=pytorch_onevar_model.OneVarTrialWithTrainingMetrics,
-            hparams=self.hparams,
-            trial_seed=self.trial_seed,
-        )
 
         training_metrics = []
         total_steps, total_batches_processed = 10, 0
         for step_id in range(1, total_steps):
             num_batches = step_id
-            train_steps, metrics = trial_controller._train_with_steps(
-                training_enumerator=enumerate(trial_controller.training_iterator),
+            train_steps, metrics = controller._train_with_steps(
+                training_enumerator=enumerate(controller.training_iterator),
                 train_steps=[
                     pytorch._TrainStep(step_type=pytorch._TrainStepType.TRAIN, unit=pytorch.Batch(num_batches))
                 ],
@@ -793,6 +784,70 @@ class TestPyTorchTrial:
 
         amp_metrics_test(trial_class, training_metrics, agg_freq=AGG_FREQ)
 
+    def test_trainer(self) -> None:
+        # Train for 100 batches, checkpoint and validate every 50 batches
+        max_batches = 100
+        with pytorch.init(hparams=self.hparams) as train_context:
+            trial = pytorch_onevar_model.OneVarTrial(train_context)
+            trainer = pytorch.Trainer(trial, train_context)
+            trainer.fit(
+                max_length=pytorch.Batch(max_batches),
+                checkpoint_period=pytorch.Batch(max_batches // 2),
+                validation_period=pytorch.Batch(max_batches // 2),
+            )
+
+        # Verify training and validation metrics for batches trained
+        metrics_callback = trial.metrics_callback
+        batch_metrics = metrics_callback.batch_metrics
+        assert len(batch_metrics) == max_batches, "batch metrics did not match expected length"
+
+        validation_metrics = metrics_callback.validation_metrics
+        assert len(validation_metrics) == 2, "validation metrics did not match expected length"
+
+        # Verify checkpoint
+        checkpoint_callback = trial.checkpoint_callback
+        assert len(checkpoint_callback.uuids) == 2, "checkpoint callback did not return expected length of uuids"
+
+    def test_trainer_callbacks(self) -> None:
+        max_epochs = 2
+        checkpoint_batches = 5
+        validation_batches = 10
+
+        with pytorch.init(hparams=self.hparams) as train_context:
+            trial = pytorch_onevar_model.OneVarTrialCallbacks(train_context)
+            trainer = pytorch.Trainer(trial, train_context)
+            trainer.fit(
+                max_length=pytorch.Epoch(2),
+                checkpoint_period=pytorch.Batch(checkpoint_batches),
+                validation_period=pytorch.Batch(validation_batches),
+            )
+
+        # Expect epochs * epoch_len / period if last batch is end of epoch, else + 1 for last checkpoint/validation
+        total_batches = max_epochs * train_context._epoch_len
+        checkpoint_periods, batches_remaining = divmod(total_batches, checkpoint_batches)
+        checkpoints = checkpoint_periods + 1 if batches_remaining > 0 else checkpoint_periods
+        validation_periods, batches_remaining = divmod(total_batches, validation_batches)
+        validations = validation_periods + 1 if batches_remaining > 0 else validation_periods
+
+        workload_steps = max(checkpoints, validations)
+
+        assert trial.counter.__dict__ == {
+            "trial_startups": 1,
+            "validation_steps_started": validations,
+            "validation_steps_ended": validations,
+            "checkpoints_written": checkpoints,
+            "checkpoints_uploaded": checkpoints,
+            "training_started_times": 1,
+            "training_epochs_started": max_epochs,
+            "training_epochs_ended": max_epochs,
+            "training_workloads_ended": workload_steps,
+            "trial_shutdowns": 1,
+        }
+
+        assert trial.legacy_counter.__dict__ == {
+            "legacy_on_training_epochs_start_calls": 2
+        }
+
     def checkpoint_and_restore(
         self, hparams: typing.Dict, tmp_path: pathlib.Path, steps: typing.Tuple[int, int] = (1, 1)
     ) -> typing.Tuple[
@@ -822,7 +877,7 @@ class TestPyTorchTrial:
         assert len(training_metrics["A"]) == steps[0], "training metrics did not match expected length"
         validation_metrics["A"] = metrics_callback.validation_metrics
 
-        assert checkpoint_callback.uuid is not None, "trial did not return a checkpoint UUID"
+        assert len(checkpoint_callback.uuids) == 1, "trial did not return a checkpoint UUID"
 
         # Trial A: restore from checkpoint and train for 100 more batches
         trial_A, trial_controller_A = create_trial_and_trial_controller(
@@ -833,7 +888,7 @@ class TestPyTorchTrial:
             min_validation_batches=steps[1],
             min_checkpoint_batches=sys.maxsize,
             checkpoint_dir=checkpoint_dir,
-            latest_checkpoint=checkpoint_callback.uuid,
+            latest_checkpoint=checkpoint_callback.uuids[0],
             steps_completed=trial_controller_A._state.batches_trained,
         )
         trial_controller_A.run()
@@ -1012,6 +1067,12 @@ def create_trial_and_trial_controller(
             local_training=True,
             latest_checkpoint=latest_checkpoint,
             steps_completed=steps_completed,
+            average_training_metrics=bool(exp_config["optimizations"]["average_training_metrics"]),
+            smaller_is_better=bool(exp_config["searcher"]["smaller_is_better"]),
+            test_mode=False,
+            checkpoint_policy=exp_config["checkpoint_policy"],
+            step_zero_validation=bool(exp_config["perform_initial_validation"]),
+            det_profiler=None
         )
 
         trial_controller._set_data_loaders()

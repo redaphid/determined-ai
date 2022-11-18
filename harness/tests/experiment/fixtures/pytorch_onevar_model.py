@@ -112,6 +112,7 @@ class MetricsCallback(pytorch.PyTorchCallback):
     def __init__(self):
         self.validation_metrics = []
         self.training_metrics = []
+        self.batch_metrics = []
 
     def on_validation_end(self, metrics: Dict[str, Any]) -> None:
         self.validation_metrics.append(metrics)
@@ -120,14 +121,15 @@ class MetricsCallback(pytorch.PyTorchCallback):
         self, avg_metrics: Dict[str, Any], batch_metrics: Dict[str, Any]
     ) -> None:
         self.training_metrics.append(avg_metrics)
+        self.batch_metrics += batch_metrics
 
 
 class CheckpointCallback(pytorch.PyTorchCallback):
     def __init__(self):
-        self.uuid = None
+        self.uuids = []
 
     def on_checkpoint_upload_end(self, uuid: str) -> None:
-        self.uuid = uuid
+        self.uuids.append(uuid)
 
 
 class BaseOneVarTrial(pytorch.PyTorchTrial):

@@ -177,11 +177,9 @@ def _run_pytorch_trial(
                     info.trial._config["optimizations"]["average_training_metrics"]
                 ),
                 checkpoint_policy=info.trial._config["checkpoint_policy"],
-                smaller_is_better=bool(info.trial._config["searcher"]["smaller_is_better"]),
                 average_aggregated_gradients=bool(
                     info.trial._config["optimizations"]["average_aggregated_gradients"]
                 ),
-                metric_name=info.trial._config["searcher"]["metric"],
                 test_mode=False,
                 aggregation_frequency=info.trial._config["optimizations"]["aggregation_frequency"],
             )

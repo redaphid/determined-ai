@@ -443,13 +443,16 @@ class _PyTorchTrialController:
 
     def _step_batch(self):
         self._state.batches_trained += 1
-        self._state.epochs_trained = self._get_epoch_idx(self._state.batches_trained)
-        # True epoch-based training is not supported. Epoch start/end is calculated with batch.
-        if self._context.is_epoch_start():
-            self._on_epoch_start(self._state.epochs_trained)
 
-        if self._context.is_epoch_end():
-            self._on_epoch_end(self._state.epochs_trained)
+        # True epoch-based training is not supported. Epoch start/end is calculated with batch.
+        epoch_idx, batch_in_epoch_idx = divmod(self._state.batches_trained, self._context._epoch_len)
+
+        if batch_in_epoch_idx == 0:
+            self._on_epoch_start(epoch_idx)
+
+        if batch_in_epoch_idx == self._context._epoch_len - 1:
+            self._on_epoch_end(epoch_idx)
+            self._state.epochs_trained += 1
 
     def _stop_requested(self):
         if self._core_context.distributed.rank == 0:
@@ -613,6 +616,12 @@ class _PyTorchTrialController:
             # Checkpoint unsaved work and exit.
             if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
                 self._checkpoint(already_exiting=True)
+        except det.InvalidHP as e:
+            # Catch InvalidHP to checkpoint before exiting and re-raise for cleanup by core.init()
+            if not self._checkpoint_is_current():
+                self._checkpoint(already_exiting=True)
+            raise e
+        return
 
     # XXX: maybe/probably better if train_steps is passed in individually instead of as a list
     # XXX: return only the reached limits instead of all passed in steps?
@@ -629,9 +638,9 @@ class _PyTorchTrialController:
         self._context.reset_reducers()
 
         for batch_idx, batch in training_enumerator:
-            epoch_idx = self._get_epoch_idx(batch_idx)
+            # XXX: maybe change this to just use context.is_epoch_end, but divmod is neat
+            epoch_idx, batch_in_epoch_idx = divmod(batch_idx, self._context._epoch_len)
             batch_metrics = self._train_batch(batch=batch, batch_idx=batch_idx, epoch_idx=epoch_idx)
-
             training_metrics.append(batch_metrics)
             self._step_batch()
 
@@ -640,8 +649,13 @@ class _PyTorchTrialController:
                 if isinstance(step.unit, Batch) and step.unit._divides(batch_idx + 1):
                     step.limit_reached = True
 
-                # True epoch-based training not supported, calculate epoch periods by batch
-                if isinstance(step.unit, Epoch) and step.unit._divides(epoch_idx):
+                # True epoch based training not supported, detect last batch of epoch to calculate fully-trained epochs
+                if isinstance(step.unit, Epoch) and step.unit._divides(epoch_idx + 1):
+                    if batch_in_epoch_idx == self._context._epoch_len - 1:
+                        step.limit_reached = True
+
+                # Break early after one batch for test mode
+                if step.step_type == _TrainStepType.TRAIN and self._test_mode:
                     step.limit_reached = True
 
             # Exit if any train step limits have been reached

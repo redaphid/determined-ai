@@ -42,17 +42,15 @@ class Trainer:
 
     def fit(
         self,
-        checkpoint_period: pytorch.TrainUnit,
-        validation_period: pytorch.TrainUnit,
+        checkpoint_period: pytorch.TrainUnit = None,
+        validation_period: pytorch.TrainUnit = None,
         max_length: pytorch.TrainUnit = None,
         reporting_period: pytorch.TrainUnit = None,
         average_training_metrics: bool = None,
         average_aggregated_gradients: bool = None,
         aggregation_frequency: int = None,
         checkpoint_policy: str = None,
-        smaller_is_better: bool = None,
         test_mode: bool = None,
-        metric_name: str = None,
     ):
         cluster_info = det.get_cluster_info()
 
@@ -60,24 +58,28 @@ class Trainer:
         self._context._aggregation_frequency = aggregation_frequency or 1
         self._context._average_aggregated_gradients = average_aggregated_gradients or True
 
+        # Set defaults
         # XXX: default to True?
         average_training_metrics = average_training_metrics or True
         latest_checkpoint = None
         checkpoint_policy = checkpoint_policy or "best"
+        smaller_is_better = True
+        searcher_metric_name = None
+        checkpoint_period = checkpoint_period or pytorch.Batch(sys.maxsize)
+        validation_period = validation_period or pytorch.Batch(sys.maxsize)
 
         if self._local_training:
             if checkpoint_policy == "best":
-                assert metric_name, "metric_name must be specified if using checkpoint policy 'best'"
+                logging.warning("checkpoint_policy='best' is not supported in local training mode. "
+                                "Falling back to 'all'")
+                checkpoint_policy = "all"
             assert max_length, "max_length must be defined in local training mode"
             if self._det_profiler:
                 logging.warning(f"Determined profiler will be ignored in local training mode")
 
-            smaller_is_better = smaller_is_better or True
-            searcher_metric_name = metric_name
             steps_completed = 0
             reporting_period = reporting_period or pytorch.Batch(sys.maxsize)
             step_zero_validation = False
-
         else:
             if max_length:
                 logging.warning(
@@ -87,8 +89,8 @@ class Trainer:
             assert not test_mode, "test_mode is only supported in local training mode"
 
             latest_checkpoint = cluster_info.latest_checkpoint
-            smaller_is_better = smaller_is_better or bool(cluster_info.trial._config["searcher"]["smaller_is_better"])
-            searcher_metric_name = metric_name or cluster_info.trial._config["searcher"]["metric"]
+            smaller_is_better = bool(cluster_info.trial._config["searcher"]["smaller_is_better"])
+            searcher_metric_name = cluster_info.trial._config["searcher"]["metric"]
             steps_completed = int(cluster_info.trial._steps_completed)
             reporting_period = reporting_period or pytorch.Batch(int(cluster_info.trial._config["scheduling_unit"]))
             step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])

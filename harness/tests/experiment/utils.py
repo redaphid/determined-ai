@@ -109,12 +109,15 @@ def make_default_exp_config(
             "tensor_fusion_cycle_time": 3.5,
         },
         "data_layer": {"type": "shared_fs"},
+        "checkpoint_policy": "best",
+        "perform_initial_validation": False,
         "checkpoint_storage": {
             "type": "shared_fs",
             "host_path": checkpoint_dir or "/tmp",
         },
         "searcher": {
             "metric": searcher_metric,
+            "smaller_is_better": True,
         },
         "min_checkpoint_period": {"batches": 0},
         "min_validation_period": {"batches": 0},

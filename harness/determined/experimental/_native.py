@@ -97,7 +97,6 @@ def test_one_batch_pytorch(trial_class, config):
                 config.get("optimizations", {}).get("average_training_metrics")
             ),
             checkpoint_policy=config.get("checkpoint_policy", "all"),
-            smaller_is_better=config.get("searcher", {}).get("smaller_is_better"),
             average_aggregated_gradients=config.get("optimizations", {}).get("average_aggregated_gradients"),
             aggregation_frequency=config.get("optimizations", {}).get("aggregation_frequency", 1),
         )
