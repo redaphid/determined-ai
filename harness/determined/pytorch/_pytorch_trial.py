@@ -123,8 +123,8 @@ class _PyTorchTrialController:
         self,
         trial_inst: det.Trial,
         context: pytorch.PyTorchTrialContext,
-        min_checkpoint_period: TrainUnit,
-        min_validation_period: TrainUnit,
+        checkpoint_period: TrainUnit,
+        validation_period: TrainUnit,
         reporting_period: TrainUnit,
         average_training_metrics: bool,
         smaller_is_better: bool,
@@ -156,8 +156,8 @@ class _PyTorchTrialController:
 
         # Training loop variables
         self.max_length = max_length
-        self.min_checkpoint_period = min_checkpoint_period
-        self.min_validation_period = min_validation_period
+        self.checkpoint_period = checkpoint_period
+        self.validation_period = validation_period
         self.reporting_period = reporting_period
 
         # Training loop state
@@ -356,9 +356,10 @@ class _PyTorchTrialController:
             for callback in self.callbacks.values():
                 callback.on_checkpoint_upload_end(uuid=uuid)
         except det.InvalidHP:
-            self.core_context.train.report_early_exit(core.EarlyExitReason.INVALID_HP)
             if not already_exiting:
+                self.core_context.train.report_early_exit(core.EarlyExitReason.INVALID_HP)
                 raise ShouldExit(skip_exit_checkpoint=True)
+            raise
 
     def _check_evaluate_implementation(self) -> None:
         """
@@ -562,14 +563,14 @@ class _PyTorchTrialController:
                         _TrainStep(step_type=_TrainStepType.TRAIN, unit=self.max_length),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
-                            unit=self.min_checkpoint_period,
+                            unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(
                             step_type=_TrainStepType.REPORT, unit=self.reporting_period
                         ),
                         _TrainStep(
-                            step_type=_TrainStepType.VALIDATE, unit=self.min_validation_period
+                            step_type=_TrainStepType.VALIDATE, unit=self.validation_period
                         ),
                     ],
                 )
@@ -601,14 +602,14 @@ class _PyTorchTrialController:
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
-                            unit=self.min_checkpoint_period,
+                            unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(
                             step_type=_TrainStepType.REPORT, unit=self.reporting_period
                         ),
                         _TrainStep(
-                            step_type=_TrainStepType.VALIDATE, unit=self.min_validation_period
+                            step_type=_TrainStepType.VALIDATE, unit=self.validation_period
                         ),
                     ],
                 )

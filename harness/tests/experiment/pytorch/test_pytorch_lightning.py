@@ -7,7 +7,8 @@ from typing import Any, Dict
 import pytest
 
 import determined as det
-from determined import gpu, pytorch, workload
+from determined import gpu, pytorch
+from determined.pytorch import lightning
 from tests.experiment import utils  # noqa: I100
 from tests.experiment.fixtures import lightning_adapter_onevar_model as la_model
 import random
@@ -24,31 +25,6 @@ class TestLightningAdapter:
         }
 
     def test_checkpointing_and_restoring(self, tmp_path: pathlib.Path) -> None:
-        # def make_trial_controller_fn(
-        #     workloads: workload.Stream,
-        #     checkpoint_dir: typing.Optional[str] = None,
-        #     latest_checkpoint: typing.Optional[typing.Dict[str, typing.Any]] = None,
-        #     steps_completed: int = 0,
-        # ) -> det.TrialController:
-        #     return utils.make_trial_controller_from_trial_implementation(
-        #         trial_class=la_model.OneVarTrial,
-        #         hparams=self.hparams,
-        #         workloads=workloads,
-        #         trial_seed=self.trial_seed,
-        #         checkpoint_dir=checkpoint_dir,
-        #         latest_checkpoint=latest_checkpoint,
-        #         steps_completed=steps_completed,
-        #     )
-
-        # trial, trial_controller = create_trial_and_trial_controller(
-        #     trial_class=la_model.OneVarTrial,
-        #     hparams=self.hparams,
-        #     trial_seed=self.trial_seed,
-        #     checkpoint_dir=str(tmp_path),
-        #     latest_checkpoint=None,
-        #     steps_completed=0,
-        # )
-
         self.checkpoint_and_restore(
             trial_class=la_model.OneVarTrial,
             hparams=self.hparams,
@@ -56,13 +32,10 @@ class TestLightningAdapter:
             steps=(1, 1)
         )
 
-        # utils.checkpointing_and_restoring_test(make_trial_controller_fn, tmp_path)
-
     def test_checkpoint_save_load_hooks(self, tmp_path: pathlib.Path) -> None:
         class OneVarLM(la_model.OneVarLM):
             def on_load_checkpoint(self, checkpoint: Dict[str, Any]):
                 assert "test" in checkpoint
-                print(f"checkpoint {checkpoint}")
                 assert checkpoint["test"] is True
 
             def on_save_checkpoint(self, checkpoint: Dict[str, Any]):
@@ -88,49 +61,28 @@ class TestLightningAdapter:
             def __init__(self, context):
                 super().__init__(context, OneVarLM)
 
-        def make_trial_controller_fn(
-            workloads: workload.Stream,
-            checkpoint_dir: typing.Optional[str] = None,
-            latest_checkpoint: typing.Optional[typing.Dict[str, typing.Any]] = None,
-            steps_completed: int = 0,
-        ) -> det.TrialController:
-
-            return utils.make_trial_controller_from_trial_implementation(
+        with pytest.raises(AssertionError):
+            self.checkpoint_and_restore(
                 trial_class=OneVarLA,
                 hparams=self.hparams,
-                workloads=workloads,
-                trial_seed=self.trial_seed,
-                checkpoint_dir=checkpoint_dir,
-                latest_checkpoint=latest_checkpoint,
-                steps_completed=steps_completed,
+                tmp_path=tmp_path,
+                steps=(1, 1)
             )
-
-        with pytest.raises(AssertionError):
-            utils.checkpointing_and_restoring_test(make_trial_controller_fn, tmp_path)
 
     def test_lr_scheduler(self, tmp_path: pathlib.Path) -> None:
         class OneVarLAFreq1(la_model.OneVarTrialLRScheduler):
             def check_lr_value(self, batch_idx: int):
                 assert self.last_lr > self.read_lr_value()
 
-        def make_trial_controller_fn(
-            workloads: workload.Stream,
-            checkpoint_dir: typing.Optional[str] = None,
-            latest_checkpoint: typing.Optional[typing.Dict[str, typing.Any]] = None,
-            steps_completed: int = 0,
-        ) -> det.TrialController:
-
-            return utils.make_trial_controller_from_trial_implementation(
-                trial_class=OneVarLAFreq1,
-                hparams=self.hparams,
-                workloads=workloads,
-                trial_seed=self.trial_seed,
-                checkpoint_dir=checkpoint_dir,
-                latest_checkpoint=latest_checkpoint,
-                steps_completed=steps_completed,
-            )
-
-        utils.train_and_validate(make_trial_controller_fn)
+        trial, trial_controller = create_trial_and_trial_controller(
+            trial_class=OneVarLAFreq1,
+            hparams=self.hparams,
+            trial_seed=self.trial_seed,
+            max_batches=2,
+            min_validation_batches=1,
+            checkpoint_dir=str(tmp_path),
+        )
+        trial_controller.run()
 
     def test_lr_scheduler_frequency(self) -> None:
         class OneVarLAFreq2(la_model.OneVarTrialLRScheduler):
@@ -140,28 +92,18 @@ class TestLightningAdapter:
                 else:
                     assert self.last_lr == self.read_lr_value()
 
-        def make_trial_controller_fn(
-            workloads: workload.Stream,
-            checkpoint_dir: typing.Optional[str] = None,
-            latest_checkpoint: typing.Optional[typing.Dict[str, typing.Any]] = None,
-            steps_completed: int = 0,
-        ) -> det.TrialController:
-
-            updated_params = {
-                **self.hparams,
-                "lr_frequency": 2,
-            }
-            return utils.make_trial_controller_from_trial_implementation(
-                trial_class=OneVarLAFreq2,
-                hparams=updated_params,
-                workloads=workloads,
-                trial_seed=self.trial_seed,
-                checkpoint_dir=checkpoint_dir,
-                latest_checkpoint=latest_checkpoint,
-                steps_completed=steps_completed,
-            )
-
-        utils.train_and_validate(make_trial_controller_fn)
+        updated_params = {
+            **self.hparams,
+            "lr_frequency": 2,
+        }
+        trial, trial_controller = create_trial_and_trial_controller(
+            trial_class=OneVarLAFreq2,
+            hparams=updated_params,
+            trial_seed=self.trial_seed,
+            max_batches=2,
+            min_validation_batches=1,
+        )
+        trial_controller.run()
 
     def checkpoint_and_restore(
         self, hparams: typing.Dict,
@@ -245,7 +187,7 @@ class TestLightningAdapter:
 
 
 def create_trial_and_trial_controller(
-    trial_class: pytorch.PyTorchTrial,
+    trial_class: lightning.LightningAdapter,
     hparams: typing.Dict,
     scheduling_unit: int = 1,
     trial_seed: int = random.randint(0, 1 << 31),
@@ -295,14 +237,14 @@ def create_trial_and_trial_controller(
             managed_training=False
         )
 
-        trial_inst = trial_class(trial_context)
+        trial_inst = trial_class(context=trial_context)
 
         trial_controller = pytorch._PyTorchTrialController(
             trial_inst=trial_inst,
             context=trial_context,
             max_length=pytorch.Batch(max_batches),
-            min_checkpoint_period=pytorch.Batch(min_checkpoint_batches),
-            min_validation_period=pytorch.Batch(min_validation_batches),
+            checkpoint_period=pytorch.Batch(min_checkpoint_batches),
+            validation_period=pytorch.Batch(min_validation_batches),
             searcher_metric_name=trial_class._searcher_metric,  # type: ignore
             reporting_period=pytorch.Batch(scheduling_unit),
             local_training=True,

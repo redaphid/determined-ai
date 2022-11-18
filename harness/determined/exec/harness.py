@@ -49,7 +49,7 @@ def main(train_entrypoint: str) -> int:
     # TFKerasTrialController or EstimatorTrialController to add that functionality, so for now we
     # continue with the legacy strategy.
 
-    if pytorch and issubclass(trial_class, pytorch.PyTorchTrial) or lightning and issubclass(trial_class, lightning.LightningAdapter):
+    if pytorch and issubclass(trial_class, pytorch.PyTorchTrial):
         return _run_pytorch_trial(trial_class, info)
 
     env = det.EnvContext(
@@ -126,7 +126,6 @@ def main(train_entrypoint: str) -> int:
 
             # Step 5: Create a TrialController and execute training
             logging.info(f"Creating {controller_class.__name__} with {trial_class.__name__}.")
-
             controller = controller_class.from_trial(
                 trial_inst=trial_inst,
                 context=trial_context,
