@@ -412,11 +412,11 @@ class _PyTorchTrialController:
         self.validation_loader = None  # type: Optional[torch.utils.data.DataLoader]
         validation_data = self.trial.build_validation_data_loader()
         if self._evaluate_batch_defined():
-            print(f"worker {rank} evaluate batch defined")
             if isinstance(validation_data, pytorch.DataLoader):
                 self.validation_loader = validation_data.get_data_loader(
                     repeat=False, skip=0, num_replicas=num_replicas, rank=rank
                 )
+                print(f"worker {rank} validation loader length {len(self.validation_loader)}")
             else:
                 # Non-determined DataLoader; ensure the user meant to do this.
                 if not self.context.experimental._data_repro_checks_disabled:
