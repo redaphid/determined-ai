@@ -925,6 +925,7 @@ class _PyTorchTrialController:
             for callback in self.callbacks.values():
                 callback.on_validation_epoch_start()
             for idx, batch in enumerate(self.validation_loader):
+                logging.info(f"worker {self.context.distributed.rank} validating batch {idx}")
                 if self.context.experimental._auto_to_device:
                     with self.prof.record_timing("to_device", accumulate=True):
                         batch = self.context.to_device(batch)
@@ -954,6 +955,8 @@ class _PyTorchTrialController:
                 batch_metrics.append(pytorch._convert_metrics_to_numpy(vld_metrics))
                 if self.test_mode:
                     break
+
+            batch_metrics = self.context.distributed.broadcast(batch_metrics)
 
             for callback in self.callbacks.values():
                 callback.on_validation_epoch_end(batch_metrics)
