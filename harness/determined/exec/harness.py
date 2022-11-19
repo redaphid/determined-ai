@@ -11,10 +11,8 @@ from determined.common.api import analytics, certs
 
 try:
     from determined import pytorch
-    from determined.pytorch import lightning
 except ImportError:
     pytorch = None
-    lightning = None
     pass
 
 
