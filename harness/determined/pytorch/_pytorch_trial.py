@@ -412,6 +412,7 @@ class _PyTorchTrialController:
         self.validation_loader = None  # type: Optional[torch.utils.data.DataLoader]
         validation_data = self.trial.build_validation_data_loader()
         if self._evaluate_batch_defined():
+            print(f"worker {rank} evaluate batch defined")
             if isinstance(validation_data, pytorch.DataLoader):
                 self.validation_loader = validation_data.get_data_loader(
                     repeat=False, skip=0, num_replicas=num_replicas, rank=rank
@@ -888,6 +889,7 @@ class _PyTorchTrialController:
 
     @torch.no_grad()  # type: ignore
     def _validate(self, searcher_op: core.SearcherOperation = None):
+        print(f"validate {self.context.distributed.rank}")
         # Report a validation step is starting.
         if self.is_chief:
             self.core_context.train.set_status("validating")
