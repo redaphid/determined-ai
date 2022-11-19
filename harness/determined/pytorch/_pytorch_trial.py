@@ -956,8 +956,6 @@ class _PyTorchTrialController:
                 if self.test_mode:
                     break
 
-            batch_metrics = self.context.distributed.broadcast(batch_metrics)
-
             for callback in self.callbacks.values():
                 callback.on_validation_epoch_end(batch_metrics)
 

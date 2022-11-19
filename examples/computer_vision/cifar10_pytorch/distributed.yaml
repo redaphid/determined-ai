@@ -15,5 +15,7 @@ searcher:
   max_length:
     epochs: 32
 entrypoint: model_def:CIFARTrial
+min_checkpoint_period:
+  batches: 100
 min_validation_period:
   epochs: 1
