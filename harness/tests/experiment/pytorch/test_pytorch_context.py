@@ -20,7 +20,7 @@ class TestPyTorchContext:
             core_context=core_context,
             trial_seed=env.trial_seed,
             hparams=self.config["hyperparameters"],
-            slots_per_trial=0,
+            slots_per_trial=1,
             num_gpus=1,
             exp_conf=self.config,
             aggregation_frequency=1,

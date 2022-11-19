@@ -126,7 +126,7 @@ def _initialize_distributed_backend():
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
     else:
-        logging.warning(f"Backend {distributed_backend} not supported")
+        logging.warning("Only horovod and torch distributed backends are supported for PyTorchTrial")
 
 
 def _generate_local_seed():

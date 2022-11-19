@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Generator, cast
+from typing import Generator
 
 import attrdict
 import git
@@ -12,6 +12,7 @@ import model_hub.mmdetection as mh_mmdet
 import model_hub.mmdetection._callbacks as callbacks
 import model_hub.utils as mh_utils
 from determined.common import util
+import determined as det
 
 
 def cleanup_dir(directory: str) -> None:
@@ -39,8 +40,28 @@ def context(mmdet_config_dir: str) -> det_torch.PyTorchTrialContext:
     config_file = "./tests/fixtures/maskrcnn.yaml"
     with open(config_file, "rb") as f:
         config = util.safe_load_yaml_with_exceptions(f)
-    context = det_torch.PyTorchTrialContext.from_config(config)
-    context = cast(det_torch.PyTorchTrialContext, context)
+
+    core_context, env = det._make_local_execution_env(
+        managed_training=False,
+        test_mode=False,
+        config=config,
+        checkpoint_dir="/tmp",
+        limit_gpus=1,
+    )
+
+    context = det_torch.PyTorchTrialContext(
+        core_context=core_context,
+        trial_seed=env.trial_seed,
+        hparams=config["hyperparameters"],
+        slots_per_trial=1,
+        num_gpus=1,
+        exp_conf=config,
+        aggregation_frequency=1,
+        fp16_compression=False,
+        average_aggregated_gradients=True,
+        steps_completed=0,
+        managed_training=False
+    )
     return context
 
 
