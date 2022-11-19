@@ -151,7 +151,7 @@ def _run_pytorch_trial(
 
             if train_context.distributed.size > 1 and not train_context.distributed.rank == 0:
                 log_level = logging.DEBUG if info.trial._debug else logging.WARNING
-            logging.getLogger().setLevel(log_level)
+                logging.getLogger().setLevel(log_level)
 
             logging.info(
                 f"Creating {pytorch._PyTorchTrialController.__name__} with {trial_class.__name__}."
