@@ -174,9 +174,6 @@ def _run_pytorch_trial(
                     **info.trial._config["min_validation_period"]
                 ),
                 reporting_period=pytorch.Batch(info.trial._config["scheduling_unit"]),
-                average_training_metrics=bool(
-                    info.trial._config["optimizations"]["average_training_metrics"]
-                ),
                 checkpoint_policy=info.trial._config["checkpoint_policy"],
                 average_aggregated_gradients=bool(
                     info.trial._config["optimizations"]["average_aggregated_gradients"]

@@ -88,13 +88,10 @@ def test_one_batch_pytorch(trial_class, config):
         trainer.fit(
             max_length=pytorch.Batch(1),
             checkpoint_period=pytorch.TrainUnit._from_values(
-                config.get("min_checkpoint_period", sys.maxsize)
+                **config.get("min_checkpoint_period", {"batches": sys.maxsize})
             ),
             validation_period=pytorch.TrainUnit._from_values(
-                config.get("min_validation_period", sys.maxsize)
-            ),
-            average_training_metrics=bool(
-                config.get("optimizations", {}).get("average_training_metrics")
+                **config.get("min_validation_period", {"batches": sys.maxsize})
             ),
             checkpoint_policy=config.get("checkpoint_policy", "all"),
             average_aggregated_gradients=config.get("optimizations", {}).get("average_aggregated_gradients"),

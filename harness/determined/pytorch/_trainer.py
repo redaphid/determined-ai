@@ -46,7 +46,6 @@ class Trainer:
         validation_period: pytorch.TrainUnit = None,
         max_length: pytorch.TrainUnit = None,
         reporting_period: pytorch.TrainUnit = None,
-        average_training_metrics: bool = None,
         average_aggregated_gradients: bool = None,
         aggregation_frequency: int = None,
         checkpoint_policy: str = None,
@@ -59,8 +58,6 @@ class Trainer:
         self._context._average_aggregated_gradients = average_aggregated_gradients or True
 
         # Set defaults
-        # XXX: default to True?
-        average_training_metrics = average_training_metrics or True
         latest_checkpoint = None
         checkpoint_policy = checkpoint_policy or "best"
         smaller_is_better = True
