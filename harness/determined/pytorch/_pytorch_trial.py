@@ -1018,30 +1018,30 @@ class _PyTorchTrialController:
 
         self.state.last_val = self.state.batches_trained
 
-        if self.is_chief:
-            # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
-            # than evaluate_batch() and we can't know how the user processed their validation data.
-            if self._evaluate_batch_defined():
-                step_duration = time.time() - step_start_time
-                logging.info(
-                    det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
-                )
-            self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
+        if not self.is_chief:
+            return {}
+
+        # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
+        # than evaluate_batch() and we can't know how the user processed their validation data.
+        if self._evaluate_batch_defined():
+            step_duration = time.time() - step_start_time
+            logging.info(
+                det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
+            )
+        self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
 
         if searcher_op:
             searcher_length = TrainUnit._from_searcher_unit(searcher_op.length, self.searcher_unit)
             searcher_metric = self._validate_searcher_metric(metrics)
-            if self.is_chief:
-                if self._steps_until_complete(searcher_length) < 1:
-                    searcher_op.report_completed(searcher_metric)
+            if self._steps_until_complete(searcher_length) < 1:
+                searcher_op.report_completed(searcher_metric)
 
             if self.ckpt_policy == "best" and not self._checkpoint_is_current():
                 best_validation_before = self.core_context.train.get_experiment_best_validation()
 
-            if self.is_chief:
-                self.core_context.train.report_validation_metrics(
-                    self.state.batches_trained, metrics
-                )
+            self.core_context.train.report_validation_metrics(
+                self.state.batches_trained, metrics
+            )
 
             if not self._checkpoint_is_current():
                 if self.ckpt_policy == "all" or (
