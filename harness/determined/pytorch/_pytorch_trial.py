@@ -1018,19 +1018,19 @@ class _PyTorchTrialController:
 
         self.state.last_val = self.state.batches_trained
 
-        if not self.is_chief:
-            return {}
+        if self.is_chief:
+            # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
+            # than evaluate_batch() and we can't know how the user processed their validation data.
+            if self._evaluate_batch_defined():
+                step_duration = time.time() - step_start_time
+                logging.info(
+                    det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
+                )
+            self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
 
-        # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
-        # than evaluate_batch() and we can't know how the user processed their validation data.
-        if self._evaluate_batch_defined():
-            step_duration = time.time() - step_start_time
-            logging.info(
-                det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
-            )
-        self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
+        should_checkpoint = False
 
-        if searcher_op:
+        if searcher_op and self.is_chief:
             searcher_length = TrainUnit._from_searcher_unit(searcher_op.length, self.searcher_unit)
             searcher_metric = self._validate_searcher_metric(metrics)
             if self._steps_until_complete(searcher_length) < 1:
@@ -1048,8 +1048,12 @@ class _PyTorchTrialController:
                     self.ckpt_policy == "best"
                     and self._is_best_validation(now=searcher_metric, before=best_validation_before)
                 ):
-                    self._checkpoint(already_exiting=False)
+                    should_checkpoint = True
 
+        should_checkpoint = self.context.distributed.broadcast(should_checkpoint)
+
+        if should_checkpoint:
+            self._checkpoint(already_exiting=False)
         return metrics
 
     def _load(self, load_path: pathlib.Path) -> None:
