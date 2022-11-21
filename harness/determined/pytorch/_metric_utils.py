@@ -66,7 +66,6 @@ def _combine_metrics_across_processes(
     ), "_combine_metrics_across_processes should only be called if context.distributed > 1"
 
     # all_args is a list of [(metrics, num_batches), ...] for each worker.
-    print(f"worker {context.rank} gathering metrics for batches {num_batches}")
     all_args = context.gather((metrics, num_batches))
 
     if not context.rank == 0:

@@ -416,7 +416,6 @@ class _PyTorchTrialController:
                 self.validation_loader = validation_data.get_data_loader(
                     repeat=False, skip=0, num_replicas=num_replicas, rank=rank
                 )
-                print(f"worker {rank} validation loader length {len(self.validation_loader)}")
             else:
                 # Non-determined DataLoader; ensure the user meant to do this.
                 if not self.context.experimental._data_repro_checks_disabled:
@@ -889,7 +888,6 @@ class _PyTorchTrialController:
 
     @torch.no_grad()  # type: ignore
     def _validate(self, searcher_op: core.SearcherOperation = None):
-        print(f"validate {self.context.distributed.rank}")
         # Report a validation step is starting.
         if self.is_chief:
             self.core_context.train.set_status("validating")
@@ -927,7 +925,6 @@ class _PyTorchTrialController:
             for callback in self.callbacks.values():
                 callback.on_validation_epoch_start()
             for idx, batch in enumerate(self.validation_loader):
-                print(f"worker {self.context.distributed.rank} validating batch {idx}")
                 if self.context.experimental._auto_to_device:
                     with self.prof.record_timing("to_device", accumulate=True):
                         batch = self.context.to_device(batch)
