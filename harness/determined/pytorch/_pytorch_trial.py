@@ -356,7 +356,7 @@ class _PyTorchTrialController:
             if not already_exiting:
                 self.core_context.train.report_early_exit(core.EarlyExitReason.INVALID_HP)
                 raise ShouldExit(skip_exit_checkpoint=True)
-
+            raise
 
     def _check_evaluate_implementation(self) -> None:
         """
