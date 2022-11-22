@@ -19,7 +19,6 @@ class Trainer:
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
         self._det_profiler = None
-        self._trial_controller = None
         cluster_info = det.get_cluster_info()
         self._local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
@@ -92,7 +91,7 @@ class Trainer:
             reporting_period = reporting_period or pytorch.Batch(int(cluster_info.trial._config["scheduling_unit"]))
             step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])
 
-        self._trial_controller = pytorch._PyTorchTrialController(
+        trial_controller = pytorch._PyTorchTrialController(
             trial_inst=self._trial,
             context=self._context,
             checkpoint_period=checkpoint_period,
@@ -110,7 +109,7 @@ class Trainer:
             det_profiler=self._det_profiler,
         )
 
-        self._trial_controller.run()
+        trial_controller.run()
 
 
 def _initialize_distributed_backend():

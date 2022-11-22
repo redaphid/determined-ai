@@ -302,7 +302,6 @@ class _PyTorchTrialController:
                 batch_metrics=batch_metrics,
             )
 
-
     def _is_best_validation(self, now: float, before: Optional[float]) -> bool:
         if before is None:
             return True
@@ -357,7 +356,7 @@ class _PyTorchTrialController:
             if not already_exiting:
                 self.core_context.train.report_early_exit(core.EarlyExitReason.INVALID_HP)
                 raise ShouldExit(skip_exit_checkpoint=True)
-            raise
+
 
     def _check_evaluate_implementation(self) -> None:
         """
