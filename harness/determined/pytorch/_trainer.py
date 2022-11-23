@@ -153,6 +153,7 @@ def init(
 
     # Pre-execute steps: initialize distributed backend
     distributed_context = distributed
+    pytorch._PyTorchTrialController._set_random_seeds(cluster_info.trial.trial_seed)
     if not local_training:
         distributed_context = _initialize_distributed_backend()
 
