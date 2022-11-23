@@ -47,14 +47,13 @@ class TrainUnit:
     def _from_values(
         batches: Optional[int] = None, records: Optional[int] = None, epochs: Optional[int] = None
     ) -> "TrainUnit":
-        print(f"from_values: batches {batches}, records {records}, epochs {epochs}")
         if sum((batches is not None, records is not None, epochs is not None)) != 1:
             raise ValueError(f"invalid length: batches={batches} records={records} epochs={epochs}")
-        if batches:
+        if batches is not None:
             return Batch(batches)
-        if records:
+        if records is not None:
             return Record(records)
-        if epochs:
+        if epochs is not None:
             return Epoch(epochs)
 
         # Make mypy happy
