@@ -1043,9 +1043,7 @@ class _PyTorchTrialController:
             # validation data.
             if self._evaluate_batch_defined():
                 step_duration = time.time() - step_start_time
-                logging.info(
-                    det.util.make_timing_log("validated", step_duration, num_inputs, idx)
-                )
+                logging.info(det.util.make_timing_log("validated", step_duration, num_inputs, idx))
             self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
 
         should_checkpoint = False
