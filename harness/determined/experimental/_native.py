@@ -81,7 +81,9 @@ def test_one_batch_pytorch(trial_class: Any, config: Dict) -> Any:
         logging.error("unable to import determined.pytorch module")
         return
 
-    with pytorch.init(hparams=config["hyperparameters"]) as trial_context:
+    with pytorch.init(
+        hparams=config["hyperparameters"]
+    ) as trial_context:  # type: pytorch.PyTorchTrialContext
         trial_context._exp_conf = config
         trial_inst = trial_class(trial_context)
         trainer = pytorch.Trainer(trial_inst, trial_context)

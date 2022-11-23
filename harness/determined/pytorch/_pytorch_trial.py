@@ -53,7 +53,7 @@ class TrainUnit:
             return Batch(batches)
         elif records:
             return Record(records)
-        elif epochs:
+        else:
             return Epoch(epochs)
 
     def _divides(self, steps: int) -> bool:
@@ -437,7 +437,7 @@ class _PyTorchTrialController:
                     )
                 self.validation_loader = validation_data
 
-    def _step_batch(self):
+    def _step_batch(self) -> None:
         self.state.batches_trained += 1
 
         # True epoch-based training is not supported. Epoch start/end is calculated with batch.

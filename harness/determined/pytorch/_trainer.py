@@ -2,7 +2,7 @@ import contextlib
 import logging
 import random
 import sys
-from typing import Dict, Optional
+from typing import Dict, Iterator, Optional
 
 import torch
 import torch.distributed as dist
@@ -115,6 +115,7 @@ class Trainer:
             det_profiler=self._det_profiler,
         )
 
+        trial_controller._set_random_seeds(self._context.get_trial_seed())
         trial_controller.run()
 
 
@@ -143,7 +144,7 @@ def _generate_local_seed() -> int:
 @contextlib.contextmanager
 def init(
     *, hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None
-) -> pytorch.PyTorchTrialContext:
+) -> Iterator[pytorch.PyTorchTrialContext]:
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
