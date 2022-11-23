@@ -26,6 +26,7 @@ class Trainer:
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
     ) -> None:
         assert self._info, "Determined profiler must be run on cluster"
+        print(f"configuring Determined profiler starting from batch {begin_on_batch} to {end_after_batch}, enabled {enabled}")
         self._det_profiler = profiler.ProfilerAgent(
             trial_id=str(self._info.trial.trial_id),
             agent_id=self._info.agent_id,
@@ -151,7 +152,7 @@ def init(
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
-    # Pre-execute steps: initialize distributed backend and set trial seeds
+    # Pre-execute steps: initialize distributed backend
     distributed_context = distributed
     if not local_training:
         distributed_context = _initialize_distributed_backend()
