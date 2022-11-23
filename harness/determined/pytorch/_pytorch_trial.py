@@ -50,10 +50,16 @@ class TrainUnit:
         if sum((batches is not None, records is not None, epochs is not None)) != 1:
             raise ValueError(f"invalid length: batches={batches} records={records} epochs={epochs}")
         if batches is not None:
+            if batches < 1:
+                batches = sys.maxsize
             return Batch(batches)
         if records is not None:
+            if records < 1:
+                records = sys.maxsize
             return Record(records)
         if epochs is not None:
+            if epochs < 1:
+                epochs = sys.maxsize
             return Epoch(epochs)
 
         # Make mypy happy
