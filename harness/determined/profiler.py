@@ -1084,3 +1084,6 @@ class DummyProfilerAgent(ProfilerAgent):
 
     def record_metric(self, metric_name: str, value: float) -> None:
         pass
+
+    def _set_sync_device(self, sync_device: Callable[[], None]) -> None:
+        pass

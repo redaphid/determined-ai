@@ -1,12 +1,13 @@
 import os
 
-from determined import pytorch
+from determined import core, pytorch
 import torch
 from typing import Any, Dict, Tuple, cast
 from torchvision import datasets, transforms
 from torch import nn
 from determined.pytorch import DataLoader, TorchData, PyTorchTrialContext
 import determined as det
+import torch.distributed as dist
 import logging
 
 
@@ -118,17 +119,21 @@ class MNistTrial(pytorch.PyTorchTrial):
 
 
 def main():
-    with det.pytorch.init(hparams={"global_batch_size": 32}) as train_context:
+    dist.init_process_group(backend="gloo")
+    import os
+    os.environ["USE_TORCH_DISTRIBUTED"] = "true"
+    with det.pytorch.init(hparams={"global_batch_size": 32},
+                          distributed=core.DistributedContext.from_torch_distributed(chief_ip="localhost")) as train_context:
         trial = MNistTrial(train_context)
         trainer = det.pytorch.Trainer(trial, train_context)
-        trainer.configure_profiler(enabled=True,
-                                   sync_timings=True,
-                                   begin_on_batch=0,
-                                   end_after_batch=10)
+        # trainer.configure_profiler(enabled=True,
+        #                            sync_timings=True,
+        #                            begin_on_batch=0,
+        #                            end_after_batch=10)
         trainer.fit(
             max_length=pytorch.Epoch(1),
-            checkpoint_period=pytorch.Batch(100),
-            validation_period=pytorch.Batch(100),
+            checkpoint_period=pytorch.Batch(10),
+            validation_period=pytorch.Batch(10),
         )
 
 

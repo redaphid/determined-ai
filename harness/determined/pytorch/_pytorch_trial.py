@@ -340,7 +340,8 @@ class _PyTorchTrialController:
                 callback.on_training_epoch_end(epoch_idx)
 
     def _checkpoint(self, already_exiting: bool) -> None:
-        self.core_context.train.set_status("checkpointing")
+        if self.is_chief:
+            self.core_context.train.set_status("checkpointing")
         self.state.last_ckpt = self.state.batches_trained
 
         uuid = ""
@@ -704,9 +705,10 @@ class _PyTorchTrialController:
                         # Report metrics to searcher API
                         # Report metrics to core API
                         # Checkpoint
-                        self.core_context.train.report_validation_metrics(
-                            self.state.batches_trained, val_metrics
-                        )
+                        if self.is_chief:
+                            self.core_context.train.report_validation_metrics(
+                                self.state.batches_trained, val_metrics
+                            )
 
                         if not self._checkpoint_is_current():
                             self._checkpoint(already_exiting=False)
