@@ -1,5 +1,6 @@
 # type: ignore
 import pathlib
+import random
 import sys
 import typing
 from typing import Any, Dict
@@ -11,7 +12,6 @@ from determined import gpu, pytorch
 from determined.pytorch import lightning
 from tests.experiment import utils  # noqa: I100
 from tests.experiment.fixtures import lightning_adapter_onevar_model as la_model
-import random
 
 
 class TestLightningAdapter:
@@ -26,10 +26,7 @@ class TestLightningAdapter:
 
     def test_checkpointing_and_restoring(self, tmp_path: pathlib.Path) -> None:
         self.checkpoint_and_restore(
-            trial_class=la_model.OneVarTrial,
-            hparams=self.hparams,
-            tmp_path=tmp_path,
-            steps=(1, 1)
+            trial_class=la_model.OneVarTrial, hparams=self.hparams, tmp_path=tmp_path, steps=(1, 1)
         )
 
     def test_checkpoint_save_load_hooks(self, tmp_path: pathlib.Path) -> None:
@@ -46,10 +43,7 @@ class TestLightningAdapter:
                 super().__init__(context, OneVarLM)
 
         self.checkpoint_and_restore(
-            trial_class=OneVarLA,
-            hparams=self.hparams,
-            tmp_path=tmp_path,
-            steps=(1, 1)
+            trial_class=OneVarLA, hparams=self.hparams, tmp_path=tmp_path, steps=(1, 1)
         )
 
     def test_checkpoint_load_hook(self, tmp_path: pathlib.Path) -> None:
@@ -63,10 +57,7 @@ class TestLightningAdapter:
 
         with pytest.raises(AssertionError):
             self.checkpoint_and_restore(
-                trial_class=OneVarLA,
-                hparams=self.hparams,
-                tmp_path=tmp_path,
-                steps=(1, 1)
+                trial_class=OneVarLA, hparams=self.hparams, tmp_path=tmp_path, steps=(1, 1)
             )
 
     def test_lr_scheduler(self, tmp_path: pathlib.Path) -> None:
@@ -106,9 +97,11 @@ class TestLightningAdapter:
         trial_controller.run()
 
     def checkpoint_and_restore(
-        self, hparams: typing.Dict,
+        self,
+        hparams: typing.Dict,
         trial_class: pytorch.PyTorchTrial,
-        tmp_path: pathlib.Path, steps: typing.Tuple[int, int] = (1, 1),
+        tmp_path: pathlib.Path,
+        steps: typing.Tuple[int, int] = (1, 1),
     ) -> typing.Tuple[
         typing.Sequence[typing.Dict[str, typing.Any]], typing.Sequence[typing.Dict[str, typing.Any]]
     ]:
@@ -133,7 +126,9 @@ class TestLightningAdapter:
         checkpoint_callback = trial_A.checkpoint_callback
 
         training_metrics["A"] = metrics_callback.training_metrics
-        assert len(training_metrics["A"]) == steps[0], "training metrics did not match expected length"
+        assert (
+            len(training_metrics["A"]) == steps[0]
+        ), "training metrics did not match expected length"
         validation_metrics["A"] = metrics_callback.validation_metrics
 
         assert len(checkpoint_callback.uuids) == 1, "trial did not return a checkpoint UUID"
@@ -190,7 +185,7 @@ def create_trial_and_trial_controller(
     trial_class: lightning.LightningAdapter,
     hparams: typing.Dict,
     scheduling_unit: int = 1,
-    trial_seed: int = random.randint(0, 1 << 31),
+    trial_seed: int = None,
     exp_config: typing.Optional[typing.Dict] = None,
     checkpoint_dir: typing.Optional[str] = None,
     latest_checkpoint: typing.Optional[str] = None,
@@ -208,10 +203,13 @@ def create_trial_and_trial_controller(
         assert hasattr(
             trial_class, "_searcher_metric"
         ), "Trial classes for unit tests should be annotated with a _searcher_metric attribute"
-        searcher_metric = trial_class._searcher_metric  # type: ignore
+        searcher_metric = trial_class._searcher_metric
         exp_config = utils.make_default_exp_config(
             hparams, scheduling_unit, searcher_metric, checkpoint_dir=checkpoint_dir
         )
+
+    if not trial_seed:
+        trial_seed = random.randint(0, 1 << 31)
 
     storage_manager = det.common.storage.SharedFSStorageManager(checkpoint_dir or "/tmp")
     with det.core._dummy_init(storage_manager=storage_manager) as core_context:
@@ -234,7 +232,8 @@ def create_trial_and_trial_controller(
             fp16_compression=False,
             average_aggregated_gradients=True,
             steps_completed=steps_completed,
-            managed_training=False
+            managed_training=False,
+            debug_enabled=False,
         )
 
         trial_inst = trial_class(context=trial_context)
@@ -245,7 +244,7 @@ def create_trial_and_trial_controller(
             max_length=pytorch.Batch(max_batches),
             checkpoint_period=pytorch.Batch(min_checkpoint_batches),
             validation_period=pytorch.Batch(min_validation_batches),
-            searcher_metric_name=trial_class._searcher_metric,  # type: ignore
+            searcher_metric_name=trial_class._searcher_metric,
             reporting_period=pytorch.Batch(scheduling_unit),
             local_training=True,
             latest_checkpoint=latest_checkpoint,
@@ -254,7 +253,7 @@ def create_trial_and_trial_controller(
             test_mode=False,
             checkpoint_policy=exp_config["checkpoint_policy"],
             step_zero_validation=bool(exp_config["perform_initial_validation"]),
-            det_profiler=None
+            det_profiler=None,
         )
 
         trial_controller._set_data_loaders()

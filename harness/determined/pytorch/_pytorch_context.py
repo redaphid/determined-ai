@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 
 import determined as det
-from determined import profiler, pytorch, tensorboard, util
+from determined import profiler, pytorch, util
 from determined.horovod import hvd
 
 # Apex is included only for GPU trials.
@@ -54,12 +54,13 @@ class PyTorchTrialContext(pytorch._PyTorchReducerContext):
         hparams: Dict,
         slots_per_trial: int,
         num_gpus: int,
-        exp_conf: Optional[Dict],
+        exp_conf: Dict,
         aggregation_frequency: int,
         fp16_compression: bool,
         average_aggregated_gradients: bool,
         steps_completed: int,
         managed_training: bool,
+        debug_enabled: bool,
     ) -> None:
         self._core = core_context
         self.distributed = self._core.distributed
@@ -71,6 +72,7 @@ class PyTorchTrialContext(pytorch._PyTorchReducerContext):
         )
         self._hparams = hparams
         self._num_gpus = num_gpus
+        self._debug_enabled = debug_enabled
         self._exp_conf = exp_conf
 
         self._trial_seed = trial_seed
@@ -579,9 +581,7 @@ class PyTorchTrialContext(pytorch._PyTorchReducerContext):
             num_losses=num_losses,
             min_loss_scale=min_loss_scale,
             max_loss_scale=max_loss_scale,
-            verbosity=verbosity
-            if self.distributed.get_rank() == 0 or self.env.experiment_config.debug_enabled()
-            else 0,
+            verbosity=verbosity if self.distributed.get_rank() == 0 or self._debug_enabled else 0,
         )
 
         if not isinstance(models, list):

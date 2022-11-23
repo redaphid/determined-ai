@@ -84,8 +84,7 @@ def load_trial_from_checkpoint_path(path: str, **kwargs: Any) -> pytorch.PyTorch
 
     checkpoint = torch.load(str(ckpt_dir.joinpath("state_dict.pth")), **kwargs)  # type: ignore
 
-    trial_context = cast(pytorch.PyTorchTrialContext, trial_context)
-    trial = cast(pytorch.PyTorchTrial, trial_cls(trial_context))
+    trial = trial_cls(trial_context)
 
     # We are still backwards compatible with checkpoints saved in the pre-0.12.13 PyTorchTrial API,
     # but when we can guarantee that the pre-0.12.13 API was not in use, we avoid checking for a
@@ -121,7 +120,7 @@ def _load_pytorch_trial_for_checkpoint_export(
     trial_cls_spec: str,
     config: Dict[str, Any],
     hparams: Dict[str, Any],
-) -> Tuple[pytorch.PyTorchTrial, pytorch.PyTorchTrialContext]:
+) -> Tuple[Type[pytorch.PyTorchTrial], pytorch.PyTorchTrialContext]:
     with det._local_execution_manager(context_dir):
         trial_class = cast(pytorch.PyTorchTrial, load.trial_class_from_entrypoint(trial_cls_spec))
 
@@ -140,15 +139,14 @@ def _load_pytorch_trial_for_checkpoint_export(
             slots_per_trial=config.slots_per_trial(),
             num_gpus=len(container_gpus),
             exp_conf=config,
-            aggregation_frequency=config.get_optimizations_config().get(
-                "aggregation_frequency"
+            aggregation_frequency=int(
+                config.get_optimizations_config().get("aggregation_frequency")
             ),
-            fp16_compression=config.get_optimizations_config().get(
-                "gradient_compression"
-            ),
-            average_aggregated_gradients=config.average_training_metrics_enabled(),
+            fp16_compression=bool(config.get_optimizations_config().get("gradient_compression")),
+            average_aggregated_gradients=bool(config.average_training_metrics_enabled()),
             steps_completed=0,
-            managed_training=managed_training
+            managed_training=managed_training,
+            debug_enabled=False,
         )
 
     return trial_class, trial_context

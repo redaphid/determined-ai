@@ -147,7 +147,9 @@ class OneVarTrial(LightningAdapter):
 
     def build_callbacks(self) -> Dict[str, pytorch.PyTorchCallback]:
         lightning_callbacks = super().build_callbacks()
-        lightning_callbacks.update({"metrics": self.metrics_callback, "checkpoint": self.checkpoint_callback})
+        lightning_callbacks.update(
+            {"metrics": self.metrics_callback, "checkpoint": self.checkpoint_callback}
+        )
         return lightning_callbacks
 
 

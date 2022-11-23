@@ -7,6 +7,7 @@ import determined as det
 from determined import workload
 from determined.common import check
 
+
 def _make_test_workloads(config: det.ExperimentConfig) -> workload.Stream:
     interceptor = workload.WorkloadResponseInterceptor()
 
@@ -73,7 +74,7 @@ def test_one_batch(
         )
 
 
-def test_one_batch_pytorch(trial_class, config):
+def test_one_batch_pytorch(trial_class, config) -> Any:
     try:
         from determined import pytorch
     except ImportError:
@@ -81,7 +82,6 @@ def test_one_batch_pytorch(trial_class, config):
         return
 
     with pytorch.init(hparams=config["hyperparameters"]) as trial_context:
-        # XXX: this is not ideal, but it's to avoid changing the trainer init API to accommodate this use case
         trial_context._exp_conf = config
         trial_inst = trial_class(trial_context)
         trainer = pytorch.Trainer(trial_inst, trial_context)
@@ -94,6 +94,8 @@ def test_one_batch_pytorch(trial_class, config):
                 **config.get("min_validation_period", {"batches": sys.maxsize})
             ),
             checkpoint_policy=config.get("checkpoint_policy", "all"),
-            average_aggregated_gradients=config.get("optimizations", {}).get("average_aggregated_gradients"),
+            average_aggregated_gradients=config.get("optimizations", {}).get(
+                "average_aggregated_gradients"
+            ),
             aggregation_frequency=config.get("optimizations", {}).get("aggregation_frequency", 1),
         )

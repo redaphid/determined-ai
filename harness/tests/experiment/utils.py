@@ -1,6 +1,6 @@
 import os
 import pathlib
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, cast
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type
 
 import numpy as np
 import pytest

@@ -14,7 +14,6 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 
 import numpy as np
 import torch
-
 from torch import distributed as dist
 
 import determined as det
@@ -161,7 +160,6 @@ class _PyTorchTrialController:
 
         # Training loop state
         if local_training:
-            # XXX: is there a better place to set a dummy trial ID? needed by checkpoint
             self.trial_id = 0
             assert self.max_length, "max_length must be specified for local-training mode"
         else:
@@ -519,7 +517,9 @@ class _PyTorchTrialController:
 
             # XXX: remove training_iterator
             self.training_iterator = iter(self.training_loader)
-            self.training_enumerator = enumerate(self.training_iterator, start=self.start_from_batch)
+            self.training_enumerator = enumerate(
+                self.training_iterator, start=self.start_from_batch
+            )
 
             def cleanup_iterator() -> None:
                 # Explicitly trigger the training iterator's shutdown (which happens in __del__).
@@ -563,19 +563,16 @@ class _PyTorchTrialController:
                             unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
-                        _TrainStep(
-                            step_type=_TrainStepType.REPORT, unit=self.reporting_period
-                        ),
-                        _TrainStep(
-                            step_type=_TrainStepType.VALIDATE, unit=self.validation_period
-                        ),
+                        _TrainStep(step_type=_TrainStepType.REPORT, unit=self.reporting_period),
+                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                     ],
                 )
             except ShouldExit as e:
                 if not e.skip_exit_checkpoint and not self._checkpoint_is_current():
                     self._checkpoint(already_exiting=True)
             except det.InvalidHP as e:
-                # Catch InvalidHP to checkpoint before exiting and re-raise for cleanup by core.init()
+                # Catch InvalidHP to checkpoint before exiting and re-raise for cleanup by
+                # core.init()
                 if not self._checkpoint_is_current():
                     self._checkpoint(already_exiting=True)
                 raise e
@@ -602,12 +599,8 @@ class _PyTorchTrialController:
                             unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
-                        _TrainStep(
-                            step_type=_TrainStepType.REPORT, unit=self.reporting_period
-                        ),
-                        _TrainStep(
-                            step_type=_TrainStepType.VALIDATE, unit=self.validation_period
-                        ),
+                        _TrainStep(step_type=_TrainStepType.REPORT, unit=self.reporting_period),
+                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                     ],
                 )
         except ShouldExit as e:
@@ -621,9 +614,6 @@ class _PyTorchTrialController:
             raise e
         return
 
-    # XXX: maybe/probably better if train_steps is passed in individually instead of as a list
-    # XXX: return only the reached limits instead of all passed in steps?
-    # XXX: maybe train_with shouldn't take in the iterator since it needs to be created on trial start anyway
     def _train_with_steps(
         self, training_enumerator: iter, train_steps: List[_TrainStep]
     ) -> Tuple[List[_TrainStep], List]:
@@ -647,7 +637,8 @@ class _PyTorchTrialController:
                 if isinstance(step.unit, Batch) and step.unit._divides(batch_idx + 1):
                     step.limit_reached = True
 
-                # True epoch based training not supported, detect last batch of epoch to calculate fully-trained epochs
+                # True epoch based training not supported, detect last batch of epoch to calculate
+                # fully-trained epochs
                 if isinstance(step.unit, Epoch) and step.unit._divides(epoch_idx + 1):
                     if batch_in_epoch_idx == self.context._epoch_len - 1:
                         step.limit_reached = True
@@ -714,9 +705,7 @@ class _PyTorchTrialController:
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
 
-    def _train_for_op(
-        self, op: core.SearcherOperation, train_steps: List[_TrainStep]
-    ):
+    def _train_for_op(self, op: core.SearcherOperation, train_steps: List[_TrainStep]):
         searcher_complete = op._completed
 
         while not searcher_complete:
@@ -768,9 +757,9 @@ class _PyTorchTrialController:
     def _validate_searcher_metric(self, val_metrics: Dict):
         if self.searcher_metric_name not in val_metrics:
             raise RuntimeError(
-                f"Search method is configured to use metric '{self.searcher_metric_name}' but model "
-                f"definition returned validation metrics {list(val_metrics.keys())}. The metric "
-                "used by the search method must be one of the validation "
+                f"Search method is configured to use metric '{self.searcher_metric_name}' but "
+                f"model definition returned validation metrics {list(val_metrics.keys())}. The "
+                f"metric used by the search method must be one of the validation "
                 "metrics returned by the model definition."
             )
 
@@ -1015,8 +1004,9 @@ class _PyTorchTrialController:
         self.state.last_val = self.state.batches_trained
 
         if self.is_chief:
-            # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less common
-            # than evaluate_batch() and we can't know how the user processed their validation data.
+            # Skip reporting timings if evaluate_full_dataset() was defined.  This is far less
+            # common than evaluate_batch() and we can't know how the user processed their
+            # validation data.
             if self._evaluate_batch_defined():
                 step_duration = time.time() - step_start_time
                 logging.info(
@@ -1035,9 +1025,7 @@ class _PyTorchTrialController:
             if self.ckpt_policy == "best" and not self._checkpoint_is_current():
                 best_validation_before = self.core_context.train.get_experiment_best_validation()
 
-            self.core_context.train.report_validation_metrics(
-                self.state.batches_trained, metrics
-            )
+            self.core_context.train.report_validation_metrics(self.state.batches_trained, metrics)
 
             if not self._checkpoint_is_current():
                 if self.ckpt_policy == "all" or (
@@ -1236,7 +1224,7 @@ class _PyTorchTrialController:
             # steps_completed is a legacy field kept to support loading from older checkpoints.
             # checkpoints should only persist batches_trained and epochs_trained
             batches_trained=state.get("steps_completed"),
-            epochs_trained=self._get_epoch_idx(state.get("steps_completed"))
+            epochs_trained=self._get_epoch_idx(state.get("steps_completed")),
         )
 
         if self.state.batches_trained == self.val_from_previous_run:
@@ -1271,9 +1259,7 @@ class _PyTorchTrialController:
             "lr_schedulers_state_dict": [
                 lr_scheduler.state_dict() for lr_scheduler in self.context.lr_schedulers
             ],
-            "callbacks": {
-                name: callback.state_dict() for name, callback in self.callbacks.items()
-            },
+            "callbacks": {name: callback.state_dict() for name, callback in self.callbacks.items()},
             "rng_state": rng_state,
         }
 

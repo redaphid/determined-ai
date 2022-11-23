@@ -1,9 +1,9 @@
 import pytest
 import torch
 
-from determined import errors, pytorch
-from tests.experiment.fixtures import pytorch_onevar_model
 import determined as det
+from determined import errors, pytorch
+
 
 class TestPyTorchContext:
     def setup_method(self) -> None:
@@ -27,7 +27,8 @@ class TestPyTorchContext:
             fp16_compression=False,
             average_aggregated_gradients=True,
             steps_completed=0,
-            managed_training=False
+            managed_training=False,
+            debug_enabled=False,
         )
 
         assert isinstance(context, pytorch.PyTorchTrialContext)

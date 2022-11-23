@@ -404,9 +404,7 @@ class TestPyTorchTrial:
             "training_workloads_ended": 1,
             "trial_shutdowns": 1,
         }
-        assert trial.legacy_counter.__dict__ == {
-            "legacy_on_training_epochs_start_calls": 2
-        }
+        assert trial.legacy_counter.__dict__ == {"legacy_on_training_epochs_start_calls": 2}
 
         trial, trial_controller = create_trial_and_trial_controller(
             trial_class=pytorch_onevar_model.OneVarTrialCallbacks,
@@ -434,9 +432,7 @@ class TestPyTorchTrial:
             "training_workloads_ended": 2,
             "trial_shutdowns": 1,
         }
-        assert trial.legacy_counter.__dict__ == {
-            "legacy_on_training_epochs_start_calls": 2
-        }
+        assert trial.legacy_counter.__dict__ == {"legacy_on_training_epochs_start_calls": 2}
 
         trial, trial_controller = create_trial_and_trial_controller(
             trial_class=pytorch_onevar_model.OneVarTrialCallbacks,
@@ -464,9 +460,7 @@ class TestPyTorchTrial:
             "training_workloads_ended": 2,
             "trial_shutdowns": 1,
         }
-        assert trial.legacy_counter.__dict__ == {
-            "legacy_on_training_epochs_start_calls": 2
-        }
+        assert trial.legacy_counter.__dict__ == {"legacy_on_training_epochs_start_calls": 2}
 
     @pytest.mark.parametrize(
         "lr_scheduler_step_mode", [mode.value for mode in pytorch.LRScheduler.StepMode]
@@ -506,7 +500,9 @@ class TestPyTorchTrial:
             train_steps, metrics = controller._train_with_steps(
                 training_enumerator=enumerate(controller.training_iterator),
                 train_steps=[
-                    pytorch._TrainStep(step_type=pytorch._TrainStepType.TRAIN, unit=pytorch.Batch(num_batches))
+                    pytorch._TrainStep(
+                        step_type=pytorch._TrainStepType.TRAIN, unit=pytorch.Batch(num_batches)
+                    )
                 ],
             )
             assert len(train_steps) == 1, "unexpected train step count"
@@ -515,7 +511,9 @@ class TestPyTorchTrial:
             training_metrics.extend(metrics)
             total_batches_processed += num_batches
 
-        assert total_batches_processed == sum(range(1, total_steps)), "total batches did not match expected"
+        assert total_batches_processed == sum(
+            range(1, total_steps)
+        ), "total batches did not match expected"
 
     def test_custom_reducers(self) -> None:
         trial, controller = create_trial_and_trial_controller(
@@ -534,9 +532,7 @@ class TestPyTorchTrial:
         batch_size = self.hparams["global_batch_size"]
 
         for i, metrics in enumerate(training_metrics):
-            expect = pytorch_onevar_model.TriangleLabelSum.expect(
-                batch_size, 10 * i, 10 * (i + 1)
-            )
+            expect = pytorch_onevar_model.TriangleLabelSum.expect(batch_size, 10 * i, 10 * (i + 1))
             assert "cls_reducer" in metrics
             assert metrics["cls_reducer"] == expect
             assert "fn_reducer" in metrics
@@ -806,7 +802,9 @@ class TestPyTorchTrial:
 
         # Verify checkpoint
         checkpoint_callback = trial.checkpoint_callback
-        assert len(checkpoint_callback.uuids) == 2, "checkpoint callback did not return expected length of uuids"
+        assert (
+            len(checkpoint_callback.uuids) == 2
+        ), "checkpoint callback did not return expected length of uuids"
 
     def test_trainer_callbacks(self) -> None:
         max_epochs = 2
@@ -822,7 +820,8 @@ class TestPyTorchTrial:
                 validation_period=pytorch.Batch(validation_batches),
             )
 
-        # Expect epochs * epoch_len / period if last batch is end of epoch, else + 1 for last checkpoint/validation
+        # Expect epochs * epoch_len / period if last batch is end of epoch,
+        # else + 1 for last checkpoint/validation
         total_batches = max_epochs * train_context._epoch_len
         checkpoint_periods, batches_remaining = divmod(total_batches, checkpoint_batches)
         checkpoints = checkpoint_periods + 1 if batches_remaining > 0 else checkpoint_periods
@@ -844,9 +843,7 @@ class TestPyTorchTrial:
             "trial_shutdowns": 1,
         }
 
-        assert trial.legacy_counter.__dict__ == {
-            "legacy_on_training_epochs_start_calls": 2
-        }
+        assert trial.legacy_counter.__dict__ == {"legacy_on_training_epochs_start_calls": 2}
 
     def checkpoint_and_restore(
         self, hparams: typing.Dict, tmp_path: pathlib.Path, steps: typing.Tuple[int, int] = (1, 1)
@@ -874,7 +871,9 @@ class TestPyTorchTrial:
         checkpoint_callback = trial_A.checkpoint_callback
 
         training_metrics["A"] = metrics_callback.training_metrics
-        assert len(training_metrics["A"]) == steps[0], "training metrics did not match expected length"
+        assert (
+            len(training_metrics["A"]) == steps[0]
+        ), "training metrics did not match expected length"
         validation_metrics["A"] = metrics_callback.validation_metrics
 
         assert len(checkpoint_callback.uuids) == 1, "trial did not return a checkpoint UUID"
@@ -1007,7 +1006,7 @@ def create_trial_and_trial_controller(
     trial_class: pytorch.PyTorchTrial,
     hparams: typing.Dict,
     scheduling_unit: int = 1,
-    trial_seed: int = random.randint(0, 1 << 31),
+    trial_seed: int = None,
     exp_config: typing.Optional[typing.Dict] = None,
     checkpoint_dir: typing.Optional[str] = None,
     latest_checkpoint: typing.Optional[str] = None,
@@ -1025,10 +1024,13 @@ def create_trial_and_trial_controller(
         assert hasattr(
             trial_class, "_searcher_metric"
         ), "Trial classes for unit tests should be annotated with a _searcher_metric attribute"
-        searcher_metric = trial_class._searcher_metric  # type: ignore
+        searcher_metric = trial_class._searcher_metric
         exp_config = utils.make_default_exp_config(
             hparams, scheduling_unit, searcher_metric, checkpoint_dir=checkpoint_dir
         )
+
+    if not trial_seed:
+        trial_seed = random.randint(0, 1 << 31)
 
     storage_manager = det.common.storage.SharedFSStorageManager(checkpoint_dir or "/tmp")
     with det.core._dummy_init(storage_manager=storage_manager) as core_context:
@@ -1051,7 +1053,8 @@ def create_trial_and_trial_controller(
             fp16_compression=False,
             average_aggregated_gradients=True,
             steps_completed=steps_completed,
-            managed_training=False
+            managed_training=False,
+            debug_enabled=False,
         )
 
         trial_inst = trial_class(trial_context)
@@ -1062,7 +1065,7 @@ def create_trial_and_trial_controller(
             max_length=pytorch.Batch(max_batches),
             checkpoint_period=pytorch.Batch(min_checkpoint_batches),
             validation_period=pytorch.Batch(min_validation_batches),
-            searcher_metric_name=trial_class._searcher_metric,  # type: ignore
+            searcher_metric_name=trial_class._searcher_metric,
             reporting_period=pytorch.Batch(scheduling_unit),
             local_training=True,
             latest_checkpoint=latest_checkpoint,
@@ -1071,7 +1074,7 @@ def create_trial_and_trial_controller(
             test_mode=False,
             checkpoint_policy=exp_config["checkpoint_policy"],
             step_zero_validation=bool(exp_config["perform_initial_validation"]),
-            det_profiler=None
+            det_profiler=None,
         )
 
         trial_controller._set_data_loaders()

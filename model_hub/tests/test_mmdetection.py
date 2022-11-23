@@ -60,7 +60,8 @@ def context(mmdet_config_dir: str) -> det_torch.PyTorchTrialContext:
         fp16_compression=False,
         average_aggregated_gradients=True,
         steps_completed=0,
-        managed_training=False
+        managed_training=False,
+        debug_enabled=False,
     )
     return context
 

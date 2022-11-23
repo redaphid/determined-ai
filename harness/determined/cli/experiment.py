@@ -195,11 +195,16 @@ def local_experiment(args: Namespace) -> None:
     with det._local_execution_manager(args.model_def.resolve()):
         # XXX fix this import
         from determined import pytorch
+
         trial_class = determined.load.trial_class_from_entrypoint(entrypoint)
         if issubclass(trial_class, pytorch.PyTorchTrial):
-            determined.experimental.test_one_batch_pytorch(trial_class=trial_class, config=experiment_config)
+            determined.experimental.test_one_batch_pytorch(
+                trial_class=trial_class, config=experiment_config
+            )
         else:
-            determined.experimental.test_one_batch(trial_class=trial_class, config=experiment_config)
+            determined.experimental.test_one_batch(
+                trial_class=trial_class, config=experiment_config
+            )
 
 
 def create(args: Namespace) -> None:

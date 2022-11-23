@@ -24,7 +24,7 @@ class Trainer:
 
     def configure_profiler(
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
-    ):
+    ) -> None:
         cluster_info = det.get_cluster_info()
         assert cluster_info, "Determined profiler must be run on cluster"
         self._det_profiler = profiler.ProfilerAgent(
@@ -41,15 +41,15 @@ class Trainer:
 
     def fit(
         self,
-        checkpoint_period: pytorch.TrainUnit = None,
-        validation_period: pytorch.TrainUnit = None,
-        max_length: pytorch.TrainUnit = None,
-        reporting_period: pytorch.TrainUnit = None,
-        average_aggregated_gradients: bool = None,
-        aggregation_frequency: int = None,
-        checkpoint_policy: str = None,
-        test_mode: bool = None,
-    ):
+        checkpoint_period: Optional[pytorch.TrainUnit] = None,
+        validation_period: Optional[pytorch.TrainUnit] = None,
+        max_length: Optional[pytorch.TrainUnit] = None,
+        reporting_period: Optional[pytorch.TrainUnit] = None,
+        average_aggregated_gradients: Optional[bool] = None,
+        aggregation_frequency: Optional[int] = None,
+        checkpoint_policy: Optional[str] = None,
+        test_mode: Optional[bool] = None,
+    ) -> None:
         cluster_info = det.get_cluster_info()
 
         # Set context and training variables
@@ -66,12 +66,14 @@ class Trainer:
 
         if self._local_training:
             if checkpoint_policy == "best":
-                logging.warning("checkpoint_policy='best' is not supported in local training mode. "
-                                "Falling back to 'all'")
+                logging.warning(
+                    "checkpoint_policy='best' is not supported in local training mode. "
+                    "Falling back to 'all'"
+                )
                 checkpoint_policy = "all"
             assert max_length, "max_length must be defined in local training mode"
             if self._det_profiler:
-                logging.warning(f"Determined profiler will be ignored in local training mode")
+                logging.warning("Determined profiler will be ignored in local training mode")
 
             steps_completed = 0
             reporting_period = reporting_period or pytorch.Batch(sys.maxsize)
@@ -83,12 +85,15 @@ class Trainer:
                     "Please configure the searcher length instead."
                 )
             assert not test_mode, "test_mode is only supported in local training mode"
+            assert cluster_info, "Unable to detect cluster info"
 
             latest_checkpoint = cluster_info.latest_checkpoint
             smaller_is_better = bool(cluster_info.trial._config["searcher"]["smaller_is_better"])
             searcher_metric_name = cluster_info.trial._config["searcher"]["metric"]
             steps_completed = int(cluster_info.trial._steps_completed)
-            reporting_period = reporting_period or pytorch.Batch(int(cluster_info.trial._config["scheduling_unit"]))
+            reporting_period = reporting_period or pytorch.Batch(
+                int(cluster_info.trial._config["scheduling_unit"])
+            )
             step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])
 
         trial_controller = pytorch._PyTorchTrialController(
@@ -112,7 +117,7 @@ class Trainer:
         trial_controller.run()
 
 
-def _initialize_distributed_backend():
+def _initialize_distributed_backend() -> core.DistributedContext:
     distributed_backend = det._DistributedBackend()
     if distributed_backend.use_horovod():
         hvd.require_horovod_type("torch", "PyTorchTrial is in use.")
@@ -125,15 +130,19 @@ def _initialize_distributed_backend():
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
     else:
-        logging.warning("Only horovod and torch distributed backends are supported for PyTorchTrial")
+        logging.warning(
+            "Only horovod and torch distributed backends are supported for PyTorchTrial"
+        )
 
 
-def _generate_local_seed():
+def _generate_local_seed() -> int:
     return random.randint(0, 1 << 31)
 
 
 @contextlib.contextmanager
-def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None):
+def init(
+    *, hparams: Optional[Dict] = None, distributed: Optional[core.DistributedContext] = None
+) -> pytorch.PyTorchTrialContext:
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
@@ -143,24 +152,26 @@ def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.Distribut
         distributed_context = _initialize_distributed_backend()
 
     # Initialize default values
-    slots_per_trial = 0
-    num_gpus = 0
-    exp_conf = None
-    aggregation_frequency = 1
-    fp16_compression = False
-    average_aggregated_gradients = False
-    steps_completed = 0
-    managed_training = True
-
     if local_training:
-        trial_seed = _generate_local_seed()
         hparams = hparams or {}
+        trial_seed = _generate_local_seed()
+        exp_conf = None
+        num_gpus = 0
+        slots_per_trial = 0
+        aggregation_frequency = 1
+        fp16_compression = False
+        average_aggregated_gradients = False
+        steps_completed = 0
         managed_training = False
+        debug_enabled = False
     else:
+        assert cluster_info, "Unable to detect cluster info"
         if hparams and cluster_info.trial.hparams:
             logging.warning(
-                "hparams are specified in Trainer and experiment config. Trainer hparams will be ignored"
+                "hparams are specified in Trainer and experiment config. "
+                "Trainer hparams will be ignored"
             )
+
         hparams = cluster_info.trial.hparams
         trial_seed = cluster_info.trial.trial_seed
         exp_conf = cluster_info.trial._config
@@ -172,8 +183,8 @@ def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.Distribut
             exp_conf["optimizations"]["average_aggregated_gradients"]
         )
         steps_completed = cluster_info.trial._steps_completed
-
-    pytorch._PyTorchTrialController._set_random_seeds(trial_seed)
+        managed_training = True
+        debug_enabled = cluster_info.trial._debug
 
     with core.init(
         distributed=distributed_context,
@@ -191,6 +202,7 @@ def init(*, hparams: Optional[Dict] = None, distributed: Optional[core.Distribut
             fp16_compression=fp16_compression,
             average_aggregated_gradients=average_aggregated_gradients,
             steps_completed=steps_completed,
-            managed_training=managed_training
+            managed_training=managed_training,
+            debug_enabled=debug_enabled,
         )
         yield context
