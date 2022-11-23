@@ -152,6 +152,13 @@ def check_logs(
             continue
 
         # Make sure each filter returns some logs (it should or else it shouldn't be a filter).
+        log_outputs = log_fn(
+            **{
+                to_snake_case(k): v[0],
+            },
+        )
+        print(f"log outputs {log_outputs}")
+        
         assert any(
             log_fn(
                 **{
