@@ -176,7 +176,7 @@ class _PyTorchTrialController:
         else:
             self.trial_id = self.core_context.train._trial_id
 
-        self.state = _TrialState(trial_id=self.trial_id, batches_trained=steps_completed)
+        self.state = _TrialState(trial_id=self.trial_id)
         self.start_from_batch = steps_completed
         self.val_from_previous_run = self.core_context.train._get_last_validation()
         self.step_zero_validation = step_zero_validation
@@ -455,7 +455,7 @@ class _PyTorchTrialController:
         assert epoch_len, "Training dataloader not initialized"
 
         # True epoch-based training is not supported. Epoch start/end is calculated with batch.
-        epoch_idx, batch_in_epoch_idx = divmod(self.state.batches_trained, epoch_len)
+        epoch_idx, batch_in_epoch_idx = divmod(self.state.batches_trained - 1, epoch_len)
 
         if batch_in_epoch_idx == 0:
             self._on_epoch_start(epoch_idx)
@@ -575,13 +575,13 @@ class _PyTorchTrialController:
                     training_enumerator=self.training_enumerator,
                     train_steps=[
                         _TrainStep(step_type=_TrainStepType.TRAIN, unit=self.max_length),
+                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
                             unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(step_type=_TrainStepType.REPORT, unit=self.reporting_period),
-                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                     ],
                 )
             except ShouldExit as e:
@@ -611,13 +611,13 @@ class _PyTorchTrialController:
                             step_type=_TrainStepType.TRAIN,
                             unit=TrainUnit._from_searcher_unit(op.length, self.searcher_unit),
                         ),
+                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
                             unit=self.checkpoint_period,
                         ),
                         # Scheduling unit is always configured in batches
                         _TrainStep(step_type=_TrainStepType.REPORT, unit=self.reporting_period),
-                        _TrainStep(step_type=_TrainStepType.VALIDATE, unit=self.validation_period),
                     ],
                 )
         except ShouldExit as e:
@@ -637,9 +637,14 @@ class _PyTorchTrialController:
         training_metrics = []
 
         # Start of train step: tell core API and set model mode
-        self.core_context.train.set_status("training")
+        if self.is_chief:
+            self.core_context.train.set_status("training")
+
+        self.prof.set_training(True)
+
         for model in self.context.models:
             model.train()
+
         self.context.reset_reducers()
 
         epoch_len = self.context._epoch_len
@@ -719,8 +724,6 @@ class _PyTorchTrialController:
                 self._stop_requested()
 
         # Finished training. Perform final checkpoint/validation if necessary.
-        # XXX: is this actually necessary? there's no searcher mandate, but still seems useful to
-        # do a last checkpoint before finish
         if not self._validation_is_current():
             self._validate()
 
@@ -767,11 +770,11 @@ class _PyTorchTrialController:
                 self._stop_requested()
 
         # Finished training for op. Perform final checkpoint/validation if necessary.
-        if not self._validation_is_current():
-            self._validate(op)
-
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
+
+        if not self._validation_is_current():
+            self._validate(op)
 
         if self.is_chief:
             assert op._completed, "logic error; op was never completed"
@@ -1222,6 +1225,7 @@ class _PyTorchTrialController:
         # Load our state from the checkpoint if we are continuing training after a pause or restart.
         # If the trial_id doesn't match our current trial id, we're continuing training a previous
         # trial and the state in the checkpoint should be discarded.
+
         if state.get("trial_id") != self.trial_id:
             return
 
