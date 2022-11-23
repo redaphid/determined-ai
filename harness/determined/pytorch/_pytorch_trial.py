@@ -531,7 +531,6 @@ class _PyTorchTrialController:
             # We create it before loading state because we don't want the training_iterator
             # shuffling values after we load state.
 
-            # XXX: remove training_iterator
             self.training_iterator = iter(self.training_loader)
             self.training_enumerator = enumerate(
                 self.training_iterator, start=self.start_from_batch

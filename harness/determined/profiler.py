@@ -1076,6 +1076,9 @@ class DummyProfilerAgent(ProfilerAgent):
     ) -> Iterator[None]:
         yield
 
+    def set_training(self, training: bool) -> None:
+        pass
+
     def update_batch_idx(self, batch_idx: int) -> None:
         pass
 

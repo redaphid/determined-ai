@@ -12,7 +12,6 @@ from determined._trial_controller import (
 from determined._execution import (
     _catch_sys_exit,
     _make_local_execution_env,
-    # XXX: exposed because needed only by PyTorchTrial, maybe bad idea to expose them here
     _get_gpus,
     _make_local_execution_exp_config,
     _local_execution_manager,

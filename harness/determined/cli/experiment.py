@@ -193,18 +193,20 @@ def local_experiment(args: Namespace) -> None:
     set_logger(bool(experiment_config.get("debug", False)))
 
     with det._local_execution_manager(args.model_def.resolve()):
-        # XXX fix this import
-        from determined import pytorch
-
         trial_class = determined.load.trial_class_from_entrypoint(entrypoint)
-        if issubclass(trial_class, pytorch.PyTorchTrial):
-            determined.experimental.test_one_batch_pytorch(
-                trial_class=trial_class, config=experiment_config
-            )
-        else:
-            determined.experimental.test_one_batch(
-                trial_class=trial_class, config=experiment_config
-            )
+        try:
+            from determined import pytorch
+            if issubclass(trial_class, pytorch.PyTorchTrial):
+                determined.experimental.test_one_batch_pytorch(
+                    trial_class=trial_class, config=experiment_config
+                )
+                return
+        except ImportError:
+            pass
+
+        determined.experimental.test_one_batch(
+            trial_class=trial_class, config=experiment_config
+        )
 
 
 def create(args: Namespace) -> None:
@@ -891,7 +893,7 @@ main_cmd = Cmd(
                 experiment_id_arg("experiment ID"),
             ]
             + logs_args_description,
-        ),
+            ),
         Cmd(
             "download-model-def",
             download_model_def,
@@ -921,8 +923,8 @@ main_cmd = Cmd(
                     "--best",
                     type=int,
                     help="Return the best N checkpoints for this experiment. "
-                    "If this flag is used, only checkpoints with an associated "
-                    "validation metric will be considered.",
+                         "If this flag is used, only checkpoints with an associated "
+                         "validation metric will be considered.",
                     metavar="N",
                 ),
                 Arg("--csv", action="store_true", help="print as CSV"),
@@ -949,15 +951,15 @@ main_cmd = Cmd(
                     "--git",
                     action="store_true",
                     help="Associate git metadata with this experiment. This "
-                    "flag assumes that git is installed, a .git repository "
-                    "exists in the model definition directory, and that the "
-                    "git working tree of that repository is empty.",
+                         "flag assumes that git is installed, a .git repository "
+                         "exists in the model definition directory, and that the "
+                         "git working tree of that repository is empty.",
                 ),
                 Arg(
                     "--local",
                     action="store_true",
                     help="Create the experiment in local mode instead of submitting it to the "
-                    "cluster. For more information, see documentation on det.experimental.create()",
+                         "cluster. For more information, see documentation on det.experimental.create()",
                 ),
                 Arg(
                     "--template",
@@ -979,11 +981,11 @@ main_cmd = Cmd(
                         "--test-mode",
                         action="store_true",
                         help="Test the experiment configuration and model "
-                        "definition by creating and scheduling a very small "
-                        "experiment. This command will verify that a training "
-                        "workload and validation workload run successfully and that "
-                        "checkpoints can be saved. The test experiment will "
-                        "be archived on creation.",
+                             "definition by creating and scheduling a very small "
+                             "experiment. This command will verify that a training "
+                             "workload and validation workload run successfully and that "
+                             "checkpoints can be saved. The test experiment will "
+                             "be archived on creation.",
                     ),
                 ),
             ],
@@ -1035,34 +1037,34 @@ main_cmd = Cmd(
                     type=str,
                     default="checkpoints",
                     help="Desired top level directory for the checkpoints. "
-                    "Checkpoints will be downloaded to "
-                    "<output_dir>/<checkpoint_uuid>/<checkpoint_files>.",
+                         "Checkpoints will be downloaded to "
+                         "<output_dir>/<checkpoint_uuid>/<checkpoint_files>.",
                 ),
                 Arg(
                     "--top-n",
                     type=int,
                     default=1,
                     help="The number of checkpoints to download for the "
-                    "experiment. The checkpoints are sorted by validation "
-                    "metric as defined by --sort-by and --smaller-is-better."
-                    "This command will select the best N checkpoints from the "
-                    "top performing N trials of the experiment.",
+                         "experiment. The checkpoints are sorted by validation "
+                         "metric as defined by --sort-by and --smaller-is-better."
+                         "This command will select the best N checkpoints from the "
+                         "top performing N trials of the experiment.",
                 ),
                 Arg(
                     "--sort-by",
                     type=str,
                     default=None,
                     help="The name of the validation metric to sort on. Without --sort-by, the "
-                    "experiment's searcher metric is assumed. If this argument is specified, "
-                    "--smaller-is-better must also be specified.",
+                         "experiment's searcher metric is assumed. If this argument is specified, "
+                         "--smaller-is-better must also be specified.",
                 ),
                 Arg(
                     "--smaller-is-better",
                     type=lambda s: bool(distutils.util.strtobool(s)),
                     default=None,
                     help="The sort order for metrics when using --sort-by. For "
-                    "example, 'accuracy' would require passing '--smaller-is-better false'. If "
-                    "--sort-by is specified, this argument must be specified.",
+                         "example, 'accuracy' would require passing '--smaller-is-better false'. If "
+                         "--sort-by is specified, this argument must be specified.",
                 ),
                 Arg(
                     "-q",
