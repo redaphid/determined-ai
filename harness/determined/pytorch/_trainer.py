@@ -18,7 +18,7 @@ class Trainer:
         self._context = context
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
-        self._det_profiler = None
+        self._det_profiler = None  # type: Optional[profiler.ProfilerAgent]
         cluster_info = det.get_cluster_info()
         self._local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
@@ -57,12 +57,10 @@ class Trainer:
         self._context._average_aggregated_gradients = average_aggregated_gradients or True
 
         # Set defaults
-        latest_checkpoint = None
         checkpoint_policy = checkpoint_policy or "best"
-        smaller_is_better = True
-        searcher_metric_name = None
         checkpoint_period = checkpoint_period or pytorch.Batch(sys.maxsize)
         validation_period = validation_period or pytorch.Batch(sys.maxsize)
+        test_mode = test_mode or False
 
         if self._local_training:
             if checkpoint_policy == "best":
@@ -75,6 +73,9 @@ class Trainer:
             if self._det_profiler:
                 logging.warning("Determined profiler will be ignored in local training mode")
 
+            latest_checkpoint = None
+            smaller_is_better = True
+            searcher_metric_name = None
             steps_completed = 0
             reporting_period = reporting_period or pytorch.Batch(sys.maxsize)
             step_zero_validation = False

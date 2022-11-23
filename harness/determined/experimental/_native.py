@@ -74,7 +74,7 @@ def test_one_batch(
         )
 
 
-def test_one_batch_pytorch(trial_class, config) -> Any:
+def test_one_batch_pytorch(trial_class: Any, config: Dict) -> Any:
     try:
         from determined import pytorch
     except ImportError:

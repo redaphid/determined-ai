@@ -11,7 +11,7 @@ from determined.common.api import analytics, certs
 
 try:
     from determined import pytorch
-except ImportError:
+except ImportError:  # pragma: no cover
     pytorch = None
     pass
 
@@ -136,7 +136,7 @@ def main(train_entrypoint: str) -> int:
 
 
 def _run_pytorch_trial(
-    trial_class: Type[det.Trial],
+    trial_class: Type[pytorch.PyTorchTrial],
     info: det.ClusterInfo,
 ) -> int:
     det.common.set_logger(info.trial._debug)
@@ -144,7 +144,7 @@ def _run_pytorch_trial(
     logging.debug("Starting harness.")
 
     with maybe_periodic_stacktraces(info.trial._debug):
-        with pytorch.init() as train_context:
+        with pytorch.init() as train_context:  # type: pytorch.PyTorchTrialContext
             trial_inst = trial_class(train_context)
 
             if train_context.distributed.size > 1 and not train_context.distributed.rank == 0:

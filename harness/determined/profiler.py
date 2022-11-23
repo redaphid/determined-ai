@@ -1056,13 +1056,13 @@ class GpuMemoryCollector:
 
 
 class DummyProfilerAgent(ProfilerAgent):
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> "DummyProfilerAgent":
         pass
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         pass
 
     @contextlib.contextmanager
@@ -1071,7 +1071,7 @@ class DummyProfilerAgent(ProfilerAgent):
     ) -> Iterator[None]:
         yield
 
-    def update_batch_idx(self, batch_idx: int):
+    def update_batch_idx(self, batch_idx: int) -> None:
         pass
 
     def record_metric(self, metric_name: str, value: float) -> None:

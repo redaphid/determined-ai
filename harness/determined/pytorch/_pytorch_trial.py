@@ -33,7 +33,7 @@ class TrainUnit:
         self.value = value
 
     @staticmethod
-    def _from_searcher_unit(length: int, unit: core.Unit):
+    def _from_searcher_unit(length: int, unit: core.Unit) -> "TrainUnit":
         if unit == core.Unit.EPOCHS:
             return Epoch(length)
         elif unit == core.Unit.RECORDS:
@@ -46,7 +46,7 @@ class TrainUnit:
     @staticmethod
     def _from_values(
         batches: Optional[int] = None, records: Optional[int] = None, epochs: Optional[int] = None
-    ):
+    ) -> "TrainUnit":
         if sum((batches is not None, records is not None, epochs is not None)) != 1:
             raise ValueError(f"invalid length: batches={batches} records={records} epochs={epochs}")
         if batches:
@@ -56,7 +56,7 @@ class TrainUnit:
         elif epochs:
             return Epoch(epochs)
 
-    def _divides(self, steps: int):
+    def _divides(self, steps: int) -> bool:
         assert self.value > 0, "TrainUnit value must be > 0"
         if steps == 0:
             return False
@@ -127,7 +127,7 @@ class _PyTorchTrialController:
         reporting_period: TrainUnit,
         smaller_is_better: bool,
         steps_completed: int,
-        latest_checkpoint: str,
+        latest_checkpoint: Optional[str],
         local_training: bool,
         test_mode: bool,
         searcher_metric_name: str,
@@ -257,7 +257,7 @@ class _PyTorchTrialController:
         # torch.backends.cudnn.deterministic = True
         # torch.backends.cudnn.benchmark = False
 
-    def _report_training_metrics(self, training_metrics: List[Dict]):
+    def _report_training_metrics(self, training_metrics: List[Dict]) -> None:
         # Aggregate and reduce training metrics from all the training processes.
         if self.context.distributed.size > 1:
             with self.prof.record_timing("average_training_metrics"):
@@ -306,7 +306,7 @@ class _PyTorchTrialController:
 
         return (now < before) if self.smaller_is_better else (now > before)
 
-    def _on_epoch_start(self, epoch_idx: int):
+    def _on_epoch_start(self, epoch_idx: int) -> None:
         for callback in self.callbacks.values():
             with self.prof.record_timing(
                 f"callbacks.{callback.__class__.__name__}.on_training_epoch_start"
@@ -321,14 +321,14 @@ class _PyTorchTrialController:
                     )
                     callback.on_training_epoch_start()  # type: ignore[call-arg]
 
-    def _on_epoch_end(self, epoch_idx: int):
+    def _on_epoch_end(self, epoch_idx: int) -> None:
         for callback in self.callbacks.values():
             with self.prof.record_timing(
                 f"callbacks.{callback.__class__.__name__}.on_training_epoch_end"
             ):
                 callback.on_training_epoch_end(epoch_idx)
 
-    def _checkpoint(self, already_exiting: bool):
+    def _checkpoint(self, already_exiting: bool) -> None:
         self.core_context.train.set_status("checkpointing")
         self.state.last_ckpt = self.state.batches_trained
 
@@ -450,14 +450,14 @@ class _PyTorchTrialController:
             self._on_epoch_end(epoch_idx)
             self.state.epochs_trained += 1
 
-    def _stop_requested(self):
+    def _stop_requested(self) -> None:
         if self.core_context.distributed.rank == 0:
             if self.core_context.preempt.should_preempt():
                 raise ShouldExit()
         if self.context.get_stop_requested():
             raise ShouldExit()
 
-    def _report_searcher_progress(self, op: core.SearcherOperation, unit: core.Unit):
+    def _report_searcher_progress(self, op: core.SearcherOperation, unit: core.Unit) -> None:
         if unit == core.Unit.BATCHES:
             op.report_progress(self.state.batches_trained)
         elif unit == core.Unit.RECORDS:
@@ -473,7 +473,7 @@ class _PyTorchTrialController:
         # State always persists validation step in batches
         return self.state.last_val == self.state.batches_trained
 
-    def _steps_until_complete(self, train_unit: TrainUnit):
+    def _steps_until_complete(self, train_unit: TrainUnit) -> int:
         if isinstance(train_unit, Batch):
             return train_unit.value - self.state.batches_trained
         elif isinstance(train_unit, Epoch):
@@ -481,7 +481,7 @@ class _PyTorchTrialController:
         elif isinstance(train_unit, Record):
             return train_unit.value - (self.state.batches_trained * self.global_batch_size)
 
-    def run(self):
+    def run(self) -> None:
         @contextlib.contextmanager
         def defer(fn: Callable, *args: Any) -> Iterator[None]:
             try:
@@ -653,7 +653,7 @@ class _PyTorchTrialController:
 
         # True epoch end
 
-    def _train_for_local(self, train_steps: List[_TrainStep], training_enumerator: iter):
+    def _train_for_local(self, train_steps: List[_TrainStep], training_enumerator: iter) -> None:
         max_length_reached = False
 
         while not max_length_reached:
@@ -705,7 +705,7 @@ class _PyTorchTrialController:
         if not self._checkpoint_is_current():
             self._checkpoint(already_exiting=False)
 
-    def _train_for_op(self, op: core.SearcherOperation, train_steps: List[_TrainStep]):
+    def _train_for_op(self, op: core.SearcherOperation, train_steps: List[_TrainStep]) -> None:
         searcher_complete = op._completed
 
         while not searcher_complete:
@@ -754,7 +754,7 @@ class _PyTorchTrialController:
         if self.is_chief:
             assert op._completed, "logic error; op was never completed"
 
-    def _validate_searcher_metric(self, val_metrics: Dict):
+    def _validate_searcher_metric(self, val_metrics: Dict) -> Any:
         if self.searcher_metric_name not in val_metrics:
             raise RuntimeError(
                 f"Search method is configured to use metric '{self.searcher_metric_name}' but "
@@ -808,7 +808,7 @@ class _PyTorchTrialController:
             return False
         return self.context._should_communicate_and_update()  # type: ignore
 
-    def _train_batch(self, batch: pytorch.TorchData, epoch_idx: int, batch_idx: int):
+    def _train_batch(self, batch: pytorch.TorchData, epoch_idx: int, batch_idx: int) -> Dict:
         # Set the batch index on the trial context used by step_optimizer
         self.context._current_batch_idx = batch_idx
 
@@ -875,7 +875,7 @@ class _PyTorchTrialController:
         return training_metrics
 
     @torch.no_grad()  # type: ignore
-    def _validate(self, searcher_op: core.SearcherOperation = None):
+    def _validate(self, searcher_op: core.SearcherOperation = None) -> Dict[str, Any]:
         # Report a validation step is starting.
         if self.is_chief:
             self.core_context.train.set_status("validating")
