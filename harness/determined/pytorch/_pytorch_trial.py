@@ -268,7 +268,7 @@ class _PyTorchTrialController:
         # torch.backends.cudnn.deterministic = True
         # torch.backends.cudnn.benchmark = False
 
-    def _report_training_metrics(self, training_metrics: List[Dict]) -> None:
+    def _aggregate_training_metrics(self, training_metrics: List[Dict]) -> Dict:
         # Aggregate and reduce training metrics from all the training processes.
         if self.context.distributed.size > 1:
             with self.prof.record_timing("average_training_metrics"):
@@ -287,29 +287,24 @@ class _PyTorchTrialController:
                 pytorch._convert_metrics_to_numpy(self.context.reduce_metrics(for_training=True))
             )
 
-        metrics = self.context.distributed.broadcast(metrics)
-
-        for callback in self.callbacks.values():
-            callback.on_training_workload_end(
-                avg_metrics=metrics["avg_metrics"],
-                batch_metrics=metrics["batch_metrics"],
-            )
+        if not self.is_chief:
+            return {}
 
         # Only report on the chief worker
-        if self.is_chief:
-            avg_metrics = metrics.get("avg_metrics", {})
-            batch_metrics = metrics.get("batch_metrics", [])
+        avg_metrics = metrics.get("avg_metrics", {})
+        batch_metrics = metrics.get("batch_metrics", [])
 
-            self.metric_writer.on_train_step_end(
-                self.state.batches_trained,
-                avg_metrics,
-                batch_metrics,
-            )
-            self.core_context.train.report_training_metrics(
-                steps_completed=self.state.batches_trained,
-                metrics=avg_metrics,
-                batch_metrics=batch_metrics,
-            )
+        self.metric_writer.on_train_step_end(
+            self.state.batches_trained,
+            avg_metrics,
+            batch_metrics,
+        )
+        self.core_context.train.report_training_metrics(
+            steps_completed=self.state.batches_trained,
+            metrics=avg_metrics,
+            batch_metrics=batch_metrics,
+        )
+        return metrics
 
     def _is_best_validation(self, now: float, before: Optional[float]) -> bool:
         if before is None:
@@ -685,7 +680,13 @@ class _PyTorchTrialController:
 
         while not max_length_reached:
             train_steps, training_metrics = self._train_with_steps(training_enumerator, train_steps)
-            self._report_training_metrics(training_metrics)
+            metrics = self._aggregate_training_metrics(training_metrics)
+            metrics = self.context.distributed.broadcast(metrics)
+            for callback in self.callbacks.values():
+                callback.on_training_workload_end(
+                    avg_metrics=metrics["avg_metrics"],
+                    batch_metrics=metrics["batch_metrics"],
+                )
 
             for train_step in train_steps:
                 # Check train step status to determine whether to keep training
@@ -709,7 +710,6 @@ class _PyTorchTrialController:
                             self.core_context.train.report_validation_metrics(
                                 self.state.batches_trained, val_metrics
                             )
-
                         if not self._checkpoint_is_current():
                             self._checkpoint(already_exiting=False)
 
@@ -720,9 +720,9 @@ class _PyTorchTrialController:
                 # Reset train step limit
                 train_step.limit_reached = False
 
-                # After checkpoint/validation steps, check preemption and upload to tensorboard
-                self._upload_tb_files()
-                self._stop_requested()
+            # After checkpoint/validation steps, check preemption and upload to tensorboard
+            self._upload_tb_files()
+            self._stop_requested()
 
         # Finished training. Perform final checkpoint/validation if necessary.
         if not self._validation_is_current():
@@ -739,7 +739,13 @@ class _PyTorchTrialController:
                 self.training_enumerator, train_steps
             )
 
-            self._report_training_metrics(training_metrics)
+            metrics = self._aggregate_training_metrics(training_metrics)
+            metrics = self.context.distributed.broadcast(metrics)
+            for callback in self.callbacks.values():
+                callback.on_training_workload_end(
+                    avg_metrics=metrics["avg_metrics"],
+                    batch_metrics=metrics["batch_metrics"],
+                )
 
             for train_step in train_steps:
                 # Check train step status to determine whether to keep training
@@ -939,7 +945,8 @@ class _PyTorchTrialController:
                 raise RuntimeError("validation_loader is empty.")
             for callback in self.callbacks.values():
                 callback.on_validation_epoch_start()
-            for idx, batch in enumerate(self.validation_loader):
+
+            for idx, batch in enumerate(iter(self.validation_loader)):
                 if self.context.experimental._auto_to_device:
                     with self.prof.record_timing("to_device", accumulate=True):
                         batch = self.context.to_device(batch)
@@ -982,12 +989,12 @@ class _PyTorchTrialController:
                 ),
             )
 
-            # Gather a list of per-worker (num_inputs, num_batches) tuples.
-            input_counts = self.context.distributed.gather((num_inputs, idx + 1))
-            if self.context.distributed.rank == 0:
-                assert input_counts is not None
-                # Reshape and sum.
-                num_inputs, num_batches = [sum(n) for n in zip(*input_counts)]
+            # # Gather a list of per-worker (num_inputs, num_batches) tuples.
+            # input_counts = self.context.distributed.gather((num_inputs, idx + 1))
+            # if self.context.distributed.rank == 0:
+            #     assert input_counts is not None
+            #     # Reshape and sum.
+            #     num_inputs, num_batches = [sum(n) for n in zip(*input_counts)]
 
         else:
             assert self._evaluate_full_dataset_defined(), "evaluate_full_dataset not defined."
@@ -1037,7 +1044,7 @@ class _PyTorchTrialController:
             if self._evaluate_batch_defined():
                 step_duration = time.time() - step_start_time
                 logging.info(
-                    det.util.make_timing_log("validated", step_duration, num_inputs, num_batches)
+                    det.util.make_timing_log("validated", step_duration, num_inputs, idx)
                 )
             self.metric_writer.on_validation_step_end(self.state.batches_trained, metrics)
 
@@ -1062,7 +1069,6 @@ class _PyTorchTrialController:
                     should_checkpoint = True
 
         should_checkpoint = self.context.distributed.broadcast(should_checkpoint)
-
         if should_checkpoint:
             self._checkpoint(already_exiting=False)
         return metrics
