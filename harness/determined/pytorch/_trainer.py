@@ -4,6 +4,7 @@ import random
 import sys
 from typing import Dict, Iterator, Optional
 
+import numpy as np
 import torch
 import torch.distributed as dist
 
@@ -113,7 +114,6 @@ class Trainer:
             det_profiler=self._det_profiler,
         )
 
-        trial_controller._set_random_seeds(self._context.get_trial_seed())
         trial_controller.run()
 
 
@@ -140,6 +140,16 @@ def _initialize_distributed_backend() -> Optional[core.DistributedContext]:
     return None
 
 
+def _set_random_seeds(seed: int) -> None:
+    # Set identical random seeds on all training processes.
+    # When using horovod, each worker will start at a unique
+    # offset in the dataset, ensuring that it is processing a unique
+    # training batch.
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.random.manual_seed(seed)
+
+
 def _generate_local_seed() -> int:
     return random.randint(0, 1 << 31)
 
@@ -151,9 +161,9 @@ def init(
     cluster_info = det.get_cluster_info()
     local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
 
-    # Pre-execute steps: initialize distributed backend
+    # Pre-execute steps: initialize distributed backend and random seeds
     distributed_context = distributed
-    pytorch._PyTorchTrialController._set_random_seeds(cluster_info.trial.trial_seed)
+
     if not local_training:
         distributed_context = _initialize_distributed_backend()
 
@@ -191,6 +201,8 @@ def init(
         steps_completed = cluster_info.trial._steps_completed
         managed_training = True
         debug_enabled = cluster_info.trial._debug
+
+    _set_random_seeds(trial_seed)
 
     with core.init(
         distributed=distributed_context,
