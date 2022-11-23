@@ -620,7 +620,7 @@ class _PyTorchTrialController:
         return
 
     def _train_with_steps(
-        self, training_enumerator: iter, train_steps: List[_TrainStep]
+        self, training_enumerator: Iterator, train_steps: List[_TrainStep]
     ) -> Tuple[List[_TrainStep], List]:
         training_metrics = []
 
@@ -657,7 +657,9 @@ class _PyTorchTrialController:
 
         # True epoch end
 
-    def _train_for_local(self, train_steps: List[_TrainStep], training_enumerator: iter) -> None:
+    def _train_for_local(
+        self, train_steps: List[_TrainStep], training_enumerator: Iterator
+    ) -> None:
         max_length_reached = False
 
         while not max_length_reached:
@@ -845,7 +847,7 @@ class _PyTorchTrialController:
             #
             # [1] pytorch.org/docs/master/notes/amp_examples.html
             #         #working-with-multiple-models-losses-and-optimizers
-            self.context._scaler.update()
+            self.context._scaler.update()  # type: ignore
 
         if isinstance(training_metrics, torch.Tensor):
             training_metrics = {"loss": training_metrics}
@@ -879,7 +881,7 @@ class _PyTorchTrialController:
         return training_metrics
 
     @torch.no_grad()  # type: ignore
-    def _validate(self, searcher_op: core.SearcherOperation = None) -> Dict[str, Any]:
+    def _validate(self, searcher_op: Optional[core.SearcherOperation] = None) -> Dict[str, Any]:
         # Report a validation step is starting.
         if self.is_chief:
             self.core_context.train.set_status("validating")
@@ -1021,7 +1023,9 @@ class _PyTorchTrialController:
         should_checkpoint = False
 
         if searcher_op and self.is_chief:
-            searcher_length = TrainUnit._from_searcher_unit(searcher_op.length, self.searcher_unit)
+            searcher_length = TrainUnit._from_searcher_unit(
+                searcher_op.length, self.searcher_unit
+            )  # type: ignore
             searcher_metric = self._validate_searcher_metric(metrics)
             if self._steps_until_complete(searcher_length) < 1:
                 searcher_op.report_completed(searcher_metric)

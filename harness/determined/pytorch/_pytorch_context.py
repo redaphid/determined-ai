@@ -54,7 +54,7 @@ class PyTorchTrialContext(pytorch._PyTorchReducerContext):
         hparams: Dict,
         slots_per_trial: int,
         num_gpus: int,
-        exp_conf: Dict,
+        exp_conf: Dict[str, Any],
         aggregation_frequency: int,
         fp16_compression: bool,
         average_aggregated_gradients: bool,

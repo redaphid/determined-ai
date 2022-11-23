@@ -131,12 +131,13 @@ def _initialize_distributed_backend() -> Optional[core.DistributedContext]:
         else:
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
-    elif len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
+    elif info and len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
         raise ValueError(
-            "In multi-slot tasks, the determined.exec.harness module must not be invoked "
-            "directly.  Instead, it must be wrapped in one of the following launch layers: "
-            "determined.launch.horovod, determined.launch.deepspeed"
+            "In multi-slot managed cluster training, you must wrap your training script with a "
+            "distributed launch layer such as determined.launch.torch_distributed or "
+            "determined.launch.horovod"
         )
+    return
 
 
 def _generate_local_seed() -> int:
