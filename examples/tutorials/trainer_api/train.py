@@ -121,15 +121,14 @@ def main():
     with det.pytorch.init(hparams={"global_batch_size": 32}) as train_context:
         trial = MNistTrial(train_context)
         trainer = det.pytorch.Trainer(trial, train_context)
-        # trainer.configure_profiler(enabled=True,
-        #                            sync_timings=True,
-        #                            begin_on_batch=0,
-        #                            end_after_batch=10)
+        trainer.configure_profiler(enabled=True,
+                                   sync_timings=True,
+                                   begin_on_batch=0,
+                                   end_after_batch=10)
         trainer.fit(
             max_length=pytorch.Epoch(1),
             checkpoint_period=pytorch.Batch(100),
             validation_period=pytorch.Batch(100),
-            test_mode=True,
         )
 
 

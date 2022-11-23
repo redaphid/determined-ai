@@ -13,3 +13,8 @@ entrypoint: python3 -m determined.launch.torch_distributed python3 train.py
 bind_mounts:
 - host_path: /tmp
   container_path: /tmp
+profiling:
+  begin_on_batch: 0
+  enabled: true
+  end_after_batch: null
+  sync_timings: true
