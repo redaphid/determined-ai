@@ -51,10 +51,13 @@ class TrainUnit:
             raise ValueError(f"invalid length: batches={batches} records={records} epochs={epochs}")
         if batches:
             return Batch(batches)
-        elif records:
+        if records:
             return Record(records)
-        else:
+        if epochs:
             return Epoch(epochs)
+
+        # Make mypy happy
+        raise ValueError("invalid values")
 
     def _divides(self, steps: int) -> bool:
         # Treat <= 0 values as always step
@@ -442,13 +445,16 @@ class _PyTorchTrialController:
     def _step_batch(self) -> None:
         self.state.batches_trained += 1
 
+        epoch_len = self.context._epoch_len
+        assert epoch_len, "Training dataloader not initialized"
+
         # True epoch-based training is not supported. Epoch start/end is calculated with batch.
-        epoch_idx, batch_in_epoch_idx = divmod(self.state.batches_trained, self.context._epoch_len)
+        epoch_idx, batch_in_epoch_idx = divmod(self.state.batches_trained, epoch_len)
 
         if batch_in_epoch_idx == 0:
             self._on_epoch_start(epoch_idx)
 
-        if batch_in_epoch_idx == self.context._epoch_len - 1:  # type: ignore
+        if batch_in_epoch_idx == epoch_len - 1:
             self._on_epoch_end(epoch_idx)
             self.state.epochs_trained += 1
 
@@ -597,7 +603,6 @@ class _PyTorchTrialController:
                         _TrainStep(
                             step_type=_TrainStepType.TRAIN,
                             unit=TrainUnit._from_searcher_unit(op.length, self.searcher_unit),
-                            # type: ignore
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
@@ -630,8 +635,11 @@ class _PyTorchTrialController:
             model.train()
         self.context.reset_reducers()
 
+        epoch_len = self.context._epoch_len
+        assert epoch_len, "Training dataloader uninitialized"
+
         for batch_idx, batch in training_enumerator:
-            epoch_idx, batch_in_epoch_idx = divmod(batch_idx, self.context._epoch_len)
+            epoch_idx, batch_in_epoch_idx = divmod(batch_idx, epoch_len)
             batch_metrics = self._train_batch(batch=batch, batch_idx=batch_idx, epoch_idx=epoch_idx)
             training_metrics.append(batch_metrics)
             self._step_batch()
@@ -644,7 +652,7 @@ class _PyTorchTrialController:
                 # True epoch based training not supported, detect last batch of epoch to calculate
                 # fully-trained epochs
                 if isinstance(step.unit, Epoch) and step.unit._divides(epoch_idx + 1):
-                    if batch_in_epoch_idx == self.context._epoch_len - 1:  # type: ignore
+                    if batch_in_epoch_idx == epoch_len - 1:
                         step.limit_reached = True
 
                 # Break early after one batch for test mode
@@ -656,6 +664,7 @@ class _PyTorchTrialController:
                 return train_steps, training_metrics
 
         # True epoch end
+        return train_steps, training_metrics
 
     def _train_for_local(
         self, train_steps: List[_TrainStep], training_enumerator: Iterator
@@ -780,7 +789,8 @@ class _PyTorchTrialController:
         return searcher_metric
 
     def _get_epoch_idx(self, batch_id: int) -> int:
-        return batch_id // self.context._epoch_len  # type: ignore
+        assert self.context._epoch_len, "Training dataloader uninitialized"
+        return batch_id // self.context._epoch_len
 
     def _auto_step_lr_scheduler_per_batch(
         self, batch_idx: int, lr_scheduler: pytorch.LRScheduler
@@ -1023,9 +1033,7 @@ class _PyTorchTrialController:
         should_checkpoint = False
 
         if searcher_op and self.is_chief:
-            searcher_length = TrainUnit._from_searcher_unit(
-                searcher_op.length, self.searcher_unit
-            )  # type: ignore
+            searcher_length = TrainUnit._from_searcher_unit(searcher_op.length, self.searcher_unit)
             searcher_metric = self._validate_searcher_metric(metrics)
             if self._steps_until_complete(searcher_length) < 1:
                 searcher_op.report_completed(searcher_metric)

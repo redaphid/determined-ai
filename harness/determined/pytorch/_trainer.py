@@ -131,13 +131,13 @@ def _initialize_distributed_backend() -> Optional[core.DistributedContext]:
         else:
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
-    elif info and len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
+    elif info and (len(info.container_addrs) > 1 or len(info.slot_ids) > 1):
         raise ValueError(
             "In multi-slot managed cluster training, you must wrap your training script with a "
             "distributed launch layer such as determined.launch.torch_distributed or "
             "determined.launch.horovod"
         )
-    return
+    return None
 
 
 def _generate_local_seed() -> int:
@@ -160,7 +160,7 @@ def init(
     if local_training:
         hparams = hparams or {}
         trial_seed = _generate_local_seed()
-        exp_conf = None
+        exp_conf = {}
         num_gpus = 0
         slots_per_trial = 0
         aggregation_frequency = 1
