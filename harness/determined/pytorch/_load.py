@@ -122,7 +122,9 @@ def _load_pytorch_trial_for_checkpoint_export(
     hparams: Dict[str, Any],
 ) -> Tuple[Type[pytorch.PyTorchTrial], pytorch.PyTorchTrialContext]:
     with det._local_execution_manager(context_dir):
-        trial_class = cast(pytorch.PyTorchTrial, load.trial_class_from_entrypoint(trial_cls_spec))
+        trial_class = cast(
+            Type[pytorch.PyTorchTrial], load.trial_class_from_entrypoint(trial_cls_spec)
+        )
 
         config = det.ExperimentConfig(
             det._make_local_execution_exp_config(

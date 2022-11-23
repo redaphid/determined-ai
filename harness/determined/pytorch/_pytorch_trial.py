@@ -33,7 +33,7 @@ class TrainUnit:
         self.value = value
 
     @staticmethod
-    def _from_searcher_unit(length: int, unit: core.Unit) -> "TrainUnit":
+    def _from_searcher_unit(length: int, unit: Optional[core.Unit]) -> "TrainUnit":
         if unit == core.Unit.EPOCHS:
             return Epoch(length)
         elif unit == core.Unit.RECORDS:
@@ -255,8 +255,8 @@ class _PyTorchTrialController:
             tensorboard.util.get_rank_aware_path,
         )
 
-    @staticmethod
-    def _set_random_seeds(seed: int) -> None:
+    @classmethod
+    def _set_random_seeds(cls: Type["_PyTorchTrialController"], seed: int) -> None:
         # Set identical random seeds on all training processes.
         # When using horovod, each worker will start at a unique
         # offset in the dataset, ensuring that it is processing a unique
@@ -570,6 +570,7 @@ class _PyTorchTrialController:
     def _run(self) -> None:
         if self.local_training:
             try:
+                assert self.max_length, "max_length required for local training mode"
                 self._train_for_local(
                     training_enumerator=self.training_enumerator,
                     train_steps=[
@@ -1376,8 +1377,8 @@ class PyTorchTrial(det.Trial):
        :class:`~determined.pytorch.PyTorchTrialContext`.
     """
 
-    trial_controller_class = _PyTorchTrialController
-    trial_context_class = pytorch.PyTorchTrialContext
+    trial_controller_class = _PyTorchTrialController  # type: ignore
+    trial_context_class = pytorch.PyTorchTrialContext  # type: ignore
 
     @abstractmethod
     def __init__(self, context: pytorch.PyTorchTrialContext) -> None:
