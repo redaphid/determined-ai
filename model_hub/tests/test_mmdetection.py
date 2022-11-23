@@ -7,12 +7,12 @@ import git
 import pytest
 import torch
 
+import determined as det
 import determined.pytorch as det_torch
 import model_hub.mmdetection as mh_mmdet
 import model_hub.mmdetection._callbacks as callbacks
 import model_hub.utils as mh_utils
 from determined.common import util
-import determined as det
 
 
 def cleanup_dir(directory: str) -> None:
