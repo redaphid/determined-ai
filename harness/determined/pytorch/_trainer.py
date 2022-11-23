@@ -19,18 +19,17 @@ class Trainer:
         self._core = self._context._core
         self._distributed_backend = det._DistributedBackend()
         self._det_profiler = None  # type: Optional[profiler.ProfilerAgent]
-        cluster_info = det.get_cluster_info()
-        self._local_training = cluster_info is None or cluster_info.task_type != "TRIAL"
+        self._info = det.get_cluster_info()
+        self._local_training = self._info is None or self._info.task_type != "TRIAL"
 
     def configure_profiler(
         self, sync_timings: bool, enabled: bool, begin_on_batch: int, end_after_batch: int
     ) -> None:
-        cluster_info = det.get_cluster_info()
-        assert cluster_info, "Determined profiler must be run on cluster"
+        assert self._info, "Determined profiler must be run on cluster"
         self._det_profiler = profiler.ProfilerAgent(
-            trial_id=str(cluster_info.trial.trial_id),
-            agent_id=cluster_info.agent_id,
-            master_url=cluster_info.master_url,
+            trial_id=str(self._info.trial.trial_id),
+            agent_id=self._info.agent_id,
+            master_url=self._info.master_url,
             profiling_is_enabled=enabled,
             global_rank=self._core.distributed.get_rank(),
             local_rank=self._core.distributed.get_local_rank(),
@@ -50,7 +49,6 @@ class Trainer:
         checkpoint_policy: Optional[str] = None,
         test_mode: Optional[bool] = None,
     ) -> None:
-        cluster_info = det.get_cluster_info()
 
         # Set context and training variables
         self._context._aggregation_frequency = aggregation_frequency or 1
@@ -86,16 +84,16 @@ class Trainer:
                     "Please configure the searcher length instead."
                 )
             assert not test_mode, "test_mode is only supported in local training mode"
-            assert cluster_info, "Unable to detect cluster info"
+            assert self._info, "Unable to detect cluster info"
 
-            latest_checkpoint = cluster_info.latest_checkpoint
-            smaller_is_better = bool(cluster_info.trial._config["searcher"]["smaller_is_better"])
-            searcher_metric_name = cluster_info.trial._config["searcher"]["metric"]
-            steps_completed = int(cluster_info.trial._steps_completed)
+            latest_checkpoint = self._info.latest_checkpoint
+            smaller_is_better = bool(self._info.trial._config["searcher"]["smaller_is_better"])
+            searcher_metric_name = self._info.trial._config["searcher"]["metric"]
+            steps_completed = int(self._info.trial._steps_completed)
             reporting_period = reporting_period or pytorch.Batch(
-                int(cluster_info.trial._config["scheduling_unit"])
+                int(self._info.trial._config["scheduling_unit"])
             )
-            step_zero_validation = bool(cluster_info.trial._config["perform_initial_validation"])
+            step_zero_validation = bool(self._info.trial._config["perform_initial_validation"])
 
         trial_controller = pytorch._PyTorchTrialController(
             trial_inst=self._trial,
@@ -119,7 +117,9 @@ class Trainer:
         trial_controller.run()
 
 
-def _initialize_distributed_backend() -> core.DistributedContext:
+def _initialize_distributed_backend() -> Optional[core.DistributedContext]:
+    info = det.get_cluster_info()
+
     distributed_backend = det._DistributedBackend()
     if distributed_backend.use_horovod():
         hvd.require_horovod_type("torch", "PyTorchTrial is in use.")
@@ -131,9 +131,11 @@ def _initialize_distributed_backend() -> core.DistributedContext:
         else:
             dist.init_process_group(backend="gloo")  # type: ignore
         return core.DistributedContext.from_torch_distributed()
-    else:
-        logging.warning(
-            "Only horovod and torch distributed backends are supported for PyTorchTrial"
+    elif len(info.container_addrs) > 1 or len(info.slot_ids) > 1:
+        raise ValueError(
+            "In multi-slot tasks, the determined.exec.harness module must not be invoked "
+            "directly.  Instead, it must be wrapped in one of the following launch layers: "
+            "determined.launch.horovod, determined.launch.deepspeed"
         )
 
 

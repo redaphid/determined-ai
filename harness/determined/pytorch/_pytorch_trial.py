@@ -57,7 +57,9 @@ class TrainUnit:
             return Epoch(epochs)
 
     def _divides(self, steps: int) -> bool:
-        assert self.value > 0, "TrainUnit value must be > 0"
+        # Treat <= 0 values as always step
+        if self.value < 1:
+            return True
         if steps == 0:
             return False
         return steps % self.value == 0
@@ -130,7 +132,7 @@ class _PyTorchTrialController:
         latest_checkpoint: Optional[str],
         local_training: bool,
         test_mode: bool,
-        searcher_metric_name: str,
+        searcher_metric_name: Optional[str],
         checkpoint_policy: str,
         step_zero_validation: bool,
         max_length: Optional[TrainUnit],
@@ -446,7 +448,7 @@ class _PyTorchTrialController:
         if batch_in_epoch_idx == 0:
             self._on_epoch_start(epoch_idx)
 
-        if batch_in_epoch_idx == self.context._epoch_len - 1:
+        if batch_in_epoch_idx == self.context._epoch_len - 1:  # type: ignore
             self._on_epoch_end(epoch_idx)
             self.state.epochs_trained += 1
 
@@ -480,6 +482,8 @@ class _PyTorchTrialController:
             return train_unit.value - self.state.epochs_trained
         elif isinstance(train_unit, Record):
             return train_unit.value - (self.state.batches_trained * self.global_batch_size)
+        else:
+            raise ValueError(f"Unrecognized train unit {train_unit}")
 
     def run(self) -> None:
         @contextlib.contextmanager
@@ -593,6 +597,7 @@ class _PyTorchTrialController:
                         _TrainStep(
                             step_type=_TrainStepType.TRAIN,
                             unit=TrainUnit._from_searcher_unit(op.length, self.searcher_unit),
+                            # type: ignore
                         ),
                         _TrainStep(
                             step_type=_TrainStepType.CHECKPOINT,
@@ -626,7 +631,6 @@ class _PyTorchTrialController:
         self.context.reset_reducers()
 
         for batch_idx, batch in training_enumerator:
-            # XXX: maybe change this to just use context.is_epoch_end, but divmod is neat
             epoch_idx, batch_in_epoch_idx = divmod(batch_idx, self.context._epoch_len)
             batch_metrics = self._train_batch(batch=batch, batch_idx=batch_idx, epoch_idx=epoch_idx)
             training_metrics.append(batch_metrics)
@@ -640,7 +644,7 @@ class _PyTorchTrialController:
                 # True epoch based training not supported, detect last batch of epoch to calculate
                 # fully-trained epochs
                 if isinstance(step.unit, Epoch) and step.unit._divides(epoch_idx + 1):
-                    if batch_in_epoch_idx == self.context._epoch_len - 1:
+                    if batch_in_epoch_idx == self.context._epoch_len - 1:  # type: ignore
                         step.limit_reached = True
 
                 # Break early after one batch for test mode
@@ -727,7 +731,7 @@ class _PyTorchTrialController:
                 # Report metrics and searcher progress before validation/checkpoint
                 # Because of this, no extra logic is needed for scheduling_unit step
                 if not op._completed and self.is_chief:
-                    self._report_searcher_progress(op, self.searcher_unit)
+                    self._report_searcher_progress(op, self.searcher_unit)  # type: ignore
 
                 if train_step.step_type == _TrainStepType.VALIDATE:
                     if not self._validation_is_current():
@@ -806,7 +810,7 @@ class _PyTorchTrialController:
     def _should_update_scaler(self) -> bool:
         if not self.context._scaler or not self.context.experimental._auto_amp:
             return False
-        return self.context._should_communicate_and_update()  # type: ignore
+        return self.context._should_communicate_and_update()
 
     def _train_batch(self, batch: pytorch.TorchData, epoch_idx: int, batch_idx: int) -> Dict:
         # Set the batch index on the trial context used by step_optimizer

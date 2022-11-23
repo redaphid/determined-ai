@@ -12,7 +12,6 @@ from determined.common.api import analytics, certs
 try:
     from determined import pytorch
 except ImportError:  # pragma: no cover
-    pytorch = None
     pass
 
 
