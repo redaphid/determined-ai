@@ -119,8 +119,8 @@ export const paths = {
   modelList: (): string => {
     return '/models';
   },
-  modelVersionDetails: (modelName: string, versionId: number | string): string => {
-    return `/models/${encodeURIComponent(modelName)}/versions/${versionId}`;
+  modelVersionDetails: (modelName: string, versionNum: number | string): string => {
+    return `/models/${encodeURIComponent(modelName)}/versions/${versionNum}`;
   },
   projectDetails: (projectId: number | string): string => {
     return `/projects/${projectId}/experiments`;
