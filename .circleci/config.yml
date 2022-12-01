@@ -837,8 +837,6 @@ commands:
           values-to-override: |
             detVersion=<<parameters.det-version>>,\
             maxSlotsPerPod=<<parameters.gpus-per-machine>>,\
-            taskContainerDefaults.cpuImage=determinedai/environments:cuda-11.3-pytorch-1.10-tf-2.8-gpu-0.19.4,\
-            taskContainerDefaults.gpuImage=determinedai/environments:cuda-11.3-pytorch-1.10-tf-2.8-gpu-0.19.4,\
             checkpointStorage.type=gcs,\
             checkpointStorage.bucket=det-ci
       - set-master-address-gke:
