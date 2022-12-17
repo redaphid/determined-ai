@@ -103,6 +103,10 @@ build-race: gen
 		-race \
 		./cmd/determined-master
 
+.PHONY: run
+run: build-race
+	./build/determined-master --config-file ../tools/master.yaml
+
 .PHONY: check
 check: check-gen
 	go mod tidy

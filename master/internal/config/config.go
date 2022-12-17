@@ -261,10 +261,12 @@ func (c *Config) Resolve() error {
 // Deprecations describe fields which were recently or will soon be removed.
 func (c *Config) Deprecations() (errs []error) {
 	for _, rp := range c.ResourcePools {
-		errs = append(errs, fmt.Errorf(
-			"agent_reattach_enabled is set for %s but will be ignored; "+
-				"as of 0.21.0 this feature is always on", rp.PoolName,
-		))
+		if rp.AgentReattachEnabled {
+			errs = append(errs, fmt.Errorf(
+				"agent_reattach_enabled is set for resource pool %s but will be ignored; "+
+					"as of 0.21.0 this feature is always on", rp.PoolName,
+			))
+		}
 	}
 	return errs
 }

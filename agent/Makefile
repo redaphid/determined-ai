@@ -51,6 +51,14 @@ build-race:
 		-race \
 		./cmd/determined-agent
 
+.PHONY: run
+run: build-race
+	./build/determined-agent --log-level TRACE --config-file ../tools/agent.yaml
+
+.PHONY: proxy
+proxy:
+	socat -d -d TCP-LISTEN:8081,reuseaddr,fork TCP:localhost:8080
+
 .PHONY: check
 check:
 	go mod tidy
