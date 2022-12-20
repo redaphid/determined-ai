@@ -20,8 +20,9 @@ const defaultMasterPort = "8080"
 
 // Config describes config for provisioner.
 type Config struct {
-	MasterURL               string            `json:"master_url"`
-	MasterCertName          string            `json:"master_cert_name"`
+	MasterURL      string `json:"master_url"`
+	MasterCertName string `json:"master_cert_name"`
+	// TODO: follow references to these two?
 	StartupScript           string            `json:"startup_script"`
 	ContainerStartupScript  string            `json:"container_startup_script"`
 	AgentDockerNetwork      string            `json:"agent_docker_network"`
