@@ -394,14 +394,14 @@ To list all existing cluster roles and the concrete permissions they include:
 ``Viewer``
 ==========
 
-``Viewer`` role allows a user to see workspaces, projects, experiments, as well as experiment
-metadata and artifacts within its scope.
+``Viewer`` role allows a user to see workspaces, NTSC (Notebooks, Tensorboards Shells, Commands),
+projects, experiments, as well as experiment metadata and artifacts within its scope.
 
 ``Editor``
 ==========
 
 ``Editor`` role supersedes the ``Viewer`` role, and includes permissions to create, edit, or delete
-projects and experiments within its scope.
+projects, NTSCs, and experiments within its scope.
 
 ``WorkspaceAdmin``
 ==================
