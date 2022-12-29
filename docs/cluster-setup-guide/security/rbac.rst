@@ -357,6 +357,7 @@ action on an entity type, for example:
 -  ``PERMISSION_TYPE_ADMINISTRATE_USER``: manage user accounts. This is only available on the global
    scope.
 -  ``PERMISSION_TYPE_ASSIGN_ROLES``: assign roles.
+-  ``PERMISSION_TYPE_VIEW_NSC``: view JupyterLab Notebooks, Shells, and Commands.
 
 *****************
  Usage Reference
