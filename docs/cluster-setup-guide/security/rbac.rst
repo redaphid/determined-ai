@@ -487,17 +487,8 @@ all permissions, and can only be assigned globally.
 
    Users will have no default access otherwise.
 
-*********
- Caveats
-*********
+***********************************************************************
+ RBAC Support for Notebooks, Tensorboards, Shells, and Commands (NTSC)
+***********************************************************************
 
-.. _rbac-ntsc:
-
-RBAC Support for Notebooks, Tensorboards, Shells, and Commands
-==============================================================
-
-Currently, only experiments are organized within workspaces and projects. Other task types,
-notebooks, tensorboards, sheels, and commands (NTSC) are global entities. In the future, we plan to
-migrate NTSCs to workspaces to make them covered under RBAC model.
-
-When RBAC is disabled, by default, every logged in user can access all NTSC on the cluster.
+TODO
