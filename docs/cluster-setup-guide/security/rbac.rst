@@ -492,3 +492,5 @@ all permissions, and can only be assigned globally.
 ***********************************************************************
 
 TODO
+
+TODO separate note for Tensorboards.
