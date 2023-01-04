@@ -171,6 +171,8 @@ class PyTorchTrialController(det.TrialController):
         try:
             epoch_len = len(self.training_loader)
         except TypeError:
+            # How often does this happen? Would reporting on epochs vs batch size still be accurate?
+            # When testing locally looks like this is the default case?
             epoch_len = sys.maxsize
         self.context._epoch_len = self.context.distributed.broadcast(epoch_len)
 
@@ -467,7 +469,9 @@ class PyTorchTrialController(det.TrialController):
                     if isinstance(metric, torch.Tensor):
                         metric = metric.cpu().detach().numpy()
                     tr_metrics[name] = metric
-
+            # Do we want to literally add epochs as a 'metric'
+            # or report the epoch as if it is a `total_epochs` count
+            tr_metrics["epoch"] = epoch_idx
             batch_dur = time.time() - batch_start_time
             samples_per_second = batch_inputs / batch_dur
             samples_per_second *= self.context.distributed.size
@@ -493,6 +497,7 @@ class PyTorchTrialController(det.TrialController):
         # Ignore batch_metrics entirely for custom reducers; there's no guarantee that per-batch
         # metrics are even logical for a custom reducer.
         with self.prof.record_timing("reduce_metrics"):
+            # how does this impact epochs?
             metrics["avg_metrics"].update(
                 pytorch._convert_metrics_to_numpy(self.context.reduce_metrics(for_training=True))
             )
