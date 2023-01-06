@@ -40,9 +40,9 @@ type Manager struct {
 	devices []device.Device
 
 	// System dependencies. Also set in initialization and never modified after.
-	log    *log.Entry
-	docker *docker.Client
-	pub    events.Publisher[container.Event]
+	log      *log.Entry
+	cruntime container.ContainerRuntime
+	pub      events.Publisher[container.Event]
 
 	// Internal state. Access should be protected.
 	containers  map[cproto.ID]*container.Container
@@ -56,7 +56,7 @@ func New(
 	opts options.Options,
 	mopts aproto.MasterSetAgentOptions,
 	devices []device.Device,
-	cl *docker.Client,
+	cl container.ContainerRuntime,
 	pub events.Publisher[container.Event],
 ) (*Manager, error) {
 	return &Manager{
@@ -64,7 +64,7 @@ func New(
 		mopts:       mopts,
 		devices:     devices,
 		log:         logrus.WithField("component", "container-manager"),
-		docker:      cl,
+		cruntime:    cl,
 		pub:         pub,
 		containers:  make(map[cproto.ID]*container.Container),
 		recentExits: ring.New(RecentExitsCacheSize),
@@ -81,7 +81,7 @@ func (m *Manager) ReattachContainers(
 	result := make([]aproto.ContainerReattachAck, 0, len(expectedSurvivors))
 
 	agentFilter := docker.LabelFilter(docker.AgentLabel, m.opts.AgentID)
-	runningContainers, err := m.docker.ListRunningContainers(ctx, agentFilter)
+	runningContainers, err := m.cruntime.ListRunningContainers(ctx, agentFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (m *Manager) ReattachContainers(
 	m.log.Trace("sending SIGKILL to running containers that were not reattached")
 	for cid, containerInfo := range runningContainers {
 		m.log.Infof("will kill container %s", cid)
-		if err := m.docker.SignalContainer(ctx, containerInfo.ID, unix.SIGKILL); err != nil {
+		if err := m.cruntime.SignalContainer(ctx, containerInfo.ID, unix.SIGKILL); err != nil {
 			m.log.WithError(err).Warnf("failed to kill container %s", cid)
 		}
 	}
@@ -211,7 +211,7 @@ func (m *Manager) StartContainer(ctx context.Context, req aproto.StartContainer)
 		m.mu.Unlock()
 		return fmt.Errorf("container already created: %s", req.Container.ID)
 	}
-	c := container.Start(req, m.docker, m.pub)
+	c := container.Start(req, m.cruntime, m.pub)
 	m.containers[req.Container.ID] = c
 	m.mu.Unlock()
 
@@ -306,7 +306,7 @@ func (m *Manager) reattachContainer(
 		c.Signal(ctx, syscall.SIGKILL)
 		return nil, errors.New(errorMsg)
 	}
-	c := container.Reattach(*containerCurrState, m.docker, m.pub)
+	c := container.Reattach(*containerCurrState, m.cruntime, m.pub)
 	m.containers[cID] = c
 	m.mu.Unlock()
 
