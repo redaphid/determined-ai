@@ -21,6 +21,7 @@ import (
 	"github.com/determined-ai/determined/agent/internal/options"
 	"github.com/determined-ai/determined/agent/pkg/docker"
 	"github.com/determined-ai/determined/agent/pkg/events"
+	"github.com/determined-ai/determined/agent/pkg/singularity"
 	"github.com/determined-ai/determined/master/pkg/aproto"
 	"github.com/determined-ai/determined/master/pkg/cproto"
 	"github.com/determined-ai/determined/master/pkg/device"
@@ -117,34 +118,49 @@ func (a *Agent) run(ctx context.Context) error {
 		return fmt.Errorf("failed to detect devices: %v", devices)
 	}
 
-	a.log.Trace("setting up docker client")
-	dcl, err := dclient.NewClientWithOpts(dclient.WithAPIVersionNegotiation(), dclient.FromEnv)
-	if err != nil {
-		return fmt.Errorf("failed to build docker client: %w", err)
-	}
-	defer func() {
-		a.log.Trace("cleaning up docker client")
-		if cErr := dcl.Close(); err != nil {
-			a.log.WithError(cErr).Error("failed to close docker client")
+	a.log.Trace("setting up container runtime")
+	var cruntime container.ContainerRuntime
+	var logShipper *fluent.Fluent
+	var logShipperDone chan struct{}
+	switch a.opts.ContainerRuntime {
+	case options.ApptainerContainerRuntime:
+		acl, err := singularity.New()
+		if err != nil {
+			return fmt.Errorf("failed to build singularity client: %w", err)
 		}
-	}()
-	docker := docker.NewClient(dcl)
+		cruntime = acl
+	case options.DockerContainerRuntime:
+		dcl, err := dclient.NewClientWithOpts(dclient.WithAPIVersionNegotiation(), dclient.FromEnv)
+		if err != nil {
+			return fmt.Errorf("failed to build docker client: %w", err)
+		}
+		defer func() {
+			a.log.Trace("cleaning up docker client")
+			if cErr := dcl.Close(); err != nil {
+				a.log.WithError(cErr).Error("failed to close docker client")
+			}
+		}()
+		cl := docker.NewClient(dcl)
+		cruntime = cl
 
-	a.log.Trace("setting up fluentbit daemon")
-	fluent, err := fluent.Start(ctx, a.opts, mopts, docker)
-	if err != nil {
-		return fmt.Errorf("setting up fluentbit failed: %w", err)
-	}
-	defer func() {
-		a.log.Trace("cleaning up fluent client")
-		if cErr := fluent.Close(); err != nil {
-			a.log.WithError(cErr).Error("failed to close fluentbit")
+		a.log.Trace("setting up fluentbit daemon")
+		fl, err := fluent.Start(ctx, a.opts, mopts, cl)
+		if err != nil {
+			return fmt.Errorf("setting up fluentbit failed: %w", err)
 		}
-	}()
+		defer func() {
+			a.log.Trace("cleaning up fluent client")
+			if cErr := fl.Close(); err != nil {
+				a.log.WithError(cErr).Error("failed to close fluentbit")
+			}
+		}()
+		logShipper = fl
+		logShipperDone = fl.Done
+	}
 
 	a.log.Trace("setting up container manager")
 	outbox := make(chan *aproto.MasterMessage, eventChanSize) // covers many from socket lifetimes
-	manager, err := containers.New(a.opts, mopts, devices, docker, a.sender(outbox))
+	manager, err := containers.New(a.opts, mopts, devices, cruntime, a.sender(outbox))
 	if err != nil {
 		return fmt.Errorf("error initializing container manager: %w", err)
 	}
@@ -215,17 +231,17 @@ func (a *Agent) run(ctx context.Context) error {
 			inbox = socket.Inbox
 			mopts = *newMopts // TODO: Reload fluent with new mopts.
 
-		case <-fluent.Done:
+		case <-logShipperDone:
 			a.log.Trace("fluent exited")
-			if err := fluent.Error(); err != nil {
+			if err := logShipper.Error(); err != nil {
 				a.log.Errorf("restarting fluent due to failure: %s", err)
 			}
 
-			newFluent, err := a.restartFluent(ctx, mopts, docker)
+			newLogShipper, err := a.restartFluent(ctx, mopts, cruntime.(*docker.Client))
 			if err != nil {
 				return fmt.Errorf("crashing due to fluent failure: %w", err)
 			}
-			fluent = newFluent
+			logShipper = newLogShipper
 
 		case <-ctx.Done():
 			a.log.Trace("context canceled")

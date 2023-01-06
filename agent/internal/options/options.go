@@ -52,7 +52,16 @@ type Options struct {
 	AgentReconnectBackoff int `json:"agent_reconnect_backoff"`
 
 	Hooks HooksOptions `json:"hooks"`
+
+	ContainerRuntime string `json:"container_runtime"`
 }
+
+type ContainerRuntime string
+
+const (
+	ApptainerContainerRuntime = "apptainer"
+	DockerContainerRuntime    = "docker"
+)
 
 // Validate validates the state of the Options struct.
 func (o Options) Validate() []error {

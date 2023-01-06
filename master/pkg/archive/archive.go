@@ -6,10 +6,12 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -255,4 +257,43 @@ func FromTarGz(zippedTarfile []byte) (Archive, error) {
 	}
 
 	return ar, nil
+}
+
+// Untar takes a destination path and a reader; a tar reader loops over the tarfile
+// creating the file structure at 'dst' along the way, and writing any files
+func Write(dst string, a Archive) error {
+	if _, err := os.Stat(dst); err != nil {
+		if err := os.MkdirAll(dst, 0755); err != nil {
+			return err
+		}
+	}
+
+	for _, i := range a {
+		target := filepath.Join(dst, i.Path)
+		switch i.Type {
+		case tar.TypeDir:
+			if _, err := os.Stat(target); err != nil {
+				if err := os.MkdirAll(target, i.FileMode); err != nil {
+					return fmt.Errorf("creating dir for %s: %w", target, err)
+				}
+			}
+		case tar.TypeReg:
+			targetDir := filepath.Dir(target)
+			if _, err := os.Stat(targetDir); err != nil {
+				if err := os.MkdirAll(targetDir, 0755); err != nil {
+					return err
+				}
+			}
+
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, i.FileMode)
+			if err != nil {
+				return fmt.Errorf("opening file for %s: %w", target, err)
+			}
+			if _, err := io.Copy(f, bytes.NewReader(i.Content)); err != nil {
+				return fmt.Errorf("copying content for %s: %w", target, err)
+			}
+			f.Close()
+		}
+	}
+	return nil
 }

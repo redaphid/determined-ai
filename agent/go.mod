@@ -44,6 +44,7 @@ require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb // indirect
 	github.com/aead/poly1305 v0.0.0-20180717145839-3fee0db0b635 // indirect
+	github.com/apptainer/container-library-client v1.4.1 // indirect
 	github.com/aws/aws-sdk-go v1.40.34 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect

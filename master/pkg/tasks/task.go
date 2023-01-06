@@ -306,6 +306,12 @@ func runDirHelpersArchive(aug *model.AgentUserGroup) cproto.RunArchive {
 			taskSignalHandlingMode,
 			tar.TypeReg,
 		),
+		aug.OwnedArchiveItem(
+			singularityEntrypointWrapperScript,
+			etc.MustStaticFile(etc.SingularityEntrypointWrapperScriptResource),
+			singularityEntrypointWrapperMode,
+			tar.TypeReg,
+		),
 	}, runDir)
 }
 
