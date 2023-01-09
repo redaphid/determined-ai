@@ -17,6 +17,7 @@ class DSATSearchMethod(searcher.SearchMethod):
 
     def _get_list_of_hparams(self) -> List[Dict[str, Any]]:
         """Generates a list of all hp dict combos which will be tested out."""
+        # TODO: Add non-trivial logic.
         return 2 * [self.original_config_dict]
 
     def initial_operations(self, _: searcher.SearcherState) -> List[searcher.Operation]:

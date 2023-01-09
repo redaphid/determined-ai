@@ -45,3 +45,4 @@ TODOs:
 - Error handling largely ignored throughout.
 - The custom searcher currently runs dummy trials w/ the original config. Logic for non-trivial
   searchers not yet implemented.
+- No hardware information passed to Custom Searcher, yet.
