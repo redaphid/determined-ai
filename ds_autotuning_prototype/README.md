@@ -25,6 +25,7 @@ python3 -m dsat.autotune autotune_config.yaml .
 Pros:
 
 - No need to change user script when switching between DS AT and a vanilla DS AT training run.
+- Custom Searcher config generated from initial user config; user need only provide one config, per usual.
 - Largely independent of `DeepSpeedEngine`
 
 Cons:
