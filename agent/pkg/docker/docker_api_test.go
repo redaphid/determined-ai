@@ -265,10 +265,7 @@ func TestRunContainerWithService(t *testing.T) {
 	require.True(t, found, "did not find our container")
 
 	t.Log("ensure it can be reattached")
-	reattached, terminated, err := cl.ReattachContainer(
-		ctx,
-		docker.LabelFilter(docker.ContainerIDLabel, containerID),
-	)
+	reattached, terminated, err := cl.ReattachContainer(ctx, cproto.ID(containerID))
 	require.NoError(t, err)
 	require.Nil(t, terminated)
 

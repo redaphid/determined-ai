@@ -209,7 +209,8 @@ func (c *Container) run(parent context.Context) (err error) {
 		if err = c.transition(ctx, cproto.Starting, nil, nil); err != nil {
 			return err
 		}
-		dockerID, err := c.cruntime.CreateContainer(ctx, c.spec.RunSpec, c.shimDockerEvents())
+
+		dockerID, err := c.cruntime.CreateContainer(ctx, c.containerID, c.spec.RunSpec, c.shimDockerEvents())
 		if err != nil {
 			return fmt.Errorf("creating container: %w", err)
 		}
@@ -228,7 +229,7 @@ func (c *Container) run(parent context.Context) (err error) {
 		}()
 
 		c.log.WithField("docker-id", dockerID).Trace("starting container")
-		dc, err := c.cruntime.RunContainer(ctx, parent, dockerID)
+		dc, err := c.cruntime.RunContainer(ctx, parent, dockerID, c.shimDockerEvents())
 		if err != nil {
 			return fmt.Errorf("starting container: %w", err)
 		}
@@ -268,7 +269,7 @@ func (c *Container) reattach(ctx context.Context) error {
 	c.log.Trace("entering reattach")
 	switch dc, exitCode, err := c.cruntime.ReattachContainer(
 		ctx,
-		docker.LabelFilter(docker.ContainerIDLabel, c.containerID.String()),
+		c.containerID,
 	); {
 	case errors.Is(err, context.Canceled):
 		return err

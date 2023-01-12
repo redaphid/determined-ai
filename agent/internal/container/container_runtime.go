@@ -16,13 +16,14 @@ import (
 type ContainerRuntime interface {
 	ReattachContainer(
 		ctx context.Context,
-		filter filters.Args,
+		id cproto.ID,
 	) (*docker.Container, *aproto.ExitCode, error)
 
 	PullImage(ctx context.Context, req docker.PullImage, p events.Publisher[docker.Event]) error
 
 	CreateContainer(
 		ctx context.Context,
+		id cproto.ID,
 		req cproto.RunSpec,
 		p events.Publisher[docker.Event],
 	) (string, error)
@@ -31,6 +32,7 @@ type ContainerRuntime interface {
 		ctx context.Context,
 		waitCtx context.Context,
 		id string,
+		p events.Publisher[docker.Event],
 	) (*docker.Container, error)
 
 	SignalContainer(ctx context.Context, id string, sig syscall.Signal) error

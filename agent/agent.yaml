@@ -1,0 +1,4 @@
+config_file:
+    master_host: 127.0.0.1
+    master_port: 8080
+    container_master_host: 10.138.0.64

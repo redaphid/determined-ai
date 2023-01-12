@@ -19,9 +19,9 @@ import (
 	"github.com/determined-ai/determined/agent/internal/detect"
 	"github.com/determined-ai/determined/agent/internal/fluent"
 	"github.com/determined-ai/determined/agent/internal/options"
-	"github.com/determined-ai/determined/agent/pkg/apptainer"
 	"github.com/determined-ai/determined/agent/pkg/docker"
 	"github.com/determined-ai/determined/agent/pkg/events"
+	"github.com/determined-ai/determined/agent/pkg/singularity"
 	"github.com/determined-ai/determined/master/pkg/aproto"
 	"github.com/determined-ai/determined/master/pkg/cproto"
 	"github.com/determined-ai/determined/master/pkg/device"
@@ -124,9 +124,9 @@ func (a *Agent) run(ctx context.Context) error {
 	var logShipperDone chan struct{}
 	switch a.opts.ContainerRuntime {
 	case options.ApptainerContainerRuntime:
-		acl, err := apptainer.New()
+		acl, err := singularity.New()
 		if err != nil {
-			return fmt.Errorf("failed to build apptainer client: %w", err)
+			return fmt.Errorf("failed to build singularity client: %w", err)
 		}
 		cruntime = acl
 	case options.DockerContainerRuntime:
