@@ -1445,7 +1445,7 @@ jobs:
       - skip-if-docs-only
       - skip-if-webui-only
       - setup-python-venv:
-          install-python: true
+          install-python: false
           python-version: "3.9.16"
           determined: true
           model-hub: true
