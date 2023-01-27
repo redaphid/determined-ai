@@ -269,10 +269,6 @@ func (a *apiServer) GetCommand(
 func (a *apiServer) KillCommand(
 	ctx context.Context, req *apiv1.KillCommandRequest,
 ) (resp *apiv1.KillCommandResponse, err error) {
-	defer func() {
-		err = apiutils.MapAndFilterErrors(err, nil, nil)
-	}()
-
 	targetCmd, err := a.GetCommand(ctx, &apiv1.GetCommandRequest{CommandId: req.CommandId})
 	if err != nil {
 		return nil, err

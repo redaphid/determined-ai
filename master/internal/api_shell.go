@@ -117,10 +117,6 @@ func (a *apiServer) GetShell(
 func (a *apiServer) KillShell(
 	ctx context.Context, req *apiv1.KillShellRequest,
 ) (resp *apiv1.KillShellResponse, err error) {
-	defer func() {
-		err = apiutils.MapAndFilterErrors(err, nil, nil)
-	}()
-
 	getResponse, err := a.GetShell(ctx, &apiv1.GetShellRequest{ShellId: req.ShellId})
 	if err != nil {
 		return nil, err

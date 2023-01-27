@@ -120,7 +120,7 @@ func (a *apiServer) validateToKillNotebook(ctx context.Context, notebookID strin
 	err = command.AuthZProvider.Get().CanTerminateNSC(
 		ctx, *curUser, model.AccessScopeID(targetNotebook.Notebook.WorkspaceId),
 	)
-	return apiutils.MapAndFilterErrors(err, nil, nil)
+	return err
 }
 
 func (a *apiServer) IdleNotebook(
