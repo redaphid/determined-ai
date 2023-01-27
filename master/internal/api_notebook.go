@@ -160,7 +160,7 @@ func (a *apiServer) SetNotebookPriority(
 		ctx, *curUser, model.AccessScopeID(targetNotebook.Notebook.WorkspaceId), int(req.Priority),
 	)
 	if err != nil {
-		return nil, apiutils.MapAndFilterErrors(err, nil, nil)
+		return nil, apiutils.MapAndFilterErrors(err, nil, nil) // FIXME this and the other ones
 	}
 
 	return resp, a.ask(notebooksAddr.Child(req.NotebookId), req, &resp)
