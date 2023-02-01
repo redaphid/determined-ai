@@ -321,6 +321,17 @@ def test_stress_agents_reconnect(steps: int, num_agents: int, should_disconnect:
         assert sum(agents_are_up) <= len(agent_list)
         for agent in agent_list:
             agent_id = int(agent["id"].replace("agent-", ""))
+            if agents_are_up[agent_id] != agent["enabled"]:
+                p = subprocess.run(
+                    [
+                        "det",
+                        "deploy",
+                        "local",
+                        "logs",
+                    ]
+                )
+                print(p.stdout)
+                print(p.stderr)
             assert (
                 agents_are_up[agent_id] == agent["enabled"]
             ), f"agent is up: {agents_are_up[agent_id]}, agent status: {agent}"
