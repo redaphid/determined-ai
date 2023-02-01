@@ -6,7 +6,6 @@ import {
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import Grid, { GridMode } from 'components/Grid'; //TODO: Move to components/kit? Add section to DesignKit page?
 import Breadcrumb from 'components/kit/Breadcrumb';
 import Button from 'components/kit/Button';
 import Card from 'components/kit/Card';
@@ -35,7 +34,6 @@ import { mapV1LogsResponse } from 'services/decoder';
 import useUI from 'shared/contexts/stores/UI';
 import { ValueOf } from 'shared/types';
 import { generateTestExperimentData } from 'storybook/shared/generateTestData';
-import { ShirtSize } from 'themes';
 import { BrandingType, MetricType, ResourcePool } from 'types';
 
 import css from './DesignKit.module.scss';
@@ -918,15 +916,16 @@ const CardsSection: React.FC = () => {
       </AntDCard>
       <AntDCard title="Usage">
         <strong>Card default</strong>
-        <Grid gap={ShirtSize.Medium} minItemWidth={180} mode={GridMode.AutoFill}>
-          <Card
-            actionMenu={{ items: [{ key: 'test', label: 'Test' }] }}
-            footer="Footer text"
-            title="Card with overflow">
-            Content
-          </Card>
-          <Card title="Card without overflow">Content</Card>
-        </Grid>
+        <Space size="large">
+          <div>
+            <p>Card with actions</p>
+            <Card actionMenu={{ items: [{ key: 'test', label: 'Test' }] }} />
+          </div>
+          <div>
+            <p>Card without actions</p>
+            <Card />
+          </div>
+        </Space>
         <strong>Considerations</strong>
         <ul>
           <li>Ensure links are tab-able.</li>
@@ -937,7 +936,7 @@ const CardsSection: React.FC = () => {
             additional clicks.
           </li>
         </ul>
-        <strong>DataCard variations</strong>
+        <strong>Card variations</strong>
         <ul>
           <li>
             Resource pool card (<code>{'<ResourcePoolCard>'}</code>)
