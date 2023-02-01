@@ -33,13 +33,6 @@ module.exports = {
       'warn',
       { allowArgumentsExplicitlyTypedAsAny: true },
     ],
-    '@typescript-eslint/member-ordering': [
-      'error',
-      {
-        interfaces: { order: 'alphabetically' },
-        typeLiterals: { order: 'alphabetically' },
-      },
-    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': [
       'error',

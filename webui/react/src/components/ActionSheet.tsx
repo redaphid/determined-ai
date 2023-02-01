@@ -15,9 +15,9 @@ export interface ActionItem extends LinkProps {
 
 interface Props {
   actions: ActionItem[];
-  hideCancel?: boolean;
-  onCancel?: () => void;
   show?: boolean;
+  onCancel?: () => void;
+  hideCancel?: boolean;
 }
 
 const ActionSheet: React.FC<Props> = ({ onCancel, ...props }: Props) => {

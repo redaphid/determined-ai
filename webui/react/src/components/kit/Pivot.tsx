@@ -4,9 +4,9 @@ import React, { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import css from './Pivot.module.scss';
 
 export type TabItem = {
-  children?: ReactNode;
   key: string;
   label: ReactNode;
+  children?: ReactNode;
 };
 
 interface PivotProps {
