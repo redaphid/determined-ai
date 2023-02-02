@@ -526,10 +526,13 @@ commands:
         default: ""
       aux-agent-instance-type:
         type: string
-        default: "m5.large"
+        default: "m5a.large"
       compute-agent-instance-type:
         type: string
-        default: "p2.xlarge"
+        default: "g4dn.xlarge"
+      region:
+        type: string
+        default: us-west-2
       max-dynamic-agents:
         type: integer
         default: 1
@@ -598,6 +601,7 @@ commands:
               --det-version <<parameters.det-version>> \
               --aux-agent-instance-type <<parameters.aux-agent-instance-type>> \
               --compute-agent-instance-type <<parameters.compute-agent-instance-type>> \
+              --region <<parameters.region>> \
               --max-dynamic-agents <<parameters.max-dynamic-agents>> \
               --keypair <<parameters.keypair>> \
               --deployment-type <<parameters.deployment-type>> \
@@ -627,10 +631,13 @@ commands:
         type: string
       compute-agent-instance-type:
         type: string
-        default: "p2.xlarge"
+        default: "g4dn.xlarge"
       aux-agent-instance-type:
         type: string
-        default: "m5.large"
+        default: "m5a.large"
+      region:
+        type: string
+        default: us-west-2
       max-dynamic-agents:
         type: integer
         default: 1
@@ -652,6 +659,7 @@ commands:
           det-version: <<parameters.det-version>>
           aux-agent-instance-type: <<parameters.aux-agent-instance-type>>
           compute-agent-instance-type: <<parameters.compute-agent-instance-type>>
+          region: <<parameters.region>>
           max-dynamic-agents: <<parameters.max-dynamic-agents>>
           master-tls-cert: <<parameters.master-tls-cert>>
           master-tls-key: <<parameters.master-tls-key>>
@@ -1376,8 +1384,9 @@ jobs:
   test-unit-go:
     docker:
       - image: cimg/go:1.18
-        environment:
-          GO111MODULE: "on"
+    environment:
+      GO111MODULE: "on"
+      AWS_REGION: "us-west-2"
     steps:
       - checkout
       - skip-if-docs-only
@@ -1393,6 +1402,8 @@ jobs:
   test-intg-master:
     machine:
       image: <<pipeline.parameters.machine-image>>
+    environment:
+      AWS_REGION: "us-west-2"
     resource_class: xlarge
     steps:
       - checkout
@@ -1764,10 +1775,13 @@ jobs:
     parameters:
       compute-agent-instance-type:
         type: string
-        default: "p2.xlarge"
+        default: "g4dn.xlarge"
       aux-agent-instance-type:
         type: string
-        default: "m5.large"
+        default: "m5a.large"
+      region:
+        type: string
+        default: us-west-2
       cluster-id:
         type: string
         default: determined-${CIRCLE_BRANCH////--}
@@ -1799,6 +1813,7 @@ jobs:
           det-version: ${CIRCLE_SHA1}
           compute-agent-instance-type: <<parameters.compute-agent-instance-type>>
           aux-agent-instance-type: <<parameters.aux-agent-instance-type>>
+          region: <<parameters.region>>
           max-dynamic-agents: <<parameters.max-dynamic-agents>>
           enable-cors: <<parameters.enable-cors>>
           reattach-enabled: <<parameters.reattach-enabled>>
@@ -1815,10 +1830,13 @@ jobs:
         type: string
       compute-agent-instance-type:
         type: string
-        default: p2.xlarge
+        default: g4dn.xlarge
       aux-agent-instance-type:
         type: string
-        default: m5.large
+        default: m5a.large
+      region:
+        type: string
+        default: us-west-2
       max-dynamic-agents:
         type: integer
         default: 1
@@ -1862,6 +1880,7 @@ jobs:
           det-version: ${CIRCLE_SHA1}
           aux-agent-instance-type: <<parameters.aux-agent-instance-type>>
           compute-agent-instance-type: <<parameters.compute-agent-instance-type>>
+          region: <<parameters.region>>
           max-dynamic-agents: <<parameters.max-dynamic-agents>>
           master-tls-cert: ${MASTER_TLS_CERT}
           master-tls-key: ${MASTER_TLS_KEY}
@@ -2065,10 +2084,13 @@ jobs:
         type: string
       compute-agent-instance-type:
         type: string
-        default: p2.xlarge
+        default: g4dn.xlarge
       aux-agent-instance-type:
         type: string
-        default: m5.large
+        default: m5a.large
+      region:
+        type: string
+        default: us-west-2
       max-dynamic-agents:
         type: integer
         default: 1
@@ -2096,6 +2118,7 @@ jobs:
           det-version: ${CIRCLE_SHA1}
           aux-agent-instance-type: <<parameters.aux-agent-instance-type>>
           compute-agent-instance-type: <<parameters.compute-agent-instance-type>>
+          region: <<parameters.region>>
           max-dynamic-agents: <<parameters.max-dynamic-agents>>
           master-tls-cert: ${MASTER_TLS_CERT}
           master-tls-key: ${MASTER_TLS_KEY}
@@ -2351,8 +2374,8 @@ workflows:
           matrix:
             parameters:
               parallelism: [2]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["parallel"]
               mark: ["parallel"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2545,7 +2568,7 @@ workflows:
               mark: ["distributed and not gpu_required"]
               compute-agent-instance-type: ["c5.2xlarge"]
               environment-gpu-enabled: ["0"]
-              aux-agent-instance-type: ["m5.large"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [16]
 
       # DeepSpeed tests
@@ -2564,7 +2587,7 @@ workflows:
           matrix:
             parameters:
               compute-agent-instance-type: ["g4dn.12xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["deepspeed"]
               mark: ["deepspeed"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2702,8 +2725,8 @@ workflows:
             parameters:
               cluster-id-prefix: ["distributed"]
               mark: ["distributed"]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
 
       # Nightly tests
@@ -2739,8 +2762,8 @@ workflows:
           matrix:
             parameters:
               parallelism: [2]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["parallel"]
               mark: ["parallel"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2774,8 +2797,8 @@ workflows:
             - package-and-push-system-dev
           matrix:
             parameters:
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["mmdetection"]
               mark: ["model_hub_mmdetection"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2795,8 +2818,8 @@ workflows:
             - package-and-push-system-dev
           matrix:
             parameters:
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["transformers"]
               mark: ["model_hub_transformers"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2811,8 +2834,8 @@ workflows:
             - package-and-push-system-dev
           matrix:
             parameters:
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               cluster-id-prefix: ["transformers-amp"]
               mark: ["model_hub_transformers_amp"]
               slack-mentions: ["${SLACK_USER_ID}"]
@@ -2869,8 +2892,8 @@ workflows:
             parameters:
               cluster-id-prefix: ["distributed"]
               mark: ["distributed"]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
       - test-e2e-aws:
           name: test-e2e-gpu-transformers
@@ -2879,8 +2902,8 @@ workflows:
             parameters:
               cluster-id-prefix: ["transformers"]
               mark: ["model_hub_transformers"]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
       - test-e2e-aws:
           name: test-e2e-gpu-transformers-amp
@@ -2889,8 +2912,8 @@ workflows:
             parameters:
               cluster-id-prefix: ["transformers-amp"]
               mark: ["model_hub_transformers_amp"]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
       - test-e2e-aws:
           name: test-e2e-gpu-mmdetection
@@ -2899,8 +2922,8 @@ workflows:
             parameters:
               cluster-id-prefix: ["mmdetection"]
               mark: ["model_hub_mmdetection"]
-              compute-agent-instance-type: ["p2.8xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              compute-agent-instance-type: ["g4dn.8xlarge"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
         # DeepSpeed tests do not work on K80s, so we need V100 instances.
       - test-e2e-aws:
@@ -2911,7 +2934,7 @@ workflows:
               cluster-id-prefix: ["deepspeed"]
               mark: ["deepspeed"]
               compute-agent-instance-type: ["g4dn.12xlarge"]
-              aux-agent-instance-type: ["m5.large"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [2]
       - test-e2e-aws:
           name: test-e2e-cpu-distributed
@@ -2922,7 +2945,7 @@ workflows:
               mark: ["distributed and not gpu_required"]
               compute-agent-instance-type: ["c5.2xlarge"]
               environment-gpu-enabled: ["0"]
-              aux-agent-instance-type: ["m5.large"]
+              aux-agent-instance-type: ["m5a.large"]
               max-dynamic-agents: [16]
       - test-aws-fs:
           name: test-aws-fs-fsx

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/pkg/errors"
@@ -15,6 +14,9 @@ import (
 	"github.com/determined-ai/determined/master/pkg/check"
 	"github.com/determined-ai/determined/master/pkg/device"
 )
+
+//go:generate go run aws_gen.go provconfig ec2InstanceSlots aws_slots.go
+//go:generate gofmt -w aws_slots.go
 
 // SpotPriceNotSetPlaceholder set placeholder.
 const SpotPriceNotSetPlaceholder = "OnDemand"
@@ -69,6 +71,7 @@ var defaultAWSClusterConfig = AWSClusterConfig{
 		PublicIP: true,
 	},
 	InstanceType:    "p3.8xlarge",
+	Region:          "us-east-2",
 	SpotEnabled:     false,
 	CPUSlotsAllowed: false,
 }
@@ -134,7 +137,7 @@ func (c *AWSClusterConfig) UnmarshalJSON(data []byte) error {
 func validateInstanceTypeSlots(c AWSClusterConfig) error {
 	// Must have an instance in ec2InstanceSlots map or InstanceSlots set
 	instanceType := c.InstanceType
-	if _, ok := ec2InstanceSlots[instanceType]; ok {
+	if _, ok := ec2InstanceSlots[instanceType.Name()]; ok {
 		return nil
 	}
 
@@ -143,13 +146,13 @@ func validateInstanceTypeSlots(c AWSClusterConfig) error {
 		if *instanceSlots < 0 {
 			return errors.Errorf("ec2 'instance_slots' must be greater than or equal to 0")
 		}
-		ec2InstanceSlots[instanceType] = *instanceSlots
+		ec2InstanceSlots[instanceType.Name()] = *instanceSlots
 		return nil
 	}
 
 	strs := make([]string, 0, len(ec2InstanceSlots))
 	for t := range ec2InstanceSlots {
-		strs = append(strs, t.Name())
+		strs = append(strs, t)
 	}
 	return errors.Errorf("Either ec2 'instance_type' and 'instance_slots' must be specified or "+
 		"the ec2 'instance_type' must be one of types: %s", strings.Join(strs, ", "))
@@ -241,7 +244,7 @@ func (t Ec2InstanceType) Name() string {
 
 // Slots returns number of slots.
 func (t Ec2InstanceType) Slots() int {
-	if s, ok := ec2InstanceSlots[t]; ok {
+	if s, ok := ec2InstanceSlots[t.Name()]; ok {
 		return s
 	}
 	return 0
@@ -280,120 +283,10 @@ func (t Ec2InstanceType) Accelerator() string {
 	return fmt.Sprintf("%d x %s", numGpu, accelerator)
 }
 
-// This map tracks how many slots are available in each instance type. It also
-// serves as the list of instance types that the provisioner may provision - if
-// the master.yaml is configured with an instance type and instance slots are
-// not specified the provisioner will consider it an error.
-var ec2InstanceSlots = map[Ec2InstanceType]int{
-	"g4dn.xlarge":   1,
-	"g4dn.2xlarge":  1,
-	"g4dn.4xlarge":  1,
-	"g4dn.8xlarge":  1,
-	"g4dn.16xlarge": 1,
-	"g4dn.12xlarge": 4,
-	"g4dn.metal":    8,
-	"g5.xlarge":     1,
-	"g5.2xlarge":    1,
-	"g5.4xlarge":    1,
-	"g5.8xlarge":    1,
-	"g5.16xlarge":   1,
-	"g5.12xlarge":   4,
-	"g5.24xlarge":   4,
-	"g5.48xlarge":   8,
-	"p2.xlarge":     1,
-	"p2.8xlarge":    8,
-	"p2.16xlarge":   16,
-	"p3.2xlarge":    1,
-	"p3.8xlarge":    4,
-	"p3.16xlarge":   8,
-	"p3dn.24xlarge": 8,
-	"p4d.24xlarge":  8,
-	"t2.medium":     0,
-	"t2.large":      0,
-	"t2.xlarge":     0,
-	"t2.2xlarge":    0,
-	"t3.nano":       0,
-	"t3.micro":      0,
-	"t3.small":      0,
-	"t3.medium":     0,
-	"t3.large":      0,
-	"t3.xlarge":     0,
-	"t3.2xlarge":    0,
-	"c4.large":      0,
-	"c4.xlarge":     0,
-	"c4.2xlarge":    0,
-	"c4.4xlarge":    0,
-	"c4.8xlarge":    0,
-	"c5.large":      0,
-	"c5.xlarge":     0,
-	"c5.2xlarge":    0,
-	"c5.4xlarge":    0,
-	"c5.9xlarge":    0,
-	"c5.12xlarge":   0,
-	"c5.18xlarge":   0,
-	"c5.24xlarge":   0,
-	"c5d.large":     0,
-	"c5d.xlarge":    0,
-	"c5d.2xlarge":   0,
-	"c5d.4xlarge":   0,
-	"c5d.9xlarge":   0,
-	"c5d.12xlarge":  0,
-	"c5d.18xlarge":  0,
-	"c5d.24xlarge":  0,
-	"c5n.large":     0,
-	"c5n.xlarge":    0,
-	"c5n.2xlarge":   0,
-	"c5n.4xlarge":   0,
-	"c5n.9xlarge":   0,
-	"c5n.18xlarge":  0,
-	"m4.large":      0,
-	"m4.xlarge":     0,
-	"m4.2xlarge":    0,
-	"m4.4xlarge":    0,
-	"m4.10xlarge":   0,
-	"m4.16xlarge":   0,
-	"m5.large":      0,
-	"m5.xlarge":     0,
-	"m5.2xlarge":    0,
-	"m5.4xlarge":    0,
-	"m5.8xlarge":    0,
-	"m5.12xlarge":   0,
-	"m5.16xlarge":   0,
-	"m5.24xlarge":   0,
-	"m5d.large":     0,
-	"m5d.xlarge":    0,
-	"m5d.2xlarge":   0,
-	"m5d.4xlarge":   0,
-	"m5d.8xlarge":   0,
-	"m5d.12xlarge":  0,
-	"m5d.16xlarge":  0,
-	"m5d.24xlarge":  0,
-	"m5dn.large":    0,
-	"m5dn.xlarge":   0,
-	"m5dn.2xlarge":  0,
-	"m5dn.4xlarge":  0,
-	"m5dn.8xlarge":  0,
-	"m5dn.12xlarge": 0,
-	"m5dn.16xlarge": 0,
-	"m5dn.24xlarge": 0,
-	"m5n.large":     0,
-	"m5n.xlarge":    0,
-	"m5n.2xlarge":   0,
-	"m5n.4xlarge":   0,
-	"m5n.8xlarge":   0,
-	"m5n.12xlarge":  0,
-	"m5n.16xlarge":  0,
-	"m5n.24xlarge":  0,
-	"m5zn.large":    0,
-	"m5zn.xlarge":   0,
-	"m5zn.2xlarge":  0,
-	"m5zn.3xlarge":  0,
-	"m5zn.6xlarge":  0,
-	"m5zn.12xlarge": 0,
-}
-
 func getEC2MetadataSess() (*ec2metadata.EC2Metadata, error) {
-	sess, err := session.NewSession(&aws.Config{})
+	sess, err := session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create AWS session")
 	}
