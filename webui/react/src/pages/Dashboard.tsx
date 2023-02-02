@@ -210,12 +210,7 @@ const Dashboard: React.FC = () => {
             minItemWidth={250}
             mode={GridMode.ScrollableRow}>
             {projects.map((project) => (
-              <ProjectCard
-                curUser={currentUser}
-                fetchProjects={fetchProjects}
-                key={project.id}
-                project={project}
-              />
+              <ProjectCard fetchProjects={fetchProjects} key={project.id} project={project} />
             ))}
           </Grid>
         </Section>
