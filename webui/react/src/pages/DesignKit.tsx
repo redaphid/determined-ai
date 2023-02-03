@@ -1052,7 +1052,7 @@ const LogViewerSection: React.FC = () => {
 const FormSection: React.FC = () => {
   return (
     <ComponentSection id="Form" title="Form">
-      <Card>
+      <AntDCard>
         <p>
           <code>{'<Form>'}</code> and <code>{'<Form.Item>'}</code> components are used for
           submitting user input. When these components wrap a user input field (such as{' '}
@@ -1060,8 +1060,8 @@ const FormSection: React.FC = () => {
           label, indicate that the field is required, apply input validation, or display an input
           validation error.
         </p>
-      </Card>
-      <Card title="Usage">
+      </AntDCard>
+      <AntDCard title="Usage">
         <Form>
           <strong>
             Form-specific{' '}
@@ -1169,132 +1169,7 @@ const FormSection: React.FC = () => {
             <SelectFilter />
           </Form.Item>
         </Form>
-      </Card>
-    </ComponentSection>
-  );
-};
-
-const FormSection: React.FC = () => {
-  return (
-    <ComponentSection id="Form" title="Form">
-      <Card>
-        <p>
-          <code>{'<Form>'}</code> and <code>{'<Form.Item>'}</code> components are used for
-          submitting user input. When these components wrap a user input field (such as{' '}
-          <code>{'<Input>'}</code> or <code>{'<SelectFilter>'}</code>), they can show a standard
-          label, indicate that the field is required, apply input validation, or display an input
-          validation error.
-        </p>
-      </Card>
-      <Card title="Usage">
-        <Form>
-          <strong>
-            Form-specific{' '}
-            <Link reloadDocument to={`#${ComponentTitles.Input}`}>
-              Input
-            </Link>{' '}
-            variations
-          </strong>
-          <br />
-          <Form.Item label="Required input" name="required" required>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Invalid input"
-            name="invalid"
-            validateMessage="Input validation error"
-            validateStatus="error">
-            <Input />
-          </Form.Item>
-          <br />
-          <hr />
-          <br />
-          <strong>
-            Form-specific{' '}
-            <Link reloadDocument to={`#${ComponentTitles.Input}`}>
-              TextArea
-            </Link>{' '}
-            variations
-          </strong>
-          <br />
-          <Form.Item label="Required TextArea" name="required" required>
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item
-            label="Invalid TextArea"
-            name="invalid"
-            validateMessage="Input validation error"
-            validateStatus="error">
-            <Input.TextArea />
-          </Form.Item>
-          <br />
-          <hr />
-          <br />
-          <strong>
-            Form-specific{' '}
-            <Link reloadDocument to={`#${ComponentTitles.Input}`}>
-              Password
-            </Link>{' '}
-            variations
-          </strong>
-          <br />
-          <Form.Item label="Required Password" name="required" required>
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            label="Invalid Password"
-            name="invalid"
-            validateMessage="Input validation error"
-            validateStatus="error">
-            <Input.Password />
-          </Form.Item>
-          <br />
-          <hr />
-          <br />
-          <strong>
-            Form-specific{' '}
-            <Link reloadDocument to={`#${ComponentTitles.InputNumber}`}>
-              InputNumber
-            </Link>{' '}
-            variations
-          </strong>
-          <Form.Item label="Required InputNumber" name="number" required>
-            <InputNumber />
-          </Form.Item>
-          <Form.Item
-            label="Invalid InputNumber"
-            validateMessage="Input validation error"
-            validateStatus="error">
-            <InputNumber />
-          </Form.Item>
-          <br />
-          <hr />
-          <br />
-          <strong>
-            Form-specific{' '}
-            <Link reloadDocument to={`#${ComponentTitles.Dropdowns}`}>
-              Dropdown
-            </Link>{' '}
-            variations
-          </strong>
-          <Form.Item label="Required dropdown" name="required" required>
-            <SelectFilter
-              defaultValue={1}
-              options={[
-                { label: 'Option 1', value: 1 },
-                { label: 'Option 2', value: 2 },
-                { label: 'Option 3', value: 3 },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item
-            label="Invalid dropdown"
-            validateMessage="Input validation error"
-            validateStatus="error">
-            <SelectFilter />
-          </Form.Item>
-        </Form>
-      </Card>
+      </AntDCard>
     </ComponentSection>
   );
 };
@@ -1409,9 +1284,9 @@ const Components = {
   ActionBar: <ActionBarSection />,
   Breadcrumbs: <BreadcrumbsSection />,
   Buttons: <ButtonsSection />,
+  Cards: <CardsSection />,
   Charts: <ChartsSection />,
   Checkboxes: <CheckboxesSection />,
-  DataCards: <DataCardsSection />,
   Dropdowns: <DropdownsSection />,
   Facepile: <FacepileSection />,
   Form: <FormSection />,
