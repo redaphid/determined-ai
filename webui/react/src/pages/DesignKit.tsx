@@ -921,7 +921,7 @@ const CardsSection: React.FC = () => {
       </AntDCard>
       <AntDCard title="Usage">
         <strong>Card default</strong>
-        <Space size="large">
+        <Space size="middle">
           <div>
             <p>Card with actions</p>
             <Card actionMenu={{ items: [{ key: 'test', label: 'Test' }] }} />
@@ -946,7 +946,7 @@ const CardsSection: React.FC = () => {
           <li>
             Project card (<code>{'<ProjectCard>'}</code>)
           </li>
-          <Space size="large">
+          <Space size="middle">
             <ProjectCard project={project} />
             <ProjectCard project={{ ...project, archived: true }} />
             <ProjectCard
