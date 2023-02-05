@@ -3,6 +3,8 @@ package singularity
 import (
 	"bufio"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -30,7 +32,9 @@ import (
 )
 
 const (
-	cleanupDelay = time.Hour
+	stateCache     = "/var/cache/determined/singularity_containers.json"
+	stateCacheCopy = "/var/cache/determined/singularity_containers.json.copy"
+	cleanupDelay   = time.Hour
 )
 
 type SingularityClient struct {
@@ -41,25 +45,27 @@ type SingularityClient struct {
 }
 
 type SingularityContainer struct {
-	// Start state.
-	cmd []string
-	req cproto.RunSpec
+	PID         int                    `json:"pid"`
+	Cmd         []string               `json:"cmd"`
+	Req         cproto.RunSpec         `json:"req"`
+	NetworkMode dcontainer.NetworkMode `json:"network_mode"`
+	Ports       nat.PortSet            `json:"ports"`
 
-	// Persistent state.
-	proc        *os.Process
-	networkMode dcontainer.NetworkMode
-	ports       nat.PortSet
+	Proc *os.Process `json:"-"`
 }
 
 func New() (*SingularityClient, error) {
-	return &SingularityClient{
+	cl := &SingularityClient{
 		log:        logrus.WithField("compotent", "singularity"),
 		wg:         waitgroupx.WithContext(context.Background()),
 		containers: make(map[cproto.ID]*SingularityContainer),
-	}, nil
-}
+	}
 
-var debug = true
+	if err := cl.LoadCache(); err != nil {
+		return nil, fmt.Errorf("initial cache load: %w", err)
+	}
+	return cl, nil
+}
 
 // CreateContainer implements container.ContainerRuntime
 func (s *SingularityClient) CreateContainer(
@@ -111,10 +117,10 @@ func (s *SingularityClient) CreateContainer(
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.containers[id] = &SingularityContainer{
-		cmd:         append([]string{"singularity"}, args...),
-		req:         req,
-		networkMode: "host",
-		ports:       req.ContainerConfig.ExposedPorts,
+		Cmd:         append([]string{"singularity"}, args...),
+		Req:         req,
+		NetworkMode: "host",
+		Ports:       req.ContainerConfig.ExposedPorts,
 	}
 	return id.String(), nil
 }
@@ -141,7 +147,7 @@ func (s *SingularityClient) RunContainer(
 		return nil, container.ErrMissing
 	}
 
-	cmd := exec.CommandContext(waitCtx, cont.cmd[0], cont.cmd[1:]...)
+	cmd := exec.CommandContext(waitCtx, cont.Cmd[0], cont.Cmd[1:]...)
 	stdout, oerr := cmd.StdoutPipe()
 	stderr, eerr := cmd.StderrPipe()
 	if oerr != nil || eerr != nil {
@@ -161,7 +167,7 @@ func (s *SingularityClient) RunContainer(
 
 	// TODO: device mappings and stuff for amd.
 	var devices string
-	for _, d := range cont.req.HostConfig.DeviceRequests {
+	for _, d := range cont.Req.HostConfig.DeviceRequests {
 		if d.Driver == "nvidia" {
 			devices = strings.Join(d.DeviceIDs, ",")
 		}
@@ -176,7 +182,7 @@ func (s *SingularityClient) RunContainer(
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("starting singularity container: %w", err)
 	}
-	cont.proc = cmd.Process
+	cont.Proc = cmd.Process
 
 	wchan := make(chan dcontainer.ContainerWaitOKBody)
 	errchan := make(chan error)
@@ -199,13 +205,13 @@ func (s *SingularityClient) RunContainer(
 	return &docker.Container{
 		ContainerInfo: types.ContainerJSON{
 			ContainerJSONBase: &types.ContainerJSONBase{
-				ID: strconv.Itoa(cont.proc.Pid),
+				ID: strconv.Itoa(cont.Proc.Pid),
 				HostConfig: &dcontainer.HostConfig{
-					NetworkMode: cont.networkMode,
+					NetworkMode: cont.NetworkMode,
 				},
 			},
 			Config: &dcontainer.Config{
-				ExposedPorts: cont.ports,
+				ExposedPorts: cont.Ports,
 			},
 		}, // TODO
 		ContainerWaiter: docker.ContainerWaiter{Waiter: wchan, Errs: errchan},
@@ -235,7 +241,7 @@ func (s *SingularityClient) ReattachContainer(
 	wchan := make(chan dcontainer.ContainerWaitOKBody)
 	errchan := make(chan error)
 	s.wg.Go(func(ctx context.Context) {
-		state, err := cont.proc.Wait()
+		state, err := cont.Proc.Wait()
 		spew.Dump(*state, state.ExitCode(), err)
 		if err != nil {
 			select {
@@ -264,9 +270,9 @@ func (s *SingularityClient) ReattachContainer(
 	return &docker.Container{
 		ContainerInfo: types.ContainerJSON{
 			ContainerJSONBase: &types.ContainerJSONBase{
-				ID: strconv.Itoa(cont.proc.Pid),
+				ID: strconv.Itoa(cont.Proc.Pid),
 				HostConfig: &dcontainer.HostConfig{
-					NetworkMode: cont.networkMode,
+					NetworkMode: cont.NetworkMode,
 				},
 			},
 			Config: &dcontainer.Config{
@@ -286,7 +292,7 @@ func (s *SingularityClient) RemoveContainer(ctx context.Context, id string, forc
 	if !ok {
 		return container.ErrMissing
 	}
-	return cont.proc.Kill()
+	return cont.Proc.Kill()
 }
 
 // SignalContainer implements container.ContainerRuntime
@@ -298,7 +304,7 @@ func (s *SingularityClient) SignalContainer(ctx context.Context, id string, sig 
 	if !ok {
 		return container.ErrMissing
 	}
-	return cont.proc.Signal(sig)
+	return cont.Proc.Signal(sig)
 }
 
 // ListRunningContainers implements container.ContainerRuntime
@@ -347,6 +353,46 @@ func (s *SingularityClient) PullImage(ctx context.Context, req docker.PullImage,
 
 		line = strings.TrimPrefix(line, "FATAL:   ") // TODO: prase out levels everywhere, sometimes convert.
 		p.Publish(ctx, docker.NewLogEvent(model.LogLevelInfo, line))
+	}
+	return nil
+}
+
+func (s *SingularityClient) LoadCache() error {
+	f, err := os.Open(stateCache)
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		return nil
+	case err != nil:
+		return fmt.Errorf("opening state cache: %w", err)
+	}
+
+	if err := json.NewDecoder(f).Decode(&s.containers); err != nil {
+		return fmt.Errorf("decoding state cache: %w", err)
+	}
+	return nil
+}
+
+func (s *SingularityClient) PersistCache() error {
+	bs, err := json.Marshal(s.containers)
+	if err != nil {
+		return fmt.Errorf("persisting cache: %w", err)
+	}
+
+	f, err := os.OpenFile(stateCacheCopy, os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("opening state cache copy: %w", err)
+	}
+
+	n, err := f.Write(bs)
+	switch {
+	case err != nil:
+		return fmt.Errorf("writing state cache: %w", err)
+	case n != len(bs):
+		return fmt.Errorf("unable to write full cache (%d != %d)", n, len(bs))
+	}
+
+	if err := os.Rename(stateCacheCopy, stateCache); err != nil {
+		return fmt.Errorf("commiting state cache: %w", err)
 	}
 	return nil
 }
