@@ -236,6 +236,7 @@ commands:
       - run: make -C proto get-deps
       - run: make -C master get-deps
       - run: make -C agent get-deps
+      - run: make -C webui get-deps
       - save_cache:
           key: det-go-deps-<<pipeline.parameters.cache-buster>>-{{ checksum  "master/get-deps.sh" }}-{{ checksum  "master/go.sum" }}-{{ checksum  "agent/get-deps.sh" }}-{{ checksum  "agent/go.sum" }}-{{ checksum  "proto/get-deps.sh" }}-{{ checksum  "proto/go.sum" }}
           paths:
