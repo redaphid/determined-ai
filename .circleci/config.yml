@@ -1815,7 +1815,7 @@ jobs:
         type: string
       compute-agent-instance-type:
         type: string
-        default: p2.xlarge
+        default: g4dn.2xlarge
       aux-agent-instance-type:
         type: string
         default: m5.large
