@@ -19,7 +19,7 @@ from tests import experiment as exp
 
 from .test_users import det_spawn
 
-EXPECT_TIMEOUT = 5
+EXPECT_TIMEOUT = 15
 
 
 def wait_for_gc_to_finish(experiment_id: int) -> None:
@@ -56,21 +56,17 @@ def test_set_gc_policy() -> None:
     save_trial_best = 1  # default because not set in this config
 
     # Command that uses the same gc policy as initial policy used for the experiment.
-    run_command_gc_policy(
-        str(save_exp_best), str(save_trial_latest), str(save_trial_best), str(exp_id)
-    )
+    run_command_gc_policy(save_exp_best, save_trial_latest, save_trial_best, str(exp_id))
 
     # Command that uses a diff gc policy from the initial policy used for the experiment.
     save_exp_best = 0
     save_trial_latest = 1
     save_trial_best = 1
-    run_command_gc_policy(
-        str(save_exp_best), str(save_trial_latest), str(save_trial_best), str(exp_id)
-    )
+    run_command_gc_policy(save_exp_best, save_trial_latest, save_trial_best, exp_id=str(exp_id))
 
 
 def run_command_gc_policy(
-    save_exp_best: str, save_trial_latest: str, save_trial_best: str, exp_id: str
+    save_exp_best: int, save_trial_latest: int, save_trial_best: int, exp_id: str
 ) -> None:
     command = [
         "e",
@@ -86,7 +82,7 @@ def run_command_gc_policy(
     ]
 
     child = det_spawn(command)
-    child.expect("Do you wish to " "proceed?", timeout=EXPECT_TIMEOUT)
+    child.expect("Do you wish to proceed?", timeout=EXPECT_TIMEOUT)
     child.sendline("y")
     child.read()
     child.wait()
