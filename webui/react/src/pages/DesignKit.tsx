@@ -22,6 +22,7 @@ import Pivot from 'components/kit/Pivot';
 import Tooltip from 'components/kit/Tooltip';
 import Logo from 'components/Logo'; //TODO: Move to components/kit? Add section to DesignKit page?
 import LogViewer from 'components/LogViewer/LogViewer'; //TODO: Move to components/kit?
+import OverviewStats from 'components/OverviewStats';
 import Page from 'components/Page'; //TODO: Move to components/kit? Add section to DesignKit page?
 import ProjectCard from 'components/ProjectCard';
 import ResourcePoolCard from 'components/ResourcePoolCard'; //TODO: Rename?
@@ -956,6 +957,10 @@ const CardsSection: React.FC = () => {
               }}
             />
           </Card.Group>
+          <li>
+            Stats overview (<code>{'<OverviewStats>'}</code>)
+          </li>
+          <OverviewStats title="Active Experiments">0</OverviewStats>
           <li>
             Resource pool card (<code>{'<ResourcePoolCard>'}</code>)
           </li>
