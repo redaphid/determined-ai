@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/determined-ai/determined/master/internal/rm/tasklist"
+	"github.com/sirupsen/logrus"
 
 	"github.com/determined-ai/determined/master/internal/sproto"
 	"github.com/determined-ai/determined/master/pkg/actor"
@@ -121,14 +122,41 @@ func fairshareSchedule(
 	capacity := capacityByAgentLabel(agents)
 	states := calculateGroupStates(taskList, groups, capacity)
 
+	logrus.Info("================================ scheduling")
+	logrus.Infof("agent capacity: %s", capacity)
+	logrus.Infof("allowHeterogeneousAgentFits %b", allowHeterogeneousAgentFits)
+	logrus.Infof("agent states:")
+	for ref, a := range agents {
+		logrus.Infof("- %s: enabled %t  draining %t", ref.Address(), a.enabled, a.draining)
+		for _, s := range a.slotStates {
+			logrus.Infof("  - %+v", s.enabled)
+		}
+	}
+
 	for label, groupStates := range states {
+		logrus.Infof("================ label: %q\n", label)
+		for _, g := range groupStates {
+			logrus.Infof("- group: %+v\n", g)
+		}
 		allocateSlotOffers(groupStates, capacity[label])
+		logrus.Infof("======== post offering: %q\n", label)
+		for _, g := range groupStates {
+			logrus.Infof("- group: %+v\n", g)
+		}
 		toAllocate, toRelease := assignTasks(
 			agents,
 			groupStates,
 			fittingMethod,
 			allowHeterogeneousAgentFits,
 		)
+		logrus.Info("==== allocating:")
+		for _, a := range toAllocate {
+			logrus.Infof("- name: %s  task id: %s  allocation id: %s  job id: %s", a.Name, a.TaskID, a.AllocationID, a.JobID)
+		}
+		logrus.Info("==== releasing:")
+		for _, a := range toRelease {
+			logrus.Infof("- %s", a.Address())
+		}
 		allToAllocate = append(allToAllocate, toAllocate...)
 		allToRelease = append(allToRelease, toRelease...)
 	}
