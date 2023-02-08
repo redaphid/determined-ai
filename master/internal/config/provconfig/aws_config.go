@@ -6,6 +6,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/pkg/errors"
@@ -71,7 +72,6 @@ var defaultAWSClusterConfig = AWSClusterConfig{
 		PublicIP: true,
 	},
 	InstanceType:    "p3.8xlarge",
-	Region:          "us-east-2",
 	SpotEnabled:     false,
 	CPUSlotsAllowed: false,
 }
@@ -284,9 +284,7 @@ func (t Ec2InstanceType) Accelerator() string {
 }
 
 func getEC2MetadataSess() (*ec2metadata.EC2Metadata, error) {
-	sess, err := session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	})
+	sess, err := session.NewSession(&aws.Config{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create AWS session")
 	}
