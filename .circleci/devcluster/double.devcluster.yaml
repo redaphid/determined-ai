@@ -27,7 +27,7 @@ stages:
             
   - custom:
       name: proxy
-      cmd: ["socat", "-d", "-d", "TCP-LISTEN:8081,reuseaddr,fork", "TCP:localhost:8080"]
+      cmd: ["socat", "TCP-LISTEN:8081,reuseaddr,fork", "TCP:localhost:8080"]
       post:
         - conncheck:
             port: 8081

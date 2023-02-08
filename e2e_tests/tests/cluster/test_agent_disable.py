@@ -212,7 +212,7 @@ def test_drain_agent() -> None:
 
 
 @pytest.mark.e2e_cpu_2a
-def test_drain_agent_sched() -> None:
+def test_drain_agent_schedx() -> None:
     """
     Start an experiment, drain it. Start a second one and make sure it schedules
     on the second agent *before* the first one has finished.
