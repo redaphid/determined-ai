@@ -529,7 +529,7 @@ commands:
         default: "m5a.large"
       compute-agent-instance-type:
         type: string
-        default: "g3s.xlarge"
+        default: "g4dn.xlarge"
       max-dynamic-agents:
         type: integer
         default: 1
@@ -627,7 +627,7 @@ commands:
         type: string
       compute-agent-instance-type:
         type: string
-        default: "g3s.xlarge"
+        default: "g4dn.xlarge"
       aux-agent-instance-type:
         type: string
         default: "m5a.large"
@@ -1764,7 +1764,7 @@ jobs:
     parameters:
       compute-agent-instance-type:
         type: string
-        default: "g3s.xlarge"
+        default: "g4dn.xlarge"
       aux-agent-instance-type:
         type: string
         default: "m5a.large"
@@ -2065,7 +2065,7 @@ jobs:
         type: string
       compute-agent-instance-type:
         type: string
-        default: g3s.xlarge
+        default: g4dn.xlarge
       aux-agent-instance-type:
         type: string
         default: m5a.large
