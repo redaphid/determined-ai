@@ -1,13 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Button } from 'antd';
 import React from 'react';
 
-import StoreProvider from 'contexts/Store';
+import Button from 'components/kit/Button';
 import { V1GroupSearchResult } from 'services/api-ts-sdk';
 import { CreateGroupsParams, GetGroupParams } from 'services/types';
-import { AuthProvider } from 'stores/auth';
-import { UserRolesProvider } from 'stores/userRoles';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
 import { UsersProvider } from 'stores/users';
 import { DetailedUser } from 'types';
 
@@ -74,15 +72,11 @@ const Container: React.FC<Props> = ({ group }) => {
 
 const setup = async (group?: V1GroupSearchResult) => {
   const view = render(
-    <StoreProvider>
+    <UIProvider>
       <UsersProvider>
-        <AuthProvider>
-          <UserRolesProvider>
-            <Container group={group} />
-          </UserRolesProvider>
-        </AuthProvider>
+        <Container group={group} />
       </UsersProvider>
-    </StoreProvider>,
+    </UIProvider>,
   );
 
   await user.click(await view.findByText(OPEN_MODAL_TEXT));
@@ -124,16 +118,6 @@ describe('useModalCreateGroup', () => {
       expect(
         screen.queryByRole('heading', { name: MODAL_HEADER_LABEL_CREATE }),
       ).not.toBeInTheDocument();
-    });
-  });
-
-  it('should validate the create group request', async () => {
-    await setup();
-
-    await user.click(screen.getByRole('button', { name: MODAL_HEADER_LABEL_CREATE }));
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('alert')).toHaveLength(1);
     });
   });
 

@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import { ModalFuncProps } from 'antd/es/modal/Modal';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -6,6 +5,7 @@ import { removeRolesFromGroup, removeRolesFromUser } from 'services/api';
 import useModal, { ModalHooks } from 'shared/hooks/useModal/useModal';
 import { DetError, ErrorLevel, ErrorType } from 'shared/utils/error';
 import { UserOrGroup } from 'types';
+import { message } from 'utils/dialogApi';
 import handleError from 'utils/error';
 import { isUser } from 'utils/user';
 
@@ -29,7 +29,7 @@ const useModalWorkspaceRemoveMember = ({
   userOrGroupId,
 }: Props): ModalHooks => {
   const { modalOpen: openOrUpdate, modalRef, ...modalHook } = useModal();
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const modalContent = useMemo(() => {
     return (

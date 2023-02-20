@@ -1,35 +1,28 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import StoreProvider from 'contexts/Store';
-import { AuthProvider } from 'stores/auth';
-import { ExperimentsProvider } from 'stores/experiments';
-import { ResourcePoolsProvider } from 'stores/resourcePools';
-import { TasksProvider } from 'stores/tasks';
-import { UserRolesProvider } from 'stores/userRoles';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
+import { ClusterProvider } from 'stores/cluster';
+import { UsersProvider } from 'stores/users';
 
 import { ClusterOverallStats } from './ClusterOverallStats';
 
 jest.mock('services/api', () => ({
   getActiveTasks: () => Promise.resolve({ commands: 0, notebooks: 0, shells: 0, tensorboards: 0 }),
+  getAgents: () => Promise.resolve([]),
   getExperiments: () => Promise.resolve({ experiments: [], pagination: { total: 0 } }),
+  getResourcePools: () => Promise.resolve({}),
 }));
 
 const setup = () => {
   const view = render(
-    <StoreProvider>
-      <AuthProvider>
-        <UserRolesProvider>
-          <ExperimentsProvider>
-            <TasksProvider>
-              <ResourcePoolsProvider>
-                <ClusterOverallStats />
-              </ResourcePoolsProvider>
-            </TasksProvider>
-          </ExperimentsProvider>
-        </UserRolesProvider>
-      </AuthProvider>
-    </StoreProvider>,
+    <UIProvider>
+      <UsersProvider>
+        <ClusterProvider>
+          <ClusterOverallStats />
+        </ClusterProvider>
+      </UsersProvider>
+    </UIProvider>,
   );
   return { view };
 };

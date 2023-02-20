@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React, { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 
-import StoreProvider, { StoreAction, useStoreDispatch } from 'contexts/Store';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
+import { setAuth } from 'stores/auth';
+import { UsersProvider } from 'stores/users';
 
 import InteractiveTask from './InteractiveTask';
 
@@ -23,22 +25,22 @@ jest.mock('react-router-dom', () => ({
 }));
 
 const InteractiveTaskPageContainer: React.FC = () => {
-  const storeDispatch = useStoreDispatch();
-
   useEffect(() => {
-    storeDispatch({ type: StoreAction.SetAuth, value: { isAuthenticated: true } });
-  }, [storeDispatch]);
+    setAuth({ isAuthenticated: true });
+  }, []);
 
   return <InteractiveTask />;
 };
 
 const InteractiveTaskContainer: React.FC = () => {
   return (
-    <StoreProvider>
-      <HelmetProvider>
-        <InteractiveTaskPageContainer />
-      </HelmetProvider>
-    </StoreProvider>
+    <UsersProvider>
+      <UIProvider>
+        <HelmetProvider>
+          <InteractiveTaskPageContainer />
+        </HelmetProvider>
+      </UIProvider>
+    </UsersProvider>
   );
 };
 

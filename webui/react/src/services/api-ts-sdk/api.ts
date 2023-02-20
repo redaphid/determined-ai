@@ -83,7 +83,7 @@ export class RequiredError extends Error {
  * @export
  * @enum {string}
  */
-export enum Determinedcheckpointv1State {
+export enum Checkpointv1State {
     UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
     ACTIVE = <any> 'STATE_ACTIVE',
     COMPLETED = <any> 'STATE_COMPLETED',
@@ -96,7 +96,7 @@ export enum Determinedcheckpointv1State {
  * @export
  * @enum {string}
  */
-export enum Determinedcontainerv1State {
+export enum Containerv1State {
     UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
     ASSIGNED = <any> 'STATE_ASSIGNED',
     PULLING = <any> 'STATE_PULLING',
@@ -110,97 +110,11 @@ export enum Determinedcontainerv1State {
  * @export
  * @enum {string}
  */
-export enum Determineddevicev1Type {
+export enum Devicev1Type {
     UNSPECIFIED = <any> 'TYPE_UNSPECIFIED',
     CPU = <any> 'TYPE_CPU',
     CUDA = <any> 'TYPE_CUDA',
     ROCM = <any> 'TYPE_ROCM'
-}
-
-/**
- * The current state of the experiment.   - STATE_UNSPECIFIED: The state of the experiment is unknown.  - STATE_ACTIVE: The experiment is in an active state.  - STATE_PAUSED: The experiment is in a paused state  - STATE_STOPPING_COMPLETED: The experiment is completed and is shutting down.  - STATE_STOPPING_CANCELED: The experiment is canceled and is shutting down.  - STATE_STOPPING_ERROR: The experiment is errored and is shutting down.  - STATE_COMPLETED: The experiment is completed and is shut down.  - STATE_CANCELED: The experiment is canceled and is shut down.  - STATE_ERROR: The experiment is errored and is shut down.  - STATE_DELETED: The experiment has been deleted.  - STATE_DELETING: The experiment is deleting.  - STATE_DELETE_FAILED: The experiment failed to delete.  - STATE_STOPPING_KILLED: The experiment is killed and is shutting down.  - STATE_QUEUED: The experiment is queued (waiting to be run, or job state is still queued). Queued is a substate of the Active state.  - STATE_PULLING: The experiment is pulling the image. Pulling is a substate of the Active state.  - STATE_STARTING: The experiment is preparing the environment after finishing pulling the image. Starting is a substate of the Active state.  - STATE_RUNNING: The experiment has an allocation actively running. Running is a substate of the Active state.
- * @export
- * @enum {string}
- */
-export enum Determinedexperimentv1State {
-    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
-    ACTIVE = <any> 'STATE_ACTIVE',
-    PAUSED = <any> 'STATE_PAUSED',
-    STOPPINGCOMPLETED = <any> 'STATE_STOPPING_COMPLETED',
-    STOPPINGCANCELED = <any> 'STATE_STOPPING_CANCELED',
-    STOPPINGERROR = <any> 'STATE_STOPPING_ERROR',
-    COMPLETED = <any> 'STATE_COMPLETED',
-    CANCELED = <any> 'STATE_CANCELED',
-    ERROR = <any> 'STATE_ERROR',
-    DELETED = <any> 'STATE_DELETED',
-    DELETING = <any> 'STATE_DELETING',
-    DELETEFAILED = <any> 'STATE_DELETE_FAILED',
-    STOPPINGKILLED = <any> 'STATE_STOPPING_KILLED',
-    QUEUED = <any> 'STATE_QUEUED',
-    PULLING = <any> 'STATE_PULLING',
-    STARTING = <any> 'STATE_STARTING',
-    RUNNING = <any> 'STATE_RUNNING'
-}
-
-/**
- * Job state.   - STATE_UNSPECIFIED: Unspecified state.  - STATE_QUEUED: Job is queued and waiting to be schedlued.  - STATE_SCHEDULED: Job is scheduled.  - STATE_SCHEDULED_BACKFILLED: Job is scheduled as a backfill.
- * @export
- * @enum {string}
- */
-export enum Determinedjobv1State {
-    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
-    QUEUED = <any> 'STATE_QUEUED',
-    SCHEDULED = <any> 'STATE_SCHEDULED',
-    SCHEDULEDBACKFILLED = <any> 'STATE_SCHEDULED_BACKFILLED'
-}
-
-/**
- * Job type.   - TYPE_UNSPECIFIED: Unspecified state.  - TYPE_EXPERIMENT: Experiement Job.  - TYPE_NOTEBOOK: Jupyter Notebook Job.  - TYPE_TENSORBOARD: TensorBoard Job.  - TYPE_SHELL: Shell Job.  - TYPE_COMMAND: Command Job.  - TYPE_CHECKPOINT_GC: CheckpointGC Job.
- * @export
- * @enum {string}
- */
-export enum Determinedjobv1Type {
-    UNSPECIFIED = <any> 'TYPE_UNSPECIFIED',
-    EXPERIMENT = <any> 'TYPE_EXPERIMENT',
-    NOTEBOOK = <any> 'TYPE_NOTEBOOK',
-    TENSORBOARD = <any> 'TYPE_TENSORBOARD',
-    SHELL = <any> 'TYPE_SHELL',
-    COMMAND = <any> 'TYPE_COMMAND',
-    CHECKPOINTGC = <any> 'TYPE_CHECKPOINT_GC'
-}
-
-/**
- * The current state of the task.   - STATE_UNSPECIFIED: The task state is unknown.  - STATE_PULLING: The task's base image is being pulled from the Docker registry.  - STATE_STARTING: The image has been pulled and the task is being started, but the task is not ready yet.  - STATE_RUNNING: The service in the task is running.  - STATE_TERMINATED: The task has exited or has been aborted.  - STATE_TERMINATING: The task has begun to exit.  - STATE_WAITING: The task is waiting on something to complete.  - STATE_QUEUED: Additional state to cover queueing operations.
- * @export
- * @enum {string}
- */
-export enum Determinedtaskv1State {
-    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
-    PULLING = <any> 'STATE_PULLING',
-    STARTING = <any> 'STATE_STARTING',
-    RUNNING = <any> 'STATE_RUNNING',
-    TERMINATED = <any> 'STATE_TERMINATED',
-    TERMINATING = <any> 'STATE_TERMINATING',
-    WAITING = <any> 'STATE_WAITING',
-    QUEUED = <any> 'STATE_QUEUED'
-}
-
-/**
- * - STATE_UNSPECIFIED: The trial is in an unspecified state.  - STATE_ACTIVE: The trial is in an active state.  - STATE_PAUSED: The trial is in a paused state  - STATE_STOPPING_CANCELED: The trial is canceled and is shutting down.  - STATE_STOPPING_KILLED: The trial is killed and is shutting down.  - STATE_STOPPING_COMPLETED: The trial is completed and is shutting down.  - STATE_STOPPING_ERROR: The trial is errored and is shutting down.  - STATE_CANCELED: The trial is canceled and is shut down.  - STATE_COMPLETED: The trial is completed and is shut down.  - STATE_ERROR: The trial is errored and is shut down.
- * @export
- * @enum {string}
- */
-export enum Determinedtrialv1State {
-    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
-    ACTIVE = <any> 'STATE_ACTIVE',
-    PAUSED = <any> 'STATE_PAUSED',
-    STOPPINGCANCELED = <any> 'STATE_STOPPING_CANCELED',
-    STOPPINGKILLED = <any> 'STATE_STOPPING_KILLED',
-    STOPPINGCOMPLETED = <any> 'STATE_STOPPING_COMPLETED',
-    STOPPINGERROR = <any> 'STATE_STOPPING_ERROR',
-    CANCELED = <any> 'STATE_CANCELED',
-    COMPLETED = <any> 'STATE_COMPLETED',
-    ERROR = <any> 'STATE_ERROR'
 }
 
 /**
@@ -233,6 +147,31 @@ export interface ExpCompareTrialsSampleResponseExpTrial {
      * @memberof ExpCompareTrialsSampleResponseExpTrial
      */
     experimentId: number;
+}
+
+/**
+ * The current state of the experiment.   - STATE_UNSPECIFIED: The state of the experiment is unknown.  - STATE_ACTIVE: The experiment is in an active state.  - STATE_PAUSED: The experiment is in a paused state  - STATE_STOPPING_COMPLETED: The experiment is completed and is shutting down.  - STATE_STOPPING_CANCELED: The experiment is canceled and is shutting down.  - STATE_STOPPING_ERROR: The experiment is errored and is shutting down.  - STATE_COMPLETED: The experiment is completed and is shut down.  - STATE_CANCELED: The experiment is canceled and is shut down.  - STATE_ERROR: The experiment is errored and is shut down.  - STATE_DELETED: The experiment has been deleted.  - STATE_DELETING: The experiment is deleting.  - STATE_DELETE_FAILED: The experiment failed to delete.  - STATE_STOPPING_KILLED: The experiment is killed and is shutting down.  - STATE_QUEUED: The experiment is queued (waiting to be run, or job state is still queued). Queued is a substate of the Active state.  - STATE_PULLING: The experiment is pulling the image. Pulling is a substate of the Active state.  - STATE_STARTING: The experiment is preparing the environment after finishing pulling the image. Starting is a substate of the Active state.  - STATE_RUNNING: The experiment has an allocation actively running. Running is a substate of the Active state.
+ * @export
+ * @enum {string}
+ */
+export enum Experimentv1State {
+    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
+    ACTIVE = <any> 'STATE_ACTIVE',
+    PAUSED = <any> 'STATE_PAUSED',
+    STOPPINGCOMPLETED = <any> 'STATE_STOPPING_COMPLETED',
+    STOPPINGCANCELED = <any> 'STATE_STOPPING_CANCELED',
+    STOPPINGERROR = <any> 'STATE_STOPPING_ERROR',
+    COMPLETED = <any> 'STATE_COMPLETED',
+    CANCELED = <any> 'STATE_CANCELED',
+    ERROR = <any> 'STATE_ERROR',
+    DELETED = <any> 'STATE_DELETED',
+    DELETING = <any> 'STATE_DELETING',
+    DELETEFAILED = <any> 'STATE_DELETE_FAILED',
+    STOPPINGKILLED = <any> 'STATE_STOPPING_KILLED',
+    QUEUED = <any> 'STATE_QUEUED',
+    PULLING = <any> 'STATE_PULLING',
+    STARTING = <any> 'STATE_STARTING',
+    RUNNING = <any> 'STATE_RUNNING'
 }
 
 /**
@@ -293,6 +232,33 @@ export enum GetTrialWorkloadsRequestFilterOption {
     CHECKPOINT = <any> 'FILTER_OPTION_CHECKPOINT',
     VALIDATION = <any> 'FILTER_OPTION_VALIDATION',
     CHECKPOINTORVALIDATION = <any> 'FILTER_OPTION_CHECKPOINT_OR_VALIDATION'
+}
+
+/**
+ * Job state.   - STATE_UNSPECIFIED: Unspecified state.  - STATE_QUEUED: Job is queued and waiting to be schedlued.  - STATE_SCHEDULED: Job is scheduled.  - STATE_SCHEDULED_BACKFILLED: Job is scheduled as a backfill.
+ * @export
+ * @enum {string}
+ */
+export enum Jobv1State {
+    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
+    QUEUED = <any> 'STATE_QUEUED',
+    SCHEDULED = <any> 'STATE_SCHEDULED',
+    SCHEDULEDBACKFILLED = <any> 'STATE_SCHEDULED_BACKFILLED'
+}
+
+/**
+ * Job type.   - TYPE_UNSPECIFIED: Unspecified state.  - TYPE_EXPERIMENT: Experiement Job.  - TYPE_NOTEBOOK: Jupyter Notebook Job.  - TYPE_TENSORBOARD: TensorBoard Job.  - TYPE_SHELL: Shell Job.  - TYPE_COMMAND: Command Job.  - TYPE_CHECKPOINT_GC: CheckpointGC Job.
+ * @export
+ * @enum {string}
+ */
+export enum Jobv1Type {
+    UNSPECIFIED = <any> 'TYPE_UNSPECIFIED',
+    EXPERIMENT = <any> 'TYPE_EXPERIMENT',
+    NOTEBOOK = <any> 'TYPE_NOTEBOOK',
+    TENSORBOARD = <any> 'TYPE_TENSORBOARD',
+    SHELL = <any> 'TYPE_SHELL',
+    COMMAND = <any> 'TYPE_COMMAND',
+    CHECKPOINTGC = <any> 'TYPE_CHECKPOINT_GC'
 }
 
 /**
@@ -675,6 +641,22 @@ export interface StreamResultOfV1TrialsSnapshotResponse {
 }
 
 /**
+ * The current state of the task.   - STATE_UNSPECIFIED: The task state is unknown.  - STATE_PULLING: The task's base image is being pulled from the Docker registry.  - STATE_STARTING: The image has been pulled and the task is being started, but the task is not ready yet.  - STATE_RUNNING: The service in the task is running.  - STATE_TERMINATED: The task has exited or has been aborted.  - STATE_TERMINATING: The task has begun to exit.  - STATE_WAITING: The task is waiting on something to complete.  - STATE_QUEUED: Additional state to cover queueing operations.
+ * @export
+ * @enum {string}
+ */
+export enum Taskv1State {
+    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
+    PULLING = <any> 'STATE_PULLING',
+    STARTING = <any> 'STATE_STARTING',
+    RUNNING = <any> 'STATE_RUNNING',
+    TERMINATED = <any> 'STATE_TERMINATED',
+    TERMINATING = <any> 'STATE_TERMINATING',
+    WAITING = <any> 'STATE_WAITING',
+    QUEUED = <any> 'STATE_QUEUED'
+}
+
+/**
  * Specifies a ranking for trials within their experiment.
  * @export
  * @interface TrialFiltersRankWithinExp
@@ -719,6 +701,24 @@ export enum TrialSorterNamespace {
 }
 
 /**
+ * - STATE_UNSPECIFIED: The trial is in an unspecified state.  - STATE_ACTIVE: The trial is in an active state.  - STATE_PAUSED: The trial is in a paused state  - STATE_STOPPING_CANCELED: The trial is canceled and is shutting down.  - STATE_STOPPING_KILLED: The trial is killed and is shutting down.  - STATE_STOPPING_COMPLETED: The trial is completed and is shutting down.  - STATE_STOPPING_ERROR: The trial is errored and is shutting down.  - STATE_CANCELED: The trial is canceled and is shut down.  - STATE_COMPLETED: The trial is completed and is shut down.  - STATE_ERROR: The trial is errored and is shut down.
+ * @export
+ * @enum {string}
+ */
+export enum Trialv1State {
+    UNSPECIFIED = <any> 'STATE_UNSPECIFIED',
+    ACTIVE = <any> 'STATE_ACTIVE',
+    PAUSED = <any> 'STATE_PAUSED',
+    STOPPINGCANCELED = <any> 'STATE_STOPPING_CANCELED',
+    STOPPINGKILLED = <any> 'STATE_STOPPING_KILLED',
+    STOPPINGCOMPLETED = <any> 'STATE_STOPPING_COMPLETED',
+    STOPPINGERROR = <any> 'STATE_STOPPING_ERROR',
+    CANCELED = <any> 'STATE_CANCELED',
+    COMPLETED = <any> 'STATE_COMPLETED',
+    ERROR = <any> 'STATE_ERROR'
+}
+
+/**
  * Trial is a set of workloads and are exploring a determined set of hyperparameters.
  * @export
  * @interface Trialv1Trial
@@ -750,10 +750,10 @@ export interface Trialv1Trial {
     endTime?: Date;
     /**
      * The current state of the trial.
-     * @type {Determinedexperimentv1State}
+     * @type {Experimentv1State}
      * @memberof Trialv1Trial
      */
-    state: Determinedexperimentv1State;
+    state: Experimentv1State;
     /**
      * Number times the trial restarted.
      * @type {number}
@@ -933,7 +933,7 @@ export interface V1Agent {
      */
     containers?: { [key: string]: V1Container; };
     /**
-     * An optional label applied to the agent for scheduling restrictions.
+     * This field has been deprecated and will be empty.
      * @type {string}
      * @memberof V1Agent
      */
@@ -1036,10 +1036,10 @@ export interface V1Allocation {
     taskId?: string;
     /**
      * The current state of the allocation.
-     * @type {Determinedtaskv1State}
+     * @type {Taskv1State}
      * @memberof V1Allocation
      */
-    state?: Determinedtaskv1State;
+    state?: Taskv1State;
     /**
      * Whether the allocation is ready to access.
      * @type {boolean}
@@ -1280,10 +1280,10 @@ export interface V1AugmentedTrial {
     trialId: number;
     /**
      * The state of the trial.
-     * @type {Determinedtrialv1State}
+     * @type {Trialv1State}
      * @memberof V1AugmentedTrial
      */
-    state: Determinedtrialv1State;
+    state: Trialv1State;
     /**
      * 
      * @type {any}
@@ -1472,10 +1472,10 @@ export interface V1Checkpoint {
     metadata: any;
     /**
      * The state of the underlying checkpoint.
-     * @type {Determinedcheckpointv1State}
+     * @type {Checkpointv1State}
      * @memberof V1Checkpoint
      */
-    state: Determinedcheckpointv1State;
+    state: Checkpointv1State;
     /**
      * Training-related data for this checkpoint.
      * @type {V1CheckpointTrainingMetadata}
@@ -1554,10 +1554,10 @@ export interface V1CheckpointWorkload {
     endTime?: Date;
     /**
      * The state of the checkpoint.
-     * @type {Determinedcheckpointv1State}
+     * @type {Checkpointv1State}
      * @memberof V1CheckpointWorkload
      */
-    state: Determinedcheckpointv1State;
+    state: Checkpointv1State;
     /**
      * Dictionary of file paths to file sizes in bytes of all files in the checkpoint.
      * @type {{ [key: string]: string; }}
@@ -1632,10 +1632,10 @@ export interface V1Command {
     description: string;
     /**
      * The state of the command.
-     * @type {Determinedtaskv1State}
+     * @type {Taskv1State}
      * @memberof V1Command
      */
-    state: Determinedtaskv1State;
+    state: Taskv1State;
     /**
      * The time the command was started.
      * @type {Date}
@@ -1684,6 +1684,12 @@ export interface V1Command {
      * @memberof V1Command
      */
     jobId: string;
+    /**
+     * The workspace id.
+     * @type {number}
+     * @memberof V1Command
+     */
+    workspaceId: number;
 }
 
 /**
@@ -1741,11 +1747,11 @@ export interface V1CompleteValidateAfterOperation {
      */
     op?: V1ValidateAfterOperation;
     /**
-     * The value of searcher metric associated with this completed metric. The metric provided should be the metric used to guide HP search.
-     * @type {number}
+     * The value of searcher metric associated with this completed operation. The metric provided should be the metric used to guide HP search.
+     * @type {any}
      * @memberof V1CompleteValidateAfterOperation
      */
-    searcherMetric?: number;
+    searcherMetric?: any;
 }
 
 /**
@@ -1776,10 +1782,10 @@ export interface V1Container {
     id: string;
     /**
      * The current state that the container is currently in.
-     * @type {Determinedcontainerv1State}
+     * @type {Containerv1State}
      * @memberof V1Container
      */
-    state: Determinedcontainerv1State;
+    state: Containerv1State;
     /**
      * A list of devices that is being used by this container.
      * @type {Array<V1Device>}
@@ -1830,6 +1836,36 @@ export interface V1CreateExperimentRequest {
      * @memberof V1CreateExperimentRequest
      */
     projectId?: number;
+    /**
+     * Template to use for the experiment.
+     * @type {string}
+     * @memberof V1CreateExperimentRequest
+     */
+    template?: string;
+    /**
+     * Git remote at submission time.
+     * @type {string}
+     * @memberof V1CreateExperimentRequest
+     */
+    gitRemote?: string;
+    /**
+     * Git commit at submission time.
+     * @type {string}
+     * @memberof V1CreateExperimentRequest
+     */
+    gitCommit?: string;
+    /**
+     * Git committer at submission time.
+     * @type {string}
+     * @memberof V1CreateExperimentRequest
+     */
+    gitCommitter?: string;
+    /**
+     * Git commit date at submission time.
+     * @type {Date}
+     * @memberof V1CreateExperimentRequest
+     */
+    gitCommitDate?: Date;
 }
 
 /**
@@ -1973,7 +2009,7 @@ export interface V1CurrentUserResponse {
 }
 
 /**
- * One datapoint in a series of metrics from a trial.
+ * One datapoint in a series of metrics from a trial in batch.
  * @export
  * @interface V1DataPoint
  */
@@ -1988,6 +2024,46 @@ export interface V1DataPoint {
      * Value of the requested metric at this point in the trial.
      * @type {number}
      * @memberof V1DataPoint
+     */
+    value: number;
+}
+
+/**
+ * One DataPointEpoch in a series of metrics from a trial in epoch.
+ * @export
+ * @interface V1DataPointEpoch
+ */
+export interface V1DataPointEpoch {
+    /**
+     * Total batches processed by the epoch this measurement is taken.
+     * @type {number}
+     * @memberof V1DataPointEpoch
+     */
+    epoch: number;
+    /**
+     * Value of the requested metric at this point in the trial.
+     * @type {number}
+     * @memberof V1DataPointEpoch
+     */
+    value: number;
+}
+
+/**
+ * One DataPointTime in a series of metrics from a trial in time.
+ * @export
+ * @interface V1DataPointTime
+ */
+export interface V1DataPointTime {
+    /**
+     * Total batches processed by the time this measurement is taken.
+     * @type {Date}
+     * @memberof V1DataPointTime
+     */
+    time: Date;
+    /**
+     * Value of the requested metric at this point in the trial.
+     * @type {number}
+     * @memberof V1DataPointTime
      */
     value: number;
 }
@@ -2124,10 +2200,10 @@ export interface V1Device {
     uuid?: string;
     /**
      * The type of the Device.
-     * @type {Determineddevicev1Type}
+     * @type {Devicev1Type}
      * @memberof V1Device
      */
-    type?: Determineddevicev1Type;
+    type?: Devicev1Type;
 }
 
 /**
@@ -2332,10 +2408,10 @@ export interface V1Experiment {
     endTime?: Date;
     /**
      * The current state of the experiment.
-     * @type {Determinedexperimentv1State}
+     * @type {Experimentv1State}
      * @memberof V1Experiment
      */
-    state: Determinedexperimentv1State;
+    state: Experimentv1State;
     /**
      * Boolean denoting whether the experiment was archived.
      * @type {boolean}
@@ -2474,6 +2550,12 @@ export interface V1Experiment {
      * @memberof V1Experiment
      */
     checkpointCount?: number;
+    /**
+     * The metrics and hyperparameters associated with the best trial by searcher metric.
+     * @type {number}
+     * @memberof V1Experiment
+     */
+    bestTrialSearcherMetric?: number;
 }
 
 /**
@@ -2484,10 +2566,10 @@ export interface V1Experiment {
 export interface V1ExperimentInactive {
     /**
      * Current state of the experiment.
-     * @type {Determinedexperimentv1State}
+     * @type {Experimentv1State}
      * @memberof V1ExperimentInactive
      */
-    experimentState: Determinedexperimentv1State;
+    experimentState: Experimentv1State;
 }
 
 /**
@@ -2673,7 +2755,7 @@ export interface V1GetAgentResponse {
      * @type {V1Agent}
      * @memberof V1GetAgentResponse
      */
-    agent?: V1Agent;
+    agent: V1Agent;
 }
 
 /**
@@ -2698,7 +2780,7 @@ export interface V1GetAgentsResponse {
      * @type {Array<V1Agent>}
      * @memberof V1GetAgentsResponse
      */
-    agents?: Array<V1Agent>;
+    agents: Array<V1Agent>;
     /**
      * Pagination information of the full dataset.
      * @type {V1Pagination}
@@ -2746,17 +2828,17 @@ export interface V1GetCommandResponse {
      * @type {V1Command}
      * @memberof V1GetCommandResponse
      */
-    command?: V1Command;
+    command: V1Command;
     /**
      * The command config.
      * @type {any}
      * @memberof V1GetCommandResponse
      */
-    config?: any;
+    config: any;
 }
 
 /**
- * Sorts commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.
+ * Sorts commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.  - SORT_BY_WORKSPACE_ID: Return commands sorted by workspace_id.
  * @export
  * @enum {string}
  */
@@ -2764,7 +2846,8 @@ export enum V1GetCommandsRequestSortBy {
     UNSPECIFIED = <any> 'SORT_BY_UNSPECIFIED',
     ID = <any> 'SORT_BY_ID',
     DESCRIPTION = <any> 'SORT_BY_DESCRIPTION',
-    STARTTIME = <any> 'SORT_BY_START_TIME'
+    STARTTIME = <any> 'SORT_BY_START_TIME',
+    WORKSPACEID = <any> 'SORT_BY_WORKSPACE_ID'
 }
 
 /**
@@ -2778,7 +2861,7 @@ export interface V1GetCommandsResponse {
      * @type {Array<V1Command>}
      * @memberof V1GetCommandsResponse
      */
-    commands?: Array<V1Command>;
+    commands: Array<V1Command>;
     /**
      * Pagination information of the full dataset.
      * @type {V1Pagination}
@@ -2930,7 +3013,7 @@ export interface V1GetExperimentValidationHistoryResponse {
 }
 
 /**
- * Sorts experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.
+ * Sorts experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.  - SORT_BY_SEARCHER_METRIC_VAL: Returns experiments sorted by searcher metric value..
  * @export
  * @enum {string}
  */
@@ -2949,7 +3032,8 @@ export enum V1GetExperimentsRequestSortBy {
     RESOURCEPOOL = <any> 'SORT_BY_RESOURCE_POOL',
     PROJECTID = <any> 'SORT_BY_PROJECT_ID',
     CHECKPOINTSIZE = <any> 'SORT_BY_CHECKPOINT_SIZE',
-    CHECKPOINTCOUNT = <any> 'SORT_BY_CHECKPOINT_COUNT'
+    CHECKPOINTCOUNT = <any> 'SORT_BY_CHECKPOINT_COUNT',
+    SEARCHERMETRICVAL = <any> 'SORT_BY_SEARCHER_METRIC_VAL'
 }
 
 /**
@@ -3368,7 +3452,7 @@ export interface V1GetModelVersionsResponse {
 }
 
 /**
- * Sort models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.
+ * Sort models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.  - SORT_BY_WORKSPACE: Returns models sorted by workspace name.
  * @export
  * @enum {string}
  */
@@ -3378,7 +3462,8 @@ export enum V1GetModelsRequestSortBy {
     DESCRIPTION = <any> 'SORT_BY_DESCRIPTION',
     CREATIONTIME = <any> 'SORT_BY_CREATION_TIME',
     LASTUPDATEDTIME = <any> 'SORT_BY_LAST_UPDATED_TIME',
-    NUMVERSIONS = <any> 'SORT_BY_NUM_VERSIONS'
+    NUMVERSIONS = <any> 'SORT_BY_NUM_VERSIONS',
+    WORKSPACE = <any> 'SORT_BY_WORKSPACE'
 }
 
 /**
@@ -3412,17 +3497,17 @@ export interface V1GetNotebookResponse {
      * @type {V1Notebook}
      * @memberof V1GetNotebookResponse
      */
-    notebook?: V1Notebook;
+    notebook: V1Notebook;
     /**
      * The notebook config.
      * @type {any}
      * @memberof V1GetNotebookResponse
      */
-    config?: any;
+    config: any;
 }
 
 /**
- * Sorts notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.
+ * Sorts notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.  - SORT_BY_WORKSPACE_ID: Return notebooks sorted by workspace_id
  * @export
  * @enum {string}
  */
@@ -3430,7 +3515,8 @@ export enum V1GetNotebooksRequestSortBy {
     UNSPECIFIED = <any> 'SORT_BY_UNSPECIFIED',
     ID = <any> 'SORT_BY_ID',
     DESCRIPTION = <any> 'SORT_BY_DESCRIPTION',
-    STARTTIME = <any> 'SORT_BY_START_TIME'
+    STARTTIME = <any> 'SORT_BY_START_TIME',
+    WORKSPACEID = <any> 'SORT_BY_WORKSPACE_ID'
 }
 
 /**
@@ -3444,7 +3530,7 @@ export interface V1GetNotebooksResponse {
      * @type {Array<V1Notebook>}
      * @memberof V1GetNotebooksResponse
      */
-    notebooks?: Array<V1Notebook>;
+    notebooks: Array<V1Notebook>;
     /**
      * Pagination information of the full dataset.
      * @type {V1Pagination}
@@ -3608,17 +3694,17 @@ export interface V1GetShellResponse {
      * @type {V1Shell}
      * @memberof V1GetShellResponse
      */
-    shell?: V1Shell;
+    shell: V1Shell;
     /**
      * The shell config.
      * @type {any}
      * @memberof V1GetShellResponse
      */
-    config?: any;
+    config: any;
 }
 
 /**
- * Sorts shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.
+ * Sorts shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.  - SORT_BY_WORKSPACE_ID: Return shells sorted by workspace_id.
  * @export
  * @enum {string}
  */
@@ -3626,7 +3712,8 @@ export enum V1GetShellsRequestSortBy {
     UNSPECIFIED = <any> 'SORT_BY_UNSPECIFIED',
     ID = <any> 'SORT_BY_ID',
     DESCRIPTION = <any> 'SORT_BY_DESCRIPTION',
-    STARTTIME = <any> 'SORT_BY_START_TIME'
+    STARTTIME = <any> 'SORT_BY_START_TIME',
+    WORKSPACEID = <any> 'SORT_BY_WORKSPACE_ID'
 }
 
 /**
@@ -3640,7 +3727,7 @@ export interface V1GetShellsResponse {
      * @type {Array<V1Shell>}
      * @memberof V1GetShellsResponse
      */
-    shells?: Array<V1Shell>;
+    shells: Array<V1Shell>;
     /**
      * Pagination information of the full dataset.
      * @type {V1Pagination}
@@ -3766,17 +3853,17 @@ export interface V1GetTensorboardResponse {
      * @type {V1Tensorboard}
      * @memberof V1GetTensorboardResponse
      */
-    tensorboard?: V1Tensorboard;
+    tensorboard: V1Tensorboard;
     /**
      * 
      * @type {any}
      * @memberof V1GetTensorboardResponse
      */
-    config?: any;
+    config: any;
 }
 
 /**
- * Sorts tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.
+ * Sorts tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.  - SORT_BY_WORKSPACE_ID: Return tensorboards sorted by workspace_id.
  * @export
  * @enum {string}
  */
@@ -3784,7 +3871,8 @@ export enum V1GetTensorboardsRequestSortBy {
     UNSPECIFIED = <any> 'SORT_BY_UNSPECIFIED',
     ID = <any> 'SORT_BY_ID',
     DESCRIPTION = <any> 'SORT_BY_DESCRIPTION',
-    STARTTIME = <any> 'SORT_BY_START_TIME'
+    STARTTIME = <any> 'SORT_BY_START_TIME',
+    WORKSPACEID = <any> 'SORT_BY_WORKSPACE_ID'
 }
 
 /**
@@ -3798,7 +3886,7 @@ export interface V1GetTensorboardsResponse {
      * @type {Array<V1Tensorboard>}
      * @memberof V1GetTensorboardsResponse
      */
-    tensorboards?: Array<V1Tensorboard>;
+    tensorboards: Array<V1Tensorboard>;
     /**
      * Pagination information of the full dataset.
      * @type {V1Pagination}
@@ -3959,7 +4047,7 @@ export interface V1GetUserSettingResponse {
 }
 
 /**
- * Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.
+ * Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.  - SORT_BY_NAME: Returns users sorted by username unless display name exist.
  * @export
  * @enum {string}
  */
@@ -3969,7 +4057,8 @@ export enum V1GetUsersRequestSortBy {
     USERNAME = <any> 'SORT_BY_USER_NAME',
     ADMIN = <any> 'SORT_BY_ADMIN',
     ACTIVE = <any> 'SORT_BY_ACTIVE',
-    MODIFIEDTIME = <any> 'SORT_BY_MODIFIED_TIME'
+    MODIFIEDTIME = <any> 'SORT_BY_MODIFIED_TIME',
+    NAME = <any> 'SORT_BY_NAME'
 }
 
 /**
@@ -4220,7 +4309,7 @@ export interface V1InitialOperations {
  */
 export interface V1Int32FieldFilter {
     /**
-     * TODO(ilia): add `exact`. Less than.
+     * Less than.
      * @type {number}
      * @memberof V1Int32FieldFilter
      */
@@ -4271,10 +4360,10 @@ export interface V1Job {
     summary?: V1JobSummary;
     /**
      * Job type.
-     * @type {Determinedjobv1Type}
+     * @type {Jobv1Type}
      * @memberof V1Job
      */
-    type: Determinedjobv1Type;
+    type: Jobv1Type;
     /**
      * The time when the job was submitted by the user.
      * @type {Date}
@@ -4363,10 +4452,10 @@ export interface V1Job {
 export interface V1JobSummary {
     /**
      * The scheduling state of the job.
-     * @type {Determinedjobv1State}
+     * @type {Jobv1State}
      * @memberof V1JobSummary
      */
-    state: Determinedjobv1State;
+    state: Jobv1State;
     /**
      * The number of jobs ahead of this one in the queue.
      * @type {number}
@@ -4497,6 +4586,12 @@ export interface V1LaunchCommandRequest {
      * @memberof V1LaunchCommandRequest
      */
     data?: string;
+    /**
+     * Workspace ID. Defaults to the 'Uncategorized' workspace if not specified.
+     * @type {number}
+     * @memberof V1LaunchCommandRequest
+     */
+    workspaceId?: number;
 }
 
 /**
@@ -4555,6 +4650,12 @@ export interface V1LaunchNotebookRequest {
      * @memberof V1LaunchNotebookRequest
      */
     preview?: boolean;
+    /**
+     * Workspace ID. Defaults to 'Uncategorized' workspace if not specified.
+     * @type {number}
+     * @memberof V1LaunchNotebookRequest
+     */
+    workspaceId?: number;
 }
 
 /**
@@ -4613,6 +4714,12 @@ export interface V1LaunchShellRequest {
      * @memberof V1LaunchShellRequest
      */
     data?: string;
+    /**
+     * Workspace ID. Defaults to 'Uncategorized' workspace if not specified.
+     * @type {number}
+     * @memberof V1LaunchShellRequest
+     */
+    workspaceId?: number;
 }
 
 /**
@@ -4677,6 +4784,12 @@ export interface V1LaunchTensorboardRequest {
      * @memberof V1LaunchTensorboardRequest
      */
     files?: Array<V1File>;
+    /**
+     * Workspace in which to launch tensorboard. Defaults to 'Uncategorized'.
+     * @type {number}
+     * @memberof V1LaunchTensorboardRequest
+     */
+    workspaceId?: number;
 }
 
 /**
@@ -4983,10 +5096,10 @@ export interface V1MetricsWorkload {
     endTime?: Date;
     /**
      * The current validation state.
-     * @type {Determinedexperimentv1State}
+     * @type {Experimentv1State}
      * @memberof V1MetricsWorkload
      */
-    state: Determinedexperimentv1State;
+    state: Experimentv1State;
     /**
      * Metrics.
      * @type {V1Metrics}
@@ -5067,6 +5180,12 @@ export interface V1Model {
      * @memberof V1Model
      */
     username: string;
+    /**
+     * The id of the workspace associated with this model.
+     * @type {number}
+     * @memberof V1Model
+     */
+    workspaceId: number;
     /**
      * Id of the user who created this model.
      * @type {number}
@@ -5202,6 +5321,34 @@ export interface V1MoveExperimentResponse {
 }
 
 /**
+ * Request to move a model to a workspace.
+ * @export
+ * @interface V1MoveModelRequest
+ */
+export interface V1MoveModelRequest {
+    /**
+     * The target model name.
+     * @type {string}
+     * @memberof V1MoveModelRequest
+     */
+    modelName: string;
+    /**
+     * The workspace id that the model will be stored.
+     * @type {number}
+     * @memberof V1MoveModelRequest
+     */
+    destinationWorkspaceId: number;
+}
+
+/**
+ * 
+ * @export
+ * @interface V1MoveModelResponse
+ */
+export interface V1MoveModelResponse {
+}
+
+/**
  * Request to move a project into a workspace.
  * @export
  * @interface V1MoveProjectRequest
@@ -5269,10 +5416,10 @@ export interface V1Notebook {
     description: string;
     /**
      * The state of the notebook.
-     * @type {Determinedtaskv1State}
+     * @type {Taskv1State}
      * @memberof V1Notebook
      */
-    state: Determinedtaskv1State;
+    state: Taskv1State;
     /**
      * The time the notebook was started.
      * @type {Date}
@@ -5327,6 +5474,12 @@ export interface V1Notebook {
      * @memberof V1Notebook
      */
     jobId: string;
+    /**
+     * Workspace ID.
+     * @type {number}
+     * @memberof V1Notebook
+     */
+    workspaceId: number;
 }
 
 /**
@@ -5524,6 +5677,18 @@ export interface V1PatchModel {
      * @memberof V1PatchModel
      */
     notes?: string;
+    /**
+     * The name of the workspace associated with this model.
+     * @type {string}
+     * @memberof V1PatchModel
+     */
+    workspaceName?: string;
+    /**
+     * The id of the workspace associated with this model.
+     * @type {number}
+     * @memberof V1PatchModel
+     */
+    workspaceId?: number;
 }
 
 /**
@@ -5817,7 +5982,7 @@ export interface V1Permission {
 }
 
 /**
- * List of permissions types. Value of the enum has 9xxxx for global only permissions. Permissions on the same object share the thousands place value like 2001 and 2002.   - PERMISSION_TYPE_UNSPECIFIED: The permission type is unknown.  - PERMISSION_TYPE_ADMINISTRATE_USER: Can create and update other users. Allows updating other users passwords making this permission give all other permissions effectively.  - PERMISSION_TYPE_CREATE_EXPERIMENT: Ability to create experiments.  - PERMISSION_TYPE_VIEW_EXPERIMENT_ARTIFACTS: Ability to view experiment's model code, checkpoints, trials.  - PERMISSION_TYPE_VIEW_EXPERIMENT_METADATA: Ability to view experiment's metadata like experiment config, progress.  - PERMISSION_TYPE_UPDATE_EXPERIMENT: Ability to update experiment and experiment's lifecycle.  - PERMISSION_TYPE_UPDATE_EXPERIMENT_METADATA: Ability to update experiment's metadata.  - PERMISSION_TYPE_DELETE_EXPERIMENT: Ability to delete experiment.  - PERMISSION_TYPE_UPDATE_GROUP: Ability to create, update, and add / remove users from groups.  - PERMISSION_TYPE_CREATE_WORKSPACE: Ability to create workspaces.  - PERMISSION_TYPE_VIEW_WORKSPACE: Ability to view workspace.  - PERMISSION_TYPE_UPDATE_WORKSPACE: Ability to update workspace.  - PERMISSION_TYPE_DELETE_WORKSPACE: Ability to delete workspace.  - PERMISSION_TYPE_SET_WORKSPACE_AGENT_USER_GROUP: Ability to set workspace agent user group config.  - PERMISSION_TYPE_SET_WORKSPACE_CHECKPOINT_STORAGE_CONFIG: Ability to set workspace checkpoint storage config.  - PERMISSION_TYPE_CREATE_PROJECT: Ability to create projects.  - PERMISSION_TYPE_VIEW_PROJECT: Ability to view projects.  - PERMISSION_TYPE_UPDATE_PROJECT: Ability to update projects.  - PERMISSION_TYPE_DELETE_PROJECT: Ability to delete projects.  - PERMISSION_TYPE_UPDATE_ROLES: Ability to create and update role definitions.  - PERMISSION_TYPE_ASSIGN_ROLES: Ability to assign roles to groups / users. If assigned at a workspace scope, can only assign roles to that workspace scope.  - PERMISSION_TYPE_EDIT_WEBHOOKS: Ability to create and delete webhooks.
+ * List of permissions types. Value of the enum has 9xxxx for global only permissions. Permissions on the same object share the thousands place value like 2001 and 2002.   - PERMISSION_TYPE_UNSPECIFIED: The permission type is unknown.  - PERMISSION_TYPE_ADMINISTRATE_USER: Can create and update other users. Allows updating other users passwords making this permission give all other permissions effectively.  - PERMISSION_TYPE_CREATE_EXPERIMENT: Ability to create experiments.  - PERMISSION_TYPE_VIEW_EXPERIMENT_ARTIFACTS: Ability to view experiment's model code, checkpoints, trials.  - PERMISSION_TYPE_VIEW_EXPERIMENT_METADATA: Ability to view experiment's metadata such as experiment config, progress.  - PERMISSION_TYPE_UPDATE_EXPERIMENT: Ability to update experiment and experiment's lifecycle.  - PERMISSION_TYPE_UPDATE_EXPERIMENT_METADATA: Ability to update experiment's metadata.  - PERMISSION_TYPE_DELETE_EXPERIMENT: Ability to delete experiment.  - PERMISSION_TYPE_CREATE_NSC: Ability to create Notebooks, Shells, and Commands.  - PERMISSION_TYPE_VIEW_NSC: Ability to view Notebooks, Shells, and Commands.  - PERMISSION_TYPE_UPDATE_NSC: Ability to terminate Notebooks, Shells, and Commands.  - PERMISSION_TYPE_UPDATE_GROUP: Ability to create, update, and add / remove users from groups.  - PERMISSION_TYPE_CREATE_WORKSPACE: Ability to create workspaces.  - PERMISSION_TYPE_VIEW_WORKSPACE: Ability to view workspace.  - PERMISSION_TYPE_UPDATE_WORKSPACE: Ability to update workspace.  - PERMISSION_TYPE_DELETE_WORKSPACE: Ability to delete workspace.  - PERMISSION_TYPE_SET_WORKSPACE_AGENT_USER_GROUP: Ability to set workspace agent user group config.  - PERMISSION_TYPE_SET_WORKSPACE_CHECKPOINT_STORAGE_CONFIG: Ability to set workspace checkpoint storage config.  - PERMISSION_TYPE_CREATE_PROJECT: Ability to create projects.  - PERMISSION_TYPE_VIEW_PROJECT: Ability to view projects.  - PERMISSION_TYPE_UPDATE_PROJECT: Ability to update projects.  - PERMISSION_TYPE_DELETE_PROJECT: Ability to delete projects.  - PERMISSION_TYPE_VIEW_MODEL_REGISTRY: Ability to view model registry.  - PERMISSION_TYPE_EDIT_MODEL_REGISTRY: Ability to edit model registry.  - PERMISSION_TYPE_CREATE_MODEL_REGISTRY: Ability to create model registry.  - PERMISSION_TYPE_UPDATE_ROLES: Ability to create and update role definitions.  - PERMISSION_TYPE_ASSIGN_ROLES: Ability to assign roles to groups / users. If assigned at a workspace scope, can only assign roles to that workspace scope.  - PERMISSION_TYPE_EDIT_WEBHOOKS: Ability to create and delete webhooks.
  * @export
  * @enum {string}
  */
@@ -5830,6 +5995,9 @@ export enum V1PermissionType {
     UPDATEEXPERIMENT = <any> 'PERMISSION_TYPE_UPDATE_EXPERIMENT',
     UPDATEEXPERIMENTMETADATA = <any> 'PERMISSION_TYPE_UPDATE_EXPERIMENT_METADATA',
     DELETEEXPERIMENT = <any> 'PERMISSION_TYPE_DELETE_EXPERIMENT',
+    CREATENSC = <any> 'PERMISSION_TYPE_CREATE_NSC',
+    VIEWNSC = <any> 'PERMISSION_TYPE_VIEW_NSC',
+    UPDATENSC = <any> 'PERMISSION_TYPE_UPDATE_NSC',
     UPDATEGROUP = <any> 'PERMISSION_TYPE_UPDATE_GROUP',
     CREATEWORKSPACE = <any> 'PERMISSION_TYPE_CREATE_WORKSPACE',
     VIEWWORKSPACE = <any> 'PERMISSION_TYPE_VIEW_WORKSPACE',
@@ -5841,6 +6009,9 @@ export enum V1PermissionType {
     VIEWPROJECT = <any> 'PERMISSION_TYPE_VIEW_PROJECT',
     UPDATEPROJECT = <any> 'PERMISSION_TYPE_UPDATE_PROJECT',
     DELETEPROJECT = <any> 'PERMISSION_TYPE_DELETE_PROJECT',
+    VIEWMODELREGISTRY = <any> 'PERMISSION_TYPE_VIEW_MODEL_REGISTRY',
+    EDITMODELREGISTRY = <any> 'PERMISSION_TYPE_EDIT_MODEL_REGISTRY',
+    CREATEMODELREGISTRY = <any> 'PERMISSION_TYPE_CREATE_MODEL_REGISTRY',
     UPDATEROLES = <any> 'PERMISSION_TYPE_UPDATE_ROLES',
     ASSIGNROLES = <any> 'PERMISSION_TYPE_ASSIGN_ROLES',
     EDITWEBHOOKS = <any> 'PERMISSION_TYPE_EDIT_WEBHOOKS'
@@ -5940,6 +6111,18 @@ export interface V1PostModelRequest {
      * @memberof V1PostModelRequest
      */
     labels?: Array<string>;
+    /**
+     * The name of the workspace associated with this model.
+     * @type {string}
+     * @memberof V1PostModelRequest
+     */
+    workspaceName?: string;
+    /**
+     * The id of the workspace associated with this model.
+     * @type {number}
+     * @memberof V1PostModelRequest
+     */
+    workspaceId?: number;
     /**
      * Notes associated with this model.
      * @type {string}
@@ -6648,6 +6831,12 @@ export interface V1RendezvousInfo {
      * @memberof V1RendezvousInfo
      */
     rank: number;
+    /**
+     * The slots for each address, respectively.
+     * @type {Array<number>}
+     * @memberof V1RendezvousInfo
+     */
+    slots: Array<number>;
 }
 
 /**
@@ -6741,7 +6930,7 @@ export interface V1ResourceAllocationAggregatedEntry {
      */
     byResourcePool: { [key: string]: number; };
     /**
-     * The seconds in the cluster used by experiments assigned to each agent label.
+     * This field has been deprecated and will be empty.
      * @type {{ [key: string]: number; }}
      * @memberof V1ResourceAllocationAggregatedEntry
      */
@@ -6893,10 +7082,10 @@ export interface V1ResourcePool {
     slotsUsed: number;
     /**
      * Slot device type: cpu, gpu, ...
-     * @type {Determineddevicev1Type}
+     * @type {Devicev1Type}
      * @memberof V1ResourcePool
      */
-    slotType: Determineddevicev1Type;
+    slotType: Devicev1Type;
     /**
      * 
      * @type {number}
@@ -7883,10 +8072,10 @@ export interface V1Shell {
     description: string;
     /**
      * The state of the shell.
-     * @type {Determinedtaskv1State}
+     * @type {Taskv1State}
      * @memberof V1Shell
      */
-    state: Determinedtaskv1State;
+    state: Taskv1State;
     /**
      * The time the shell was started.
      * @type {Date}
@@ -7959,6 +8148,12 @@ export interface V1Shell {
      * @memberof V1Shell
      */
     jobId: string;
+    /**
+     * The workspace id.
+     * @type {number}
+     * @memberof V1Shell
+     */
+    workspaceId: number;
 }
 
 /**
@@ -8051,6 +8246,18 @@ export interface V1SummarizedMetric {
      * @memberof V1SummarizedMetric
      */
     data: Array<V1DataPoint>;
+    /**
+     * A possibly down-sampled series of metric readings through the progress of the trial in wall time.
+     * @type {Array<V1DataPointTime>}
+     * @memberof V1SummarizedMetric
+     */
+    time?: Array<V1DataPointTime>;
+    /**
+     * A possibly down-sampled series of metric readings through the progress of the trial in epoch.
+     * @type {Array<V1DataPointEpoch>}
+     * @memberof V1SummarizedMetric
+     */
+    epochs?: Array<V1DataPointEpoch>;
     /**
      * Type of metrics (training, validation, or unset).
      * @type {V1MetricType}
@@ -8249,10 +8456,10 @@ export interface V1Tensorboard {
     description: string;
     /**
      * The state of the tensorboard.
-     * @type {Determinedtaskv1State}
+     * @type {Taskv1State}
      * @memberof V1Tensorboard
      */
-    state: Determinedtaskv1State;
+    state: Taskv1State;
     /**
      * The time the tensorboard was started.
      * @type {Date}
@@ -8319,6 +8526,12 @@ export interface V1Tensorboard {
      * @memberof V1Tensorboard
      */
     jobId: string;
+    /**
+     * The workspace id.
+     * @type {number}
+     * @memberof V1Tensorboard
+     */
+    workspaceId: number;
 }
 
 /**
@@ -8532,10 +8745,10 @@ export interface V1TrialFilters {
     endTime?: V1TimestampFieldFilter;
     /**
      * Filter trials to those with any of the given states.
-     * @type {Array<Determinedtrialv1State>}
+     * @type {Array<Trialv1State>}
      * @memberof V1TrialFilters
      */
-    states?: Array<Determinedtrialv1State>;
+    states?: Array<Trialv1State>;
     /**
      * Filter trials to those with the given searcher metric.
      * @type {string}
@@ -9361,10 +9574,10 @@ export interface V1ValidationCompleted {
     requestId: string;
     /**
      * Value of the validation metric used to direct the search.
-     * @type {number}
+     * @type {any}
      * @memberof V1ValidationCompleted
      */
-    metric: number;
+    metric: any;
     /**
      * Length from ValidateAfterOperation.
      * @type {string}
@@ -9552,6 +9765,12 @@ export interface V1Workspace {
      * @memberof V1Workspace
      */
     checkpointStorageConfig?: any;
+    /**
+     * Optional date when workspace was pinned.
+     * @type {Date}
+     * @memberof V1Workspace
+     */
+    pinnedAt?: Date;
 }
 
 /**
@@ -9564,6 +9783,18 @@ export enum V1WorkspaceState {
     DELETING = <any> 'WORKSPACE_STATE_DELETING',
     DELETEFAILED = <any> 'WORKSPACE_STATE_DELETE_FAILED',
     DELETED = <any> 'WORKSPACE_STATE_DELETED'
+}
+
+/**
+ * XAxis options available in metrics charts.   - X_AXIS_UNSPECIFIED: Unknown x-axis.  - X_AXIS_BATCH: x-axis in batch. This is the default x-axis.  - X_AXIS_TIME: x-axis in time.  - X_AXIS_EPOCH: x-axis in epoch.
+ * @export
+ * @enum {string}
+ */
+export enum V1XAxis {
+    UNSPECIFIED = <any> 'X_AXIS_UNSPECIFIED',
+    BATCH = <any> 'X_AXIS_BATCH',
+    TIME = <any> 'X_AXIS_TIME',
+    EPOCH = <any> 'X_AXIS_EPOCH'
 }
 
 
@@ -10396,7 +10627,7 @@ export const ClusterApiFetchParamCreator = function (configuration?: Configurati
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order agents in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of agents before returning results. Negative values denote number of agents to skip from the end before returning results.
          * @param {number} [limit] Limit the number of agents. A value of 0 denotes no limit.
-         * @param {string} [label] Filter agents by their label. If no label is specified or is empty, all agents are returned.
+         * @param {string} [label] This field has been deprecated and will be ignored.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -10933,7 +11164,7 @@ export const ClusterApiFp = function(configuration?: Configuration) {
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order agents in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of agents before returning results. Negative values denote number of agents to skip from the end before returning results.
          * @param {number} [limit] Limit the number of agents. A value of 0 denotes no limit.
-         * @param {string} [label] Filter agents by their label. If no label is specified or is empty, all agents are returned.
+         * @param {string} [label] This field has been deprecated and will be ignored.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -11196,7 +11427,7 @@ export const ClusterApiFactory = function (configuration?: Configuration, fetch?
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order agents in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of agents before returning results. Negative values denote number of agents to skip from the end before returning results.
          * @param {number} [limit] Limit the number of agents. A value of 0 denotes no limit.
-         * @param {string} [label] Filter agents by their label. If no label is specified or is empty, all agents are returned.
+         * @param {string} [label] This field has been deprecated and will be ignored.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -11380,7 +11611,7 @@ export class ClusterApi extends BaseAPI {
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order agents in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of agents before returning results. Negative values denote number of agents to skip from the end before returning results.
      * @param {number} [limit] Limit the number of agents. A value of 0 denotes no limit.
-     * @param {string} [label] Filter agents by their label. If no label is specified or is empty, all agents are returned.
+     * @param {string} [label] This field has been deprecated and will be ignored.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ClusterApi
@@ -11552,16 +11783,17 @@ export const CommandsApiFetchParamCreator = function (configuration?: Configurat
         /**
          * 
          * @summary Get a list of commands.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.  - SORT_BY_WORKSPACE_ID: Return commands sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order commands in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of commands before returning results. Negative values denote number of commands to skip from the end before returning results.
          * @param {number} [limit] Limit the number of commands. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit commands to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit commands to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit commands to those within a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options: any = {}): FetchArgs {
+        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/commands`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -11598,6 +11830,10 @@ export const CommandsApiFetchParamCreator = function (configuration?: Configurat
 
             if (userIds) {
                 localVarQueryParameter['userIds'] = userIds;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -11764,17 +12000,18 @@ export const CommandsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of commands.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.  - SORT_BY_WORKSPACE_ID: Return commands sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order commands in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of commands before returning results. Negative values denote number of commands to skip from the end before returning results.
          * @param {number} [limit] Limit the number of commands. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit commands to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit commands to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit commands to those within a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetCommandsResponse> {
-            const localVarFetchArgs = CommandsApiFetchParamCreator(configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, options);
+        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetCommandsResponse> {
+            const localVarFetchArgs = CommandsApiFetchParamCreator(configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -11865,17 +12102,18 @@ export const CommandsApiFactory = function (configuration?: Configuration, fetch
         /**
          * 
          * @summary Get a list of commands.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.  - SORT_BY_WORKSPACE_ID: Return commands sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order commands in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of commands before returning results. Negative values denote number of commands to skip from the end before returning results.
          * @param {number} [limit] Limit the number of commands. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit commands to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit commands to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit commands to those within a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-            return CommandsApiFp(configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, options)(fetch, basePath);
+        getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+            return CommandsApiFp(configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(fetch, basePath);
         },
         /**
          * 
@@ -11933,18 +12171,19 @@ export class CommandsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of commands.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort commands by the given field.   - SORT_BY_UNSPECIFIED: Returns commands in an unsorted list.  - SORT_BY_ID: Returns commands sorted by id.  - SORT_BY_DESCRIPTION: Returns commands sorted by description.  - SORT_BY_START_TIME: Return commands sorted by start time.  - SORT_BY_WORKSPACE_ID: Return commands sorted by workspace_id.
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order commands in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of commands before returning results. Negative values denote number of commands to skip from the end before returning results.
      * @param {number} [limit] Limit the number of commands. A value of 0 denotes no limit.
      * @param {Array<string>} [users] Limit commands to those that are owned by users with the specified usernames.
      * @param {Array<number>} [userIds] Limit commands to those that are owned by users with the specified userIds.
+     * @param {number} [workspaceId] Limit commands to those within a specific workspace, or 0 for all accessible workspaces.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommandsApi
      */
-    public getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-        return CommandsApiFp(this.configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, options)(this.fetch, this.basePath);
+    public getCommands(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+        return CommandsApiFp(this.configuration).getCommands(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -12113,10 +12352,11 @@ export const ExperimentsApiFetchParamCreator = function (configuration?: Configu
          * @param {number} [endBatches] Sample from metrics before this batch number.
          * @param {'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION'} [metricType] Type of metrics.   - METRIC_TYPE_UNSPECIFIED: Zero-value (not allowed).  - METRIC_TYPE_TRAINING: For metrics emitted during training.  - METRIC_TYPE_VALIDATION: For metrics emitted during validation.
          * @param {'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG'} [scale] Scale of metric visualization (linear or log scale).   - SCALE_UNSPECIFIED: Unknown scale.  - SCALE_LINEAR: Downsample points with closeness plotted on a linear y-axis.  - SCALE_LOG: Downsample points with closeness plotted on a logarithmic y-axis.
+         * @param {'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH'} [xAxis] x-axis selection. Default is in batch.   - X_AXIS_UNSPECIFIED: Unknown x-axis.  - X_AXIS_BATCH: x-axis in batch. This is the default x-axis.  - X_AXIS_TIME: x-axis in time.  - X_AXIS_EPOCH: x-axis in epoch.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', options: any = {}): FetchArgs {
+        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', xAxis?: 'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH', options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/trials/compare`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -12157,6 +12397,10 @@ export const ExperimentsApiFetchParamCreator = function (configuration?: Configu
 
             if (scale !== undefined) {
                 localVarQueryParameter['scale'] = scale;
+            }
+
+            if (xAxis !== undefined) {
+                localVarQueryParameter['xAxis'] = xAxis;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -12489,7 +12733,7 @@ export const ExperimentsApiFetchParamCreator = function (configuration?: Configu
         /**
          * 
          * @summary Get a list of experiments.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.  - SORT_BY_SEARCHER_METRIC_VAL: Returns experiments sorted by searcher metric value..
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order experiments in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of experiments before returning results. Negative values denote number of experiments to skip from the end before returning results.
          * @param {number} [limit] Limit the number of experiments. 0 or Unspecified - returns a default of 100. -1               - returns everything. -2               - returns pagination info but no experiments.
@@ -12501,16 +12745,17 @@ export const ExperimentsApiFetchParamCreator = function (configuration?: Configu
          * @param {Array<string>} [users] Limit experiments to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit experiments to those that are owned by users with the specified userIds.
          * @param {number} [projectId] Limit experiments to those within a specified project, or 0 for all projects.
-         * @param {number} [experimentIdFilterLt] TODO(ilia): add &#x60;exact&#x60;. Less than.
+         * @param {number} [experimentIdFilterLt] Less than.
          * @param {number} [experimentIdFilterLte] Less than or equal.
          * @param {number} [experimentIdFilterGt] Greater than.
          * @param {number} [experimentIdFilterGte] Greater than or equal.
          * @param {Array<number>} [experimentIdFilterIncl] In a set. &#x60;in&#x60; is a reserved word in python.
          * @param {Array<number>} [experimentIdFilterNotIn] Not in a set.
+         * @param {boolean} [showTrialData] whether to surface trial specific data from the best trial.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, options: any = {}): FetchArgs {
+        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, showTrialData?: boolean, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/experiments`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -12595,6 +12840,10 @@ export const ExperimentsApiFetchParamCreator = function (configuration?: Configu
 
             if (experimentIdFilterNotIn) {
                 localVarQueryParameter['experimentIdFilter.notIn'] = experimentIdFilterNotIn;
+            }
+
+            if (showTrialData !== undefined) {
+                localVarQueryParameter['showTrialData'] = showTrialData;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -13471,11 +13720,12 @@ export const ExperimentsApiFp = function(configuration?: Configuration) {
          * @param {number} [endBatches] Sample from metrics before this batch number.
          * @param {'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION'} [metricType] Type of metrics.   - METRIC_TYPE_UNSPECIFIED: Zero-value (not allowed).  - METRIC_TYPE_TRAINING: For metrics emitted during training.  - METRIC_TYPE_VALIDATION: For metrics emitted during validation.
          * @param {'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG'} [scale] Scale of metric visualization (linear or log scale).   - SCALE_UNSPECIFIED: Unknown scale.  - SCALE_LINEAR: Downsample points with closeness plotted on a linear y-axis.  - SCALE_LOG: Downsample points with closeness plotted on a logarithmic y-axis.
+         * @param {'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH'} [xAxis] x-axis selection. Default is in batch.   - X_AXIS_UNSPECIFIED: Unknown x-axis.  - X_AXIS_BATCH: x-axis in batch. This is the default x-axis.  - X_AXIS_TIME: x-axis in time.  - X_AXIS_EPOCH: x-axis in epoch.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1CompareTrialsResponse> {
-            const localVarFetchArgs = ExperimentsApiFetchParamCreator(configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, options);
+        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', xAxis?: 'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH', options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1CompareTrialsResponse> {
+            const localVarFetchArgs = ExperimentsApiFetchParamCreator(configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, xAxis, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -13633,7 +13883,7 @@ export const ExperimentsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of experiments.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.  - SORT_BY_SEARCHER_METRIC_VAL: Returns experiments sorted by searcher metric value..
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order experiments in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of experiments before returning results. Negative values denote number of experiments to skip from the end before returning results.
          * @param {number} [limit] Limit the number of experiments. 0 or Unspecified - returns a default of 100. -1               - returns everything. -2               - returns pagination info but no experiments.
@@ -13645,17 +13895,18 @@ export const ExperimentsApiFp = function(configuration?: Configuration) {
          * @param {Array<string>} [users] Limit experiments to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit experiments to those that are owned by users with the specified userIds.
          * @param {number} [projectId] Limit experiments to those within a specified project, or 0 for all projects.
-         * @param {number} [experimentIdFilterLt] TODO(ilia): add &#x60;exact&#x60;. Less than.
+         * @param {number} [experimentIdFilterLt] Less than.
          * @param {number} [experimentIdFilterLte] Less than or equal.
          * @param {number} [experimentIdFilterGt] Greater than.
          * @param {number} [experimentIdFilterGte] Greater than or equal.
          * @param {Array<number>} [experimentIdFilterIncl] In a set. &#x60;in&#x60; is a reserved word in python.
          * @param {Array<number>} [experimentIdFilterNotIn] Not in a set.
+         * @param {boolean} [showTrialData] whether to surface trial specific data from the best trial.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetExperimentsResponse> {
-            const localVarFetchArgs = ExperimentsApiFetchParamCreator(configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, options);
+        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, showTrialData?: boolean, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetExperimentsResponse> {
+            const localVarFetchArgs = ExperimentsApiFetchParamCreator(configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, showTrialData, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -14066,11 +14317,12 @@ export const ExperimentsApiFactory = function (configuration?: Configuration, fe
          * @param {number} [endBatches] Sample from metrics before this batch number.
          * @param {'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION'} [metricType] Type of metrics.   - METRIC_TYPE_UNSPECIFIED: Zero-value (not allowed).  - METRIC_TYPE_TRAINING: For metrics emitted during training.  - METRIC_TYPE_VALIDATION: For metrics emitted during validation.
          * @param {'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG'} [scale] Scale of metric visualization (linear or log scale).   - SCALE_UNSPECIFIED: Unknown scale.  - SCALE_LINEAR: Downsample points with closeness plotted on a linear y-axis.  - SCALE_LOG: Downsample points with closeness plotted on a logarithmic y-axis.
+         * @param {'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH'} [xAxis] x-axis selection. Default is in batch.   - X_AXIS_UNSPECIFIED: Unknown x-axis.  - X_AXIS_BATCH: x-axis in batch. This is the default x-axis.  - X_AXIS_TIME: x-axis in time.  - X_AXIS_EPOCH: x-axis in epoch.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', options?: any) {
-            return ExperimentsApiFp(configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, options)(fetch, basePath);
+        compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', xAxis?: 'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH', options?: any) {
+            return ExperimentsApiFp(configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, xAxis, options)(fetch, basePath);
         },
         /**
          * 
@@ -14156,7 +14408,7 @@ export const ExperimentsApiFactory = function (configuration?: Configuration, fe
         /**
          * 
          * @summary Get a list of experiments.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.  - SORT_BY_SEARCHER_METRIC_VAL: Returns experiments sorted by searcher metric value..
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order experiments in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of experiments before returning results. Negative values denote number of experiments to skip from the end before returning results.
          * @param {number} [limit] Limit the number of experiments. 0 or Unspecified - returns a default of 100. -1               - returns everything. -2               - returns pagination info but no experiments.
@@ -14168,17 +14420,18 @@ export const ExperimentsApiFactory = function (configuration?: Configuration, fe
          * @param {Array<string>} [users] Limit experiments to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit experiments to those that are owned by users with the specified userIds.
          * @param {number} [projectId] Limit experiments to those within a specified project, or 0 for all projects.
-         * @param {number} [experimentIdFilterLt] TODO(ilia): add &#x60;exact&#x60;. Less than.
+         * @param {number} [experimentIdFilterLt] Less than.
          * @param {number} [experimentIdFilterLte] Less than or equal.
          * @param {number} [experimentIdFilterGt] Greater than.
          * @param {number} [experimentIdFilterGte] Greater than or equal.
          * @param {Array<number>} [experimentIdFilterIncl] In a set. &#x60;in&#x60; is a reserved word in python.
          * @param {Array<number>} [experimentIdFilterNotIn] Not in a set.
+         * @param {boolean} [showTrialData] whether to surface trial specific data from the best trial.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, options?: any) {
-            return ExperimentsApiFp(configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, options)(fetch, basePath);
+        getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, showTrialData?: boolean, options?: any) {
+            return ExperimentsApiFp(configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, showTrialData, options)(fetch, basePath);
         },
         /**
          * 
@@ -14434,12 +14687,13 @@ export class ExperimentsApi extends BaseAPI {
      * @param {number} [endBatches] Sample from metrics before this batch number.
      * @param {'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION'} [metricType] Type of metrics.   - METRIC_TYPE_UNSPECIFIED: Zero-value (not allowed).  - METRIC_TYPE_TRAINING: For metrics emitted during training.  - METRIC_TYPE_VALIDATION: For metrics emitted during validation.
      * @param {'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG'} [scale] Scale of metric visualization (linear or log scale).   - SCALE_UNSPECIFIED: Unknown scale.  - SCALE_LINEAR: Downsample points with closeness plotted on a linear y-axis.  - SCALE_LOG: Downsample points with closeness plotted on a logarithmic y-axis.
+     * @param {'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH'} [xAxis] x-axis selection. Default is in batch.   - X_AXIS_UNSPECIFIED: Unknown x-axis.  - X_AXIS_BATCH: x-axis in batch. This is the default x-axis.  - X_AXIS_TIME: x-axis in time.  - X_AXIS_EPOCH: x-axis in epoch.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentsApi
      */
-    public compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', options?: any) {
-        return ExperimentsApiFp(this.configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, options)(this.fetch, this.basePath);
+    public compareTrials(trialIds?: Array<number>, maxDatapoints?: number, metricNames?: Array<string>, startBatches?: number, endBatches?: number, metricType?: 'METRIC_TYPE_UNSPECIFIED' | 'METRIC_TYPE_TRAINING' | 'METRIC_TYPE_VALIDATION', scale?: 'SCALE_UNSPECIFIED' | 'SCALE_LINEAR' | 'SCALE_LOG', xAxis?: 'X_AXIS_UNSPECIFIED' | 'X_AXIS_BATCH' | 'X_AXIS_TIME' | 'X_AXIS_EPOCH', options?: any) {
+        return ExperimentsApiFp(this.configuration).compareTrials(trialIds, maxDatapoints, metricNames, startBatches, endBatches, metricType, scale, xAxis, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -14540,7 +14794,7 @@ export class ExperimentsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of experiments.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL'} [sortBy] Sort experiments by the given field.   - SORT_BY_UNSPECIFIED: Returns experiments in an unsorted list.  - SORT_BY_ID: Returns experiments sorted by id.  - SORT_BY_DESCRIPTION: Returns experiments sorted by description.  - SORT_BY_START_TIME: Return experiments sorted by start time.  - SORT_BY_END_TIME: Return experiments sorted by end time. Experiments without end_time are returned after the ones with end_time.  - SORT_BY_STATE: Return experiments sorted by state.  - SORT_BY_NUM_TRIALS: Return experiments sorted by number of trials.  - SORT_BY_PROGRESS: Return experiments sorted by progress.  - SORT_BY_USER: Return experiments sorted by user.  - SORT_BY_NAME: Returns experiments sorted by name.  - SORT_BY_FORKED_FROM: Returns experiments sorted by originating model.  - SORT_BY_RESOURCE_POOL: Returns experiments sorted by resource pool.  - SORT_BY_PROJECT_ID: Returns experiments sorted by project.  - SORT_BY_CHECKPOINT_SIZE: Returns experiments sorted by checkpoint size.  - SORT_BY_CHECKPOINT_COUNT: Returns experiments sorted by checkpoint count.  - SORT_BY_SEARCHER_METRIC_VAL: Returns experiments sorted by searcher metric value..
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order experiments in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of experiments before returning results. Negative values denote number of experiments to skip from the end before returning results.
      * @param {number} [limit] Limit the number of experiments. 0 or Unspecified - returns a default of 100. -1               - returns everything. -2               - returns pagination info but no experiments.
@@ -14552,18 +14806,19 @@ export class ExperimentsApi extends BaseAPI {
      * @param {Array<string>} [users] Limit experiments to those that are owned by users with the specified usernames.
      * @param {Array<number>} [userIds] Limit experiments to those that are owned by users with the specified userIds.
      * @param {number} [projectId] Limit experiments to those within a specified project, or 0 for all projects.
-     * @param {number} [experimentIdFilterLt] TODO(ilia): add &#x60;exact&#x60;. Less than.
+     * @param {number} [experimentIdFilterLt] Less than.
      * @param {number} [experimentIdFilterLte] Less than or equal.
      * @param {number} [experimentIdFilterGt] Greater than.
      * @param {number} [experimentIdFilterGte] Greater than or equal.
      * @param {Array<number>} [experimentIdFilterIncl] In a set. &#x60;in&#x60; is a reserved word in python.
      * @param {Array<number>} [experimentIdFilterNotIn] Not in a set.
+     * @param {boolean} [showTrialData] whether to surface trial specific data from the best trial.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentsApi
      */
-    public getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, options?: any) {
-        return ExperimentsApiFp(this.configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, options)(this.fetch, this.basePath);
+    public getExperiments(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_END_TIME' | 'SORT_BY_STATE' | 'SORT_BY_NUM_TRIALS' | 'SORT_BY_PROGRESS' | 'SORT_BY_USER' | 'SORT_BY_NAME' | 'SORT_BY_FORKED_FROM' | 'SORT_BY_RESOURCE_POOL' | 'SORT_BY_PROJECT_ID' | 'SORT_BY_CHECKPOINT_SIZE' | 'SORT_BY_CHECKPOINT_COUNT' | 'SORT_BY_SEARCHER_METRIC_VAL', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, description?: string, name?: string, labels?: Array<string>, archived?: boolean, states?: Array<'STATE_UNSPECIFIED' | 'STATE_ACTIVE' | 'STATE_PAUSED' | 'STATE_STOPPING_COMPLETED' | 'STATE_STOPPING_CANCELED' | 'STATE_STOPPING_ERROR' | 'STATE_COMPLETED' | 'STATE_CANCELED' | 'STATE_ERROR' | 'STATE_DELETED' | 'STATE_DELETING' | 'STATE_DELETE_FAILED' | 'STATE_STOPPING_KILLED' | 'STATE_QUEUED' | 'STATE_PULLING' | 'STATE_STARTING' | 'STATE_RUNNING'>, users?: Array<string>, userIds?: Array<number>, projectId?: number, experimentIdFilterLt?: number, experimentIdFilterLte?: number, experimentIdFilterGt?: number, experimentIdFilterGte?: number, experimentIdFilterIncl?: Array<number>, experimentIdFilterNotIn?: Array<number>, showTrialData?: boolean, options?: any) {
+        return ExperimentsApiFp(this.configuration).getExperiments(sortBy, orderBy, offset, limit, description, name, labels, archived, states, users, userIds, projectId, experimentIdFilterLt, experimentIdFilterLte, experimentIdFilterGt, experimentIdFilterGte, experimentIdFilterIncl, experimentIdFilterNotIn, showTrialData, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -19055,10 +19310,11 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @summary Get a list of unique model labels (sorted by popularity).
+         * @param {number} [workspaceId] Optional workspace ID to limit query for model tags.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModelLabels(options: any = {}): FetchArgs {
+        getModelLabels(workspaceId?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/model/labels`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -19071,6 +19327,10 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
 					? configuration.apiKey("Authorization")
 					: configuration.apiKey;
                 localVarHeaderParameter["Authorization"] = localVarApiKeyValue;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -19186,7 +19446,7 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @summary Get a list of models.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.  - SORT_BY_WORKSPACE: Returns models sorted by workspace name.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order models in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of models before returning results. Negative values denote number of models to skip from the end before returning results.
          * @param {number} [limit] Limit the number of models. A value of 0 denotes no limit.
@@ -19195,12 +19455,15 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
          * @param {Array<string>} [labels] Limit the models to those with the following labels.
          * @param {boolean} [archived] Limit to unarchived models only.
          * @param {Array<string>} [users] Limit the models to those made by the users with the following usernames.
+         * @param {string} [workspaceName] Limit models to those that belong to the following worksapce.
+         * @param {number} [workspaceId] Limit models to those that belong to the following workspace id.
          * @param {Array<number>} [userIds] Limit the models to those made by the users with the following userIds.
          * @param {number} [id] Limit the models to this model id.
+         * @param {Array<number>} [workspaceIds] Limit models to those that belong to the following workspace ids.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, userIds?: Array<number>, id?: number, options: any = {}): FetchArgs {
+        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, workspaceName?: string, workspaceId?: number, userIds?: Array<number>, id?: number, workspaceIds?: Array<number>, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/models`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -19251,6 +19514,14 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
                 localVarQueryParameter['users'] = users;
             }
 
+            if (workspaceName !== undefined) {
+                localVarQueryParameter['workspaceName'] = workspaceName;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
+            }
+
             if (userIds) {
                 localVarQueryParameter['userIds'] = userIds;
             }
@@ -19259,10 +19530,60 @@ export const ModelsApiFetchParamCreator = function (configuration?: Configuratio
                 localVarQueryParameter['id'] = id;
             }
 
+            if (workspaceIds) {
+                localVarQueryParameter['workspaceIds'] = workspaceIds;
+            }
+
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
+
+            return {
+                url: url.format(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Move a model into a workspace
+         * @param {string} modelName The target model name.
+         * @param {V1MoveModelRequest} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        moveModel(modelName: string, body: V1MoveModelRequest, options: any = {}): FetchArgs {
+            // verify required parameter 'modelName' is not null or undefined
+            if (modelName === null || modelName === undefined) {
+                throw new RequiredError('modelName','Required parameter modelName was null or undefined when calling moveModel.');
+            }
+            // verify required parameter 'body' is not null or undefined
+            if (body === null || body === undefined) {
+                throw new RequiredError('body','Required parameter body was null or undefined when calling moveModel.');
+            }
+            const localVarPath = `/api/v1/models/{modelName}/move`
+                .replace(`{${"modelName"}}`, encodeURIComponent(String(modelName)));
+            const localVarUrlObj = url.parse(localVarPath, true);
+            const localVarRequestOptions = Object.assign({ method: 'POST' }, options);
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerToken required
+            if (configuration && configuration.apiKey) {
+                const localVarApiKeyValue = typeof configuration.apiKey === 'function'
+					? configuration.apiKey("Authorization")
+					: configuration.apiKey;
+                localVarHeaderParameter["Authorization"] = localVarApiKeyValue;
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
+            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+            delete localVarUrlObj.search;
+            localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
+            const needsSerialization = (<any>"V1MoveModelRequest" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
+            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(body || {}) : (body || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -19579,11 +19900,12 @@ export const ModelsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of unique model labels (sorted by popularity).
+         * @param {number} [workspaceId] Optional workspace ID to limit query for model tags.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModelLabels(options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetModelLabelsResponse> {
-            const localVarFetchArgs = ModelsApiFetchParamCreator(configuration).getModelLabels(options);
+        getModelLabels(workspaceId?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetModelLabelsResponse> {
+            const localVarFetchArgs = ModelsApiFetchParamCreator(configuration).getModelLabels(workspaceId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -19640,7 +19962,7 @@ export const ModelsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of models.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.  - SORT_BY_WORKSPACE: Returns models sorted by workspace name.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order models in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of models before returning results. Negative values denote number of models to skip from the end before returning results.
          * @param {number} [limit] Limit the number of models. A value of 0 denotes no limit.
@@ -19649,13 +19971,36 @@ export const ModelsApiFp = function(configuration?: Configuration) {
          * @param {Array<string>} [labels] Limit the models to those with the following labels.
          * @param {boolean} [archived] Limit to unarchived models only.
          * @param {Array<string>} [users] Limit the models to those made by the users with the following usernames.
+         * @param {string} [workspaceName] Limit models to those that belong to the following worksapce.
+         * @param {number} [workspaceId] Limit models to those that belong to the following workspace id.
          * @param {Array<number>} [userIds] Limit the models to those made by the users with the following userIds.
          * @param {number} [id] Limit the models to this model id.
+         * @param {Array<number>} [workspaceIds] Limit models to those that belong to the following workspace ids.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, userIds?: Array<number>, id?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetModelsResponse> {
-            const localVarFetchArgs = ModelsApiFetchParamCreator(configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, userIds, id, options);
+        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, workspaceName?: string, workspaceId?: number, userIds?: Array<number>, id?: number, workspaceIds?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetModelsResponse> {
+            const localVarFetchArgs = ModelsApiFetchParamCreator(configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, workspaceName, workspaceId, userIds, id, workspaceIds, options);
+            return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
+                return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
+                    if (response.status >= 200 && response.status < 300) {
+                        return response.json();
+                    } else {
+                        throw response;
+                    }
+                });
+            };
+        },
+        /**
+         * 
+         * @summary Move a model into a workspace
+         * @param {string} modelName The target model name.
+         * @param {V1MoveModelRequest} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        moveModel(modelName: string, body: V1MoveModelRequest, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1MoveModelResponse> {
+            const localVarFetchArgs = ModelsApiFetchParamCreator(configuration).moveModel(modelName, body, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -19818,11 +20163,12 @@ export const ModelsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * 
          * @summary Get a list of unique model labels (sorted by popularity).
+         * @param {number} [workspaceId] Optional workspace ID to limit query for model tags.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModelLabels(options?: any) {
-            return ModelsApiFp(configuration).getModelLabels(options)(fetch, basePath);
+        getModelLabels(workspaceId?: number, options?: any) {
+            return ModelsApiFp(configuration).getModelLabels(workspaceId, options)(fetch, basePath);
         },
         /**
          * 
@@ -19852,7 +20198,7 @@ export const ModelsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * 
          * @summary Get a list of models.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.  - SORT_BY_WORKSPACE: Returns models sorted by workspace name.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order models in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of models before returning results. Negative values denote number of models to skip from the end before returning results.
          * @param {number} [limit] Limit the number of models. A value of 0 denotes no limit.
@@ -19861,13 +20207,27 @@ export const ModelsApiFactory = function (configuration?: Configuration, fetch?:
          * @param {Array<string>} [labels] Limit the models to those with the following labels.
          * @param {boolean} [archived] Limit to unarchived models only.
          * @param {Array<string>} [users] Limit the models to those made by the users with the following usernames.
+         * @param {string} [workspaceName] Limit models to those that belong to the following worksapce.
+         * @param {number} [workspaceId] Limit models to those that belong to the following workspace id.
          * @param {Array<number>} [userIds] Limit the models to those made by the users with the following userIds.
          * @param {number} [id] Limit the models to this model id.
+         * @param {Array<number>} [workspaceIds] Limit models to those that belong to the following workspace ids.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, userIds?: Array<number>, id?: number, options?: any) {
-            return ModelsApiFp(configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, userIds, id, options)(fetch, basePath);
+        getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, workspaceName?: string, workspaceId?: number, userIds?: Array<number>, id?: number, workspaceIds?: Array<number>, options?: any) {
+            return ModelsApiFp(configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, workspaceName, workspaceId, userIds, id, workspaceIds, options)(fetch, basePath);
+        },
+        /**
+         * 
+         * @summary Move a model into a workspace
+         * @param {string} modelName The target model name.
+         * @param {V1MoveModelRequest} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        moveModel(modelName: string, body: V1MoveModelRequest, options?: any) {
+            return ModelsApiFp(configuration).moveModel(modelName, body, options)(fetch, basePath);
         },
         /**
          * 
@@ -19985,12 +20345,13 @@ export class ModelsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of unique model labels (sorted by popularity).
+     * @param {number} [workspaceId] Optional workspace ID to limit query for model tags.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ModelsApi
      */
-    public getModelLabels(options?: any) {
-        return ModelsApiFp(this.configuration).getModelLabels(options)(this.fetch, this.basePath);
+    public getModelLabels(workspaceId?: number, options?: any) {
+        return ModelsApiFp(this.configuration).getModelLabels(workspaceId, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -20025,7 +20386,7 @@ export class ModelsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of models.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE'} [sortBy] Sort the models by the given field.   - SORT_BY_UNSPECIFIED: Returns models in an unsorted list.  - SORT_BY_NAME: Returns models sorted by name.  - SORT_BY_DESCRIPTION: Returns models sorted by description.  - SORT_BY_CREATION_TIME: Returns models sorted by creation time.  - SORT_BY_LAST_UPDATED_TIME: Returns models sorted by last updated time.  - SORT_BY_NUM_VERSIONS: Returns models sorted by number of version.  - SORT_BY_WORKSPACE: Returns models sorted by workspace name.
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order models in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of models before returning results. Negative values denote number of models to skip from the end before returning results.
      * @param {number} [limit] Limit the number of models. A value of 0 denotes no limit.
@@ -20034,14 +20395,30 @@ export class ModelsApi extends BaseAPI {
      * @param {Array<string>} [labels] Limit the models to those with the following labels.
      * @param {boolean} [archived] Limit to unarchived models only.
      * @param {Array<string>} [users] Limit the models to those made by the users with the following usernames.
+     * @param {string} [workspaceName] Limit models to those that belong to the following worksapce.
+     * @param {number} [workspaceId] Limit models to those that belong to the following workspace id.
      * @param {Array<number>} [userIds] Limit the models to those made by the users with the following userIds.
      * @param {number} [id] Limit the models to this model id.
+     * @param {Array<number>} [workspaceIds] Limit models to those that belong to the following workspace ids.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ModelsApi
      */
-    public getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, userIds?: Array<number>, id?: number, options?: any) {
-        return ModelsApiFp(this.configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, userIds, id, options)(this.fetch, this.basePath);
+    public getModels(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_NAME' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_CREATION_TIME' | 'SORT_BY_LAST_UPDATED_TIME' | 'SORT_BY_NUM_VERSIONS' | 'SORT_BY_WORKSPACE', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, name?: string, description?: string, labels?: Array<string>, archived?: boolean, users?: Array<string>, workspaceName?: string, workspaceId?: number, userIds?: Array<number>, id?: number, workspaceIds?: Array<number>, options?: any) {
+        return ModelsApiFp(this.configuration).getModels(sortBy, orderBy, offset, limit, name, description, labels, archived, users, workspaceName, workspaceId, userIds, id, workspaceIds, options)(this.fetch, this.basePath);
+    }
+
+    /**
+     * 
+     * @summary Move a model into a workspace
+     * @param {string} modelName The target model name.
+     * @param {V1MoveModelRequest} body 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ModelsApi
+     */
+    public moveModel(modelName: string, body: V1MoveModelRequest, options?: any) {
+        return ModelsApiFp(this.configuration).moveModel(modelName, body, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -20156,16 +20533,17 @@ export const NotebooksApiFetchParamCreator = function (configuration?: Configura
         /**
          * 
          * @summary Get a list of notebooks.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.  - SORT_BY_WORKSPACE_ID: Return notebooks sorted by workspace_id
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order notebooks in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of notebooks before returning results. Negative values denote number of notebooks to skip from the end before returning results.
          * @param {number} [limit] Limit the number of notebooks. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit notebooks to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit notebooks to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options: any = {}): FetchArgs {
+        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/notebooks`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -20202,6 +20580,10 @@ export const NotebooksApiFetchParamCreator = function (configuration?: Configura
 
             if (userIds) {
                 localVarQueryParameter['userIds'] = userIds;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -20368,17 +20750,18 @@ export const NotebooksApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of notebooks.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.  - SORT_BY_WORKSPACE_ID: Return notebooks sorted by workspace_id
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order notebooks in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of notebooks before returning results. Negative values denote number of notebooks to skip from the end before returning results.
          * @param {number} [limit] Limit the number of notebooks. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit notebooks to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit notebooks to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetNotebooksResponse> {
-            const localVarFetchArgs = NotebooksApiFetchParamCreator(configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, options);
+        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetNotebooksResponse> {
+            const localVarFetchArgs = NotebooksApiFetchParamCreator(configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -20469,17 +20852,18 @@ export const NotebooksApiFactory = function (configuration?: Configuration, fetc
         /**
          * 
          * @summary Get a list of notebooks.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.  - SORT_BY_WORKSPACE_ID: Return notebooks sorted by workspace_id
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order notebooks in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of notebooks before returning results. Negative values denote number of notebooks to skip from the end before returning results.
          * @param {number} [limit] Limit the number of notebooks. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit notebooks to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit notebooks to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-            return NotebooksApiFp(configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, options)(fetch, basePath);
+        getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+            return NotebooksApiFp(configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(fetch, basePath);
         },
         /**
          * 
@@ -20537,18 +20921,19 @@ export class NotebooksApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of notebooks.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort notebooks by the given field.   - SORT_BY_UNSPECIFIED: Returns notebooks in an unsorted list.  - SORT_BY_ID: Returns notebooks sorted by id.  - SORT_BY_DESCRIPTION: Returns notebooks sorted by description.  - SORT_BY_START_TIME: Return notebooks sorted by start time.  - SORT_BY_WORKSPACE_ID: Return notebooks sorted by workspace_id
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order notebooks in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of notebooks before returning results. Negative values denote number of notebooks to skip from the end before returning results.
      * @param {number} [limit] Limit the number of notebooks. A value of 0 denotes no limit.
      * @param {Array<string>} [users] Limit notebooks to those that are owned by users with the specified usernames.
      * @param {Array<number>} [userIds] Limit notebooks to those that are owned by users with the specified userIds.
+     * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotebooksApi
      */
-    public getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-        return NotebooksApiFp(this.configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, options)(this.fetch, this.basePath);
+    public getNotebooks(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+        return NotebooksApiFp(this.configuration).getNotebooks(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -22503,16 +22888,17 @@ export const ShellsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @summary Get a list of shells.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.  - SORT_BY_WORKSPACE_ID: Return shells sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order shells in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of shells before returning results. Negative values denote number of shells to skip from the end before returning results.
          * @param {number} [limit] Limit the number of shells. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit shells to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit shells to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options: any = {}): FetchArgs {
+        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/shells`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -22549,6 +22935,10 @@ export const ShellsApiFetchParamCreator = function (configuration?: Configuratio
 
             if (userIds) {
                 localVarQueryParameter['userIds'] = userIds;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -22715,17 +23105,18 @@ export const ShellsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of shells.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.  - SORT_BY_WORKSPACE_ID: Return shells sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order shells in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of shells before returning results. Negative values denote number of shells to skip from the end before returning results.
          * @param {number} [limit] Limit the number of shells. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit shells to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit shells to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetShellsResponse> {
-            const localVarFetchArgs = ShellsApiFetchParamCreator(configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, options);
+        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetShellsResponse> {
+            const localVarFetchArgs = ShellsApiFetchParamCreator(configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -22816,17 +23207,18 @@ export const ShellsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * 
          * @summary Get a list of shells.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.  - SORT_BY_WORKSPACE_ID: Return shells sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order shells in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of shells before returning results. Negative values denote number of shells to skip from the end before returning results.
          * @param {number} [limit] Limit the number of shells. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit shells to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit shells to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-            return ShellsApiFp(configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, options)(fetch, basePath);
+        getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+            return ShellsApiFp(configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(fetch, basePath);
         },
         /**
          * 
@@ -22884,18 +23276,19 @@ export class ShellsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of shells.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort shells by the given field.   - SORT_BY_UNSPECIFIED: Returns shells in an unsorted list.  - SORT_BY_ID: Returns shells sorted by id.  - SORT_BY_DESCRIPTION: Returns shells sorted by description.  - SORT_BY_START_TIME: Return shells sorted by start time.  - SORT_BY_WORKSPACE_ID: Return shells sorted by workspace_id.
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order shells in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of shells before returning results. Negative values denote number of shells to skip from the end before returning results.
      * @param {number} [limit] Limit the number of shells. A value of 0 denotes no limit.
      * @param {Array<string>} [users] Limit shells to those that are owned by users with the specified usernames.
      * @param {Array<number>} [userIds] Limit shells to those that are owned by users with the specified userIds.
+     * @param {number} [workspaceId] Limit to those within a specified workspace, or 0 for all accessible workspaces.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ShellsApi
      */
-    public getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-        return ShellsApiFp(this.configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, options)(this.fetch, this.basePath);
+    public getShells(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+        return ShellsApiFp(this.configuration).getShells(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -23825,16 +24218,17 @@ export const TensorboardsApiFetchParamCreator = function (configuration?: Config
         /**
          * 
          * @summary Get a list of tensorboards.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.  - SORT_BY_WORKSPACE_ID: Return tensorboards sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order tensorboards in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of tensorboards before returning results. Negative values denote number of tensorboards to skip from the end before returning results.
          * @param {number} [limit] Limit the number of tensorboards. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit tensorboards to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit tensorboards to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit tensorboards to those that are in a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options: any = {}): FetchArgs {
+        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/tensorboards`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -23871,6 +24265,10 @@ export const TensorboardsApiFetchParamCreator = function (configuration?: Config
 
             if (userIds) {
                 localVarQueryParameter['userIds'] = userIds;
+            }
+
+            if (workspaceId !== undefined) {
+                localVarQueryParameter['workspaceId'] = workspaceId;
             }
 
             localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
@@ -24037,17 +24435,18 @@ export const TensorboardsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of tensorboards.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.  - SORT_BY_WORKSPACE_ID: Return tensorboards sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order tensorboards in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of tensorboards before returning results. Negative values denote number of tensorboards to skip from the end before returning results.
          * @param {number} [limit] Limit the number of tensorboards. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit tensorboards to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit tensorboards to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit tensorboards to those that are in a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetTensorboardsResponse> {
-            const localVarFetchArgs = TensorboardsApiFetchParamCreator(configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, options);
+        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetTensorboardsResponse> {
+            const localVarFetchArgs = TensorboardsApiFetchParamCreator(configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -24138,17 +24537,18 @@ export const TensorboardsApiFactory = function (configuration?: Configuration, f
         /**
          * 
          * @summary Get a list of tensorboards.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.  - SORT_BY_WORKSPACE_ID: Return tensorboards sorted by workspace_id.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order tensorboards in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of tensorboards before returning results. Negative values denote number of tensorboards to skip from the end before returning results.
          * @param {number} [limit] Limit the number of tensorboards. A value of 0 denotes no limit.
          * @param {Array<string>} [users] Limit tensorboards to those that are owned by users with the specified usernames.
          * @param {Array<number>} [userIds] Limit tensorboards to those that are owned by users with the specified userIds.
+         * @param {number} [workspaceId] Limit tensorboards to those that are in a specific workspace, or 0 for all accessible workspaces.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-            return TensorboardsApiFp(configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, options)(fetch, basePath);
+        getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+            return TensorboardsApiFp(configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(fetch, basePath);
         },
         /**
          * 
@@ -24206,18 +24606,19 @@ export class TensorboardsApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of tensorboards.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID'} [sortBy] Sort tensorboards by the given field.   - SORT_BY_UNSPECIFIED: Returns tensorboards in an unsorted list.  - SORT_BY_ID: Returns tensorboards sorted by id.  - SORT_BY_DESCRIPTION: Returns tensorboards sorted by description.  - SORT_BY_START_TIME: Return tensorboards sorted by start time.  - SORT_BY_WORKSPACE_ID: Return tensorboards sorted by workspace_id.
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order tensorboards in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of tensorboards before returning results. Negative values denote number of tensorboards to skip from the end before returning results.
      * @param {number} [limit] Limit the number of tensorboards. A value of 0 denotes no limit.
      * @param {Array<string>} [users] Limit tensorboards to those that are owned by users with the specified usernames.
      * @param {Array<number>} [userIds] Limit tensorboards to those that are owned by users with the specified userIds.
+     * @param {number} [workspaceId] Limit tensorboards to those that are in a specific workspace, or 0 for all accessible workspaces.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TensorboardsApi
      */
-    public getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, options?: any) {
-        return TensorboardsApiFp(this.configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, options)(this.fetch, this.basePath);
+    public getTensorboards(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_ID' | 'SORT_BY_DESCRIPTION' | 'SORT_BY_START_TIME' | 'SORT_BY_WORKSPACE_ID', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, users?: Array<string>, userIds?: Array<number>, workspaceId?: number, options?: any) {
+        return TensorboardsApiFp(this.configuration).getTensorboards(sortBy, orderBy, offset, limit, users, userIds, workspaceId, options)(this.fetch, this.basePath);
     }
 
     /**
@@ -25748,14 +26149,14 @@ export const UsersApiFetchParamCreator = function (configuration?: Configuration
         /**
          * 
          * @summary Get a list of users.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.  - SORT_BY_NAME: Returns users sorted by username unless display name exist.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order users in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of projects before returning results. Negative values denote number of projects to skip from the end before returning results.
          * @param {number} [limit] Limit the number of projects. A value of 0 denotes no limit.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options: any = {}): FetchArgs {
+        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options: any = {}): FetchArgs {
             const localVarPath = `/api/v1/users`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -26125,14 +26526,14 @@ export const UsersApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Get a list of users.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.  - SORT_BY_NAME: Returns users sorted by username unless display name exist.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order users in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of projects before returning results. Negative values denote number of projects to skip from the end before returning results.
          * @param {number} [limit] Limit the number of projects. A value of 0 denotes no limit.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetUsersResponse> {
+        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<V1GetUsersResponse> {
             const localVarFetchArgs = UsersApiFetchParamCreator(configuration).getUsers(sortBy, orderBy, offset, limit, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -26309,14 +26710,14 @@ export const UsersApiFactory = function (configuration?: Configuration, fetch?: 
         /**
          * 
          * @summary Get a list of users.
-         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.
+         * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.  - SORT_BY_NAME: Returns users sorted by username unless display name exist.
          * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order users in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
          * @param {number} [offset] Skip the number of projects before returning results. Negative values denote number of projects to skip from the end before returning results.
          * @param {number} [limit] Limit the number of projects. A value of 0 denotes no limit.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any) {
+        getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any) {
             return UsersApiFp(configuration).getUsers(sortBy, orderBy, offset, limit, options)(fetch, basePath);
         },
         /**
@@ -26439,7 +26840,7 @@ export class UsersApi extends BaseAPI {
     /**
      * 
      * @summary Get a list of users.
-     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.
+     * @param {'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME'} [sortBy] Sort users by the given field.   - SORT_BY_UNSPECIFIED: Returns users in an unsorted list.  - SORT_BY_DISPLAY_NAME: Returns users sorted by display name.  - SORT_BY_USER_NAME: Returns users sorted by user name.  - SORT_BY_ADMIN: Returns users sorted by if they are admin.  - SORT_BY_ACTIVE: Returns users sorted by if they are active.  - SORT_BY_MODIFIED_TIME: Returns users sorted by modified time.  - SORT_BY_NAME: Returns users sorted by username unless display name exist.
      * @param {'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC'} [orderBy] Order users in either ascending or descending order.   - ORDER_BY_UNSPECIFIED: Returns records in no specific order.  - ORDER_BY_ASC: Returns records in ascending order.  - ORDER_BY_DESC: Returns records in descending order.
      * @param {number} [offset] Skip the number of projects before returning results. Negative values denote number of projects to skip from the end before returning results.
      * @param {number} [limit] Limit the number of projects. A value of 0 denotes no limit.
@@ -26447,7 +26848,7 @@ export class UsersApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof UsersApi
      */
-    public getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any) {
+    public getUsers(sortBy?: 'SORT_BY_UNSPECIFIED' | 'SORT_BY_DISPLAY_NAME' | 'SORT_BY_USER_NAME' | 'SORT_BY_ADMIN' | 'SORT_BY_ACTIVE' | 'SORT_BY_MODIFIED_TIME' | 'SORT_BY_NAME', orderBy?: 'ORDER_BY_UNSPECIFIED' | 'ORDER_BY_ASC' | 'ORDER_BY_DESC', offset?: number, limit?: number, options?: any) {
         return UsersApiFp(this.configuration).getUsers(sortBy, orderBy, offset, limit, options)(this.fetch, this.basePath);
     }
 

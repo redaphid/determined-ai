@@ -21,11 +21,15 @@ def start_tensorboard(args: Namespace) -> None:
         sys.exit(1)
 
     config = command.parse_config(args.config_file, None, args.config, [])
+
+    workspace_id = cli.workspace.get_workspace_id_from_args(args)
+
     body = bindings.v1LaunchTensorboardRequest(
         config=config,
         trialIds=args.trial_ids,
         experimentIds=args.experiment_ids,
         files=context.read_v1_context(args.context, args.include),
+        workspaceId=workspace_id,
     )
 
     resp = bindings.post_LaunchTensorboard(cli.setup_session(args), body=body)
@@ -34,7 +38,8 @@ def start_tensorboard(args: Namespace) -> None:
         print(resp.tensorboard.id)
         return
 
-    request.handle_warnings(resp.warnings)
+    if resp.warnings:
+        cli.print_warnings(resp.warnings)
     currentSlotsExceeded = (resp.warnings is not None) and (
         bindings.v1LaunchWarning.LAUNCH_WARNING_CURRENT_SLOTS_EXCEEDED in resp.warnings
     )
@@ -98,6 +103,7 @@ args_description = [
                 help="only display the IDs"),
             Arg("--all", "-a", action="store_true",
                 help="show all TensorBoards (including other users')"),
+            cli.workspace.workspace_arg,
             Group(cli.output_format_args["json"], cli.output_format_args["csv"]),
         ], is_default=True),
         Cmd("start", start_tensorboard, "start new TensorBoard instance", [
@@ -109,6 +115,7 @@ args_description = [
             Arg("-t", "--trial-ids", nargs=ONE_OR_MORE, type=int,
                 help="trial IDs to load into TensorBoard; at most 100 trials are "
                      "allowed per TensorBoard instance"),
+            cli.workspace.workspace_arg,
             Arg("--config-file", default=None, type=FileType("r"),
                 help="command config file (.yaml)"),
             Arg("-c", "--context", default=None, type=Path, help=command.CONTEXT_DESC),

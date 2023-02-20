@@ -366,7 +366,7 @@ func (a *apiServer) GetProjectsByUserActivity(
 	err = db.Bun().NewSelect().Model(p).NewRaw(`
 	WITH p as (
 		SELECT  pr.*, activity_time FROM projects pr 
-		JOIN activity a ON pr.id = a.entity_id ORDER BY a.activity_time DESC LIMIT ?
+		JOIN activity a ON pr.id = a.entity_id WHERE a.user_id = ? ORDER BY a.activity_time DESC LIMIT ?
 	),
 	pe AS (
 	  SELECT project_id, state, start_time
@@ -380,12 +380,13 @@ func (a *apiServer) GetProjectsByUserActivity(
 		AND pe.state = 'ACTIVE' then 1 else 0 end) AS num_active_experiments,
 	  MAX(case when pe.project_id = p.id then pe.start_time else NULL end) 
 	  AS last_experiment_started_at
-	FROM pe, p
+	FROM p
 	  LEFT JOIN users as u ON u.id = p.user_id
 	  LEFT JOIN workspaces AS w on w.id = p.workspace_id
+	  LEFT JOIN pe on pe.project_id = p.id 
 	GROUP BY p.user_id, p.id, p.name, p.workspace_id, p.description, 
 	p.immutable, p.notes, p.state, p.error_message,  u.username, w.name, p.activity_time
-	ORDER BY p.activity_time DESC;`, limit).
+	ORDER BY p.activity_time DESC;`, curUser.ID, limit).
 		Scan(ctx, &p)
 	if err != nil {
 		return nil, err

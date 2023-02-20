@@ -4,10 +4,10 @@ import { array, boolean, number, string, undefined as undefinedType, union } fro
 import React, { useEffect } from 'react';
 import { unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
-import StoreProvider from 'contexts/Store';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
 import history from 'shared/routes/history';
-import { AuthProvider, useAuth } from 'stores/auth';
-import { DetailedUser } from 'types';
+import { setAuth, setAuthChecked } from 'stores/auth';
+import { UsersProvider, useUpdateCurrentUser } from 'stores/users';
 
 import * as hook from './useSettings';
 import { SettingsProvider } from './useSettingsProvider';
@@ -15,11 +15,6 @@ import { SettingsProvider } from './useSettingsProvider';
 jest.mock('services/api', () => ({
   ...jest.requireActual('services/api'),
   getUserSetting: () => Promise.resolve({ settings: [] }),
-}));
-jest.mock('contexts/Store', () => ({
-  __esModule: true,
-  ...jest.requireActual('contexts/Store'),
-  useStore: () => ({ auth: { user: { id: 1 } as DetailedUser } }),
 }));
 
 interface Settings {
@@ -90,7 +85,7 @@ const config: hook.SettingsConfig<Settings> = {
       type: union([undefinedType, array(string)]),
     },
   },
-  storagePath: 'settings/normal',
+  storagePath: 'settings-normal',
 };
 
 const extraConfig: hook.SettingsConfig<ExtraSettings> = {
@@ -102,15 +97,16 @@ const extraConfig: hook.SettingsConfig<ExtraSettings> = {
       type: string,
     },
   },
-  storagePath: 'settings/extra',
+  storagePath: 'settings-extra',
 };
 
 const Container: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  const { setAuth, setAuthCheck } = useAuth();
+  const updateCurrentUser = useUpdateCurrentUser();
 
   useEffect(() => {
     setAuth({ isAuthenticated: true });
-    setAuthCheck();
+    setAuthChecked();
+    updateCurrentUser(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -129,11 +125,11 @@ const setup = async (
   result: HookReturn;
 }> => {
   const RouterWrapper: React.FC<{ children: JSX.Element }> = ({ children }) => (
-    <StoreProvider>
-      <AuthProvider>
+    <UIProvider>
+      <UsersProvider>
         <Container>{children}</Container>
-      </AuthProvider>
-    </StoreProvider>
+      </UsersProvider>
+    </UIProvider>
   );
   const hookResult = await renderHook(() => hook.useSettings<Settings>(newSettings ?? config), {
     wrapper: RouterWrapper,

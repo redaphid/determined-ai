@@ -24,7 +24,6 @@ import (
 
 	"github.com/coreos/go-systemd/activation"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -84,11 +83,6 @@ var staticWebDirectoryPaths = map[string]bool{
 	"/docs/rest-api": true,
 }
 
-// gzipSkipPaths are locations of paths to be skipped by GZIP compression.
-var gzipSkipPaths = map[string]bool{
-	"/proxy": true,
-}
-
 // Master manages the Determined master state.
 type Master struct {
 	ClusterID string
@@ -97,15 +91,14 @@ type Master struct {
 	config   *config.Config
 	taskSpec *tasks.TaskSpec
 
-	logs          *logger.LogBuffer
-	system        *actor.System
-	echo          *echo.Echo
-	rwCoordinator *actor.Ref
-	db            *db.PgDB
-	rm            rm.ResourceManager
-	proxy         *actor.Ref
-	taskLogger    *task.Logger
-	hpImportance  *actor.Ref
+	logs         *logger.LogBuffer
+	system       *actor.System
+	echo         *echo.Echo
+	db           *db.PgDB
+	rm           rm.ResourceManager
+	proxy        *actor.Ref
+	taskLogger   *task.Logger
+	hpImportance *actor.Ref
 
 	trialLogBackend TrialLogBackend
 	taskLogBackend  task.LogBackend
@@ -191,20 +184,19 @@ func (m *Master) getMasterLogs(c echo.Context) (interface{}, error) {
 	return entries, nil
 }
 
-// @Summary Get a detailed view of resource allocation during the given time period (CSV).
-// @Tags Cluster
-// @ID get-raw-resource-allocation-csv
-// @Accept  json
-// @Produce  text/csv
+//	@Summary	Get a detailed view of resource allocation during the given time period (CSV).
+//	@Tags		Cluster
+//	@ID			get-raw-resource-allocation-csv
+//	@Accept		json
+//	@Produce	text/csv
 //nolint:lll
-// @Param   timestamp_after query string true "Start time to get allocations for (YYYY-MM-DDTHH:MM:SSZ format)"
+//	@Param		timestamp_after		query	string	true	"Start time to get allocations for (YYYY-MM-DDTHH:MM:SSZ format)"
 //nolint:lll
-// @Param   timestamp_before query string true "End time to get allocations for (YYYY-MM-DDTHH:MM:SSZ format)"
+//	@Param		timestamp_before	query	string	true	"End time to get allocations for (YYYY-MM-DDTHH:MM:SSZ format)"
 //nolint:lll
-// @Success 200 {} string "A CSV file containing the fields experiment_id,kind,username,labels,slots,start_time,end_time,seconds"
-//nolint:godot
-// @Router /allocation/raw [get]
-// @Deprecated
+//	@Success	200					{}		string	"A CSV file containing the fields experiment_id,kind,username,labels,slots,start_time,end_time,seconds"
+//	@Router		/allocation/raw [get]
+//	@Deprecated
 func (m *Master) getRawResourceAllocation(c echo.Context) error {
 	args := struct {
 		Start string `query:"timestamp_after"`
@@ -323,19 +315,18 @@ func (m *Master) fetchAggregatedResourceAllocation(
 	}
 }
 
-// @Summary Get an aggregated view of resource allocation during the given time period (CSV).
-// @Tags Cluster
-// @ID get-aggregated-resource-allocation-csv
-// @Produce  text/csv
+//	@Summary	Get an aggregated view of resource allocation during the given time period (CSV).
+//	@Tags		Cluster
+//	@ID			get-aggregated-resource-allocation-csv
+//	@Produce	text/csv
 //nolint:lll
-// @Param   start_date query string true "Start time to get allocations for (YYYY-MM-DD format for daily, YYYY-MM format for monthly)"
+//	@Param		start_date	query	string	true	"Start time to get allocations for (YYYY-MM-DD format for daily, YYYY-MM format for monthly)"
 //nolint:lll
-// @Param   end_date query string true "End time to get allocations for (YYYY-MM-DD format for daily, YYYY-MM format for monthly)"
+//	@Param		end_date	query	string	true	"End time to get allocations for (YYYY-MM-DD format for daily, YYYY-MM format for monthly)"
 //nolint:lll
-// @Param   period query string true "Period to aggregate over (RESOURCE_ALLOCATION_AGGREGATION_PERIOD_DAILY or RESOURCE_ALLOCATION_AGGREGATION_PERIOD_MONTHLY)"
-// @Success 200 {} string "aggregation_type,aggregation_key,date,seconds"
-//nolint:godot
-// @Router /allocation/aggregated [get]
+//	@Param		period		query	string	true	"Period to aggregate over (RESOURCE_ALLOCATION_AGGREGATION_PERIOD_DAILY or RESOURCE_ALLOCATION_AGGREGATION_PERIOD_MONTHLY)"
+//	@Success	200			{}		string	"aggregation_type,aggregation_key,date,seconds"
+//	@Router		/allocation/aggregated [get]
 func (m *Master) getAggregatedResourceAllocation(c echo.Context) error {
 	args := struct {
 		Start  string `query:"start_date"`
@@ -386,9 +377,6 @@ func (m *Master) getAggregatedResourceAllocation(c echo.Context) error {
 			return err
 		}
 		if err = writeAggType("resource_pool", entry.ByResourcePool); err != nil {
-			return err
-		}
-		if err = writeAggType("agent_label", entry.ByAgentLabel); err != nil {
 			return err
 		}
 		if err = writeAggType("total", map[string]float32{"total": entry.Seconds}); err != nil {
@@ -647,45 +635,6 @@ func convertDBErrorsToNotFound(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *Master) rwCoordinatorWebSocket(socket *websocket.Conn, c echo.Context) error {
-	c.Logger().Infof(
-		"new connection for RW Coordinator from: %v, %s",
-		socket.RemoteAddr(),
-		c.Request().URL,
-	)
-
-	resourceName := c.Request().URL.Path
-	query := c.Request().URL.Query()
-
-	readLockString, ok := query["read_lock"]
-	if !ok {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			fmt.Sprintf("Received request without specifying read_lock: %v", c.Request().URL))
-	}
-
-	var readLock bool
-	if strings.EqualFold(readLockString[0], "True") {
-		readLock = true
-	} else {
-		if !strings.EqualFold(readLockString[0], "false") {
-			return echo.NewHTTPError(http.StatusBadRequest,
-				fmt.Sprintf("Received request with invalid read_lock: %v", c.Request().URL))
-		}
-		readLock = false
-	}
-
-	socketActor := m.system.AskAt(actor.Addr("rwCoordinator"),
-		resourceRequest{resourceName, readLock, socket})
-	actorRef, ok := socketActor.Get().(*actor.Ref)
-	if !ok {
-		c.Logger().Error("failed to get websocket actor")
-		return nil
-	}
-
-	// Wait for the websocket actor to terminate.
-	return actorRef.AwaitTermination()
-}
-
 func updateClusterHeartbeat(ctx context.Context, db *db.PgDB) {
 	t := time.NewTicker(10 * time.Minute)
 	defer t.Stop()
@@ -734,6 +683,10 @@ func (m *Master) Run(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "could not fetch cluster id from database")
 	}
+
+	// Must happen before recovery. If tasks can't recover their allocations, they need an end time.
+	cluster.InitTheLastBootClusterHeartbeat()
+
 	cert, err := m.config.Security.TLS.ReadCertificate()
 	if err != nil {
 		return errors.Wrap(err, "failed to read TLS certificate")
@@ -762,7 +715,6 @@ func (m *Master) Run(ctx context.Context) error {
 	//         +- Provisioner (provisioner.Provisioner: provisioner)
 	// +- KubernetesResourceManager (scheduler.KubernetesResourceManager: kubernetesRM)
 	// +- Service Proxy (proxy.Proxy: proxy)
-	// +- RWCoordinator (internal.rw_coordinator: rwCoordinator)
 	// +- Telemetry (telemetry.telemetry: telemetry)
 	// +- TrialLogger (internal.trialLogger: trialLogger)
 	// +- Experiments (actors.Group: experiments)
@@ -798,7 +750,7 @@ func (m *Master) Run(ctx context.Context) error {
 	userService := user.GetService()
 
 	m.proxy, _ = m.system.ActorOf(actor.Addr("proxy"), &proxy.Proxy{
-		HTTPAuth: userService.ProcessProxyAuthentication,
+		HTTPAuth: processProxyAuthentication,
 	})
 
 	allocationmap.InitAllocationMap()
@@ -816,7 +768,8 @@ func (m *Master) Run(ctx context.Context) error {
 
 	gzipConfig := middleware.GzipConfig{
 		Skipper: func(c echo.Context) bool {
-			return !gzipSkipPaths[c.Path()]
+			webuiStaticAssets := regexp.MustCompile(`\/det\/(themes|static|determined)\/`)
+			return !webuiStaticAssets.MatchString(c.Request().URL.Path)
 		},
 	}
 	m.echo.Use(middleware.GzipWithConfig(gzipConfig))
@@ -891,10 +844,6 @@ func (m *Master) Run(ctx context.Context) error {
 	tasksGroup := m.echo.Group("/tasks")
 	tasksGroup.GET("", api.Route(m.getTasks))
 
-	// Distributed lock server.
-	rwCoordinator := newRWCoordinator()
-	m.rwCoordinator, _ = m.system.ActorOf(actor.Addr("rwCoordinator"), rwCoordinator)
-
 	m.system.ActorOf(actor.Addr("experiments"), &actors.Group{})
 	m.system.ActorOf(sproto.JobsActorAddr, job.NewJobs(m.rm))
 
@@ -929,7 +878,6 @@ func (m *Master) Run(ctx context.Context) error {
 	// The below function call is intentionally made after the call to CloseOpenAllocations.
 	// This ensures that in the scenario where a cluster fails all open allocations are
 	// set to the last cluster heartbeat when the cluster was running.
-	cluster.InitTheLastBootClusterHeartbeat()
 	go updateClusterHeartbeat(ctx, m.db)
 
 	// Docs and WebUI.
@@ -992,7 +940,7 @@ func (m *Master) Run(ctx context.Context) error {
 		return c.File(reactIndex)
 	})
 
-	m.echo.Static("/api/v1/api.swagger.json",
+	m.echo.File("/api/v1/api.swagger.json",
 		filepath.Join(m.config.Root, "swagger/determined/api/v1/api.swagger.json"))
 
 	m.echo.GET("/config", api.Route(m.getConfig))
@@ -1021,11 +969,6 @@ func (m *Master) Run(ctx context.Context) error {
 	resourcesGroup.GET("/allocation/aggregated", m.getAggregatedResourceAllocation)
 
 	m.echo.POST("/task-logs", api.Route(m.postTaskLogs))
-
-	// used in as a part of the data layer API (to be removed) in harness/determined/_data_layer
-	// see https://docs.determined.ai/latest/training-apis/data-layer.html#using-the-data-layer-api
-	m.echo.GET("/ws/data-layer/*",
-		api.WebSocketRoute(m.rwCoordinatorWebSocket))
 
 	m.echo.Any("/debug/pprof/*", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
 	m.echo.Any(

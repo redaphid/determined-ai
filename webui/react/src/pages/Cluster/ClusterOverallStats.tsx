@@ -6,38 +6,45 @@ import Section from 'components/Section';
 import { activeRunStates } from 'constants/states';
 import useFeature from 'hooks/useFeature';
 import usePermissions from 'hooks/usePermissions';
+import { GetExperimentsParams } from 'services/types';
 import Spinner from 'shared/components/Spinner';
 import usePolling from 'shared/hooks/usePolling';
-import { useAgents, useClusterOverview } from 'stores/agents';
-import { useExperiments, useFetchExperiments } from 'stores/experiments';
-import { useResourcePools } from 'stores/resourcePools';
-import { useActiveTasks, useFetchActiveTasks } from 'stores/tasks';
+import { useClusterStore } from 'stores/cluster';
+import experimentStore from 'stores/experiments';
+import { TasksStore } from 'stores/tasks';
 import { ShirtSize } from 'themes';
-import { ResourceType } from 'types';
+import { ResourceType, TaskCounts } from 'types';
 import { Loadable } from 'utils/loadable';
+import { useObservable } from 'utils/observable';
 
 import { maxClusterSlotCapacity } from '../Clusters/ClustersOverview';
 
+const ACTIVE_EXPERIMENTS_PARAMS: Readonly<GetExperimentsParams> = {
+  limit: -2, // according to API swagger doc, [limit] -2 - returns pagination info but no experiments.
+  states: activeRunStates,
+};
+
 export const ClusterOverallStats: React.FC = () => {
-  const loadableResourcePools = useResourcePools();
-  const resourcePools = Loadable.getOrElse([], loadableResourcePools); // TODO show spinner when this is loading
-  const overview = useClusterOverview();
-  const agents = useAgents();
+  const resourcePools = Loadable.getOrElse([], useObservable(useClusterStore().resourcePools)); // TODO show spinner when this is loading
+  const agents = useObservable(useClusterStore().agents);
+  const clusterOverview = useObservable(useClusterStore().clusterOverview);
 
   const [canceler] = useState(new AbortController());
-  const fetchActiveExperiments = useFetchExperiments(
-    { limit: -2, states: activeRunStates },
+  const fetchActiveExperiments = experimentStore.fetchExperiments(
+    ACTIVE_EXPERIMENTS_PARAMS,
     canceler,
   );
-  const fetchActiveTasks = useFetchActiveTasks(canceler);
+  const activeTasks = useObservable<Loadable<TaskCounts>>(TasksStore.getActiveTaskCounts());
+
   const fetchActiveRunning = useCallback(async () => {
     await fetchActiveExperiments();
-    await fetchActiveTasks();
-  }, [fetchActiveExperiments, fetchActiveTasks]);
+    TasksStore.fetchActiveTasks(canceler);
+  }, [fetchActiveExperiments, canceler]);
 
   usePolling(fetchActiveRunning);
-  const activeExperiments = useExperiments({ limit: -2, states: activeRunStates });
-  const activeTasks = useActiveTasks();
+  const activeExperiments = useObservable(
+    experimentStore.getExperimentsByParams(ACTIVE_EXPERIMENTS_PARAMS),
+  );
   const rbacEnabled = useFeature().isOn('rbac');
 
   const auxContainers = useMemo(() => {
@@ -66,7 +73,7 @@ export const ClusterOverallStats: React.FC = () => {
           })}
         </OverviewStats>
         {[ResourceType.CUDA, ResourceType.ROCM, ResourceType.CPU].map((resType) =>
-          Loadable.match(Loadable.all([overview, maxTotalSlots]), {
+          Loadable.match(Loadable.all([clusterOverview, maxTotalSlots]), {
             Loaded: ([overview, maxTotalSlots]) =>
               maxTotalSlots[resType] > 0 ? (
                 <OverviewStats key={resType} title={`${resType} Slots Allocated`}>

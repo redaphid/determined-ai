@@ -1,15 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Button } from 'antd';
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
-import StoreProvider from 'contexts/Store';
+import Button from 'components/kit/Button';
 import { SettingsProvider } from 'hooks/useSettingsProvider';
-import { AuthProvider, useAuth } from 'stores/auth';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
+import { setAuth, setAuthChecked } from 'stores/auth';
 import { UsersProvider } from 'stores/users';
-import { DetailedUser, ResourcePool } from 'types';
-import { Loadable } from 'utils/loadable';
+import { WorkspacesProvider } from 'stores/workspaces';
+import { WorkspaceState } from 'types';
 
 import useModalJupyterLab from './useModalJupyterLab';
 
@@ -26,17 +26,20 @@ jest.mock('services/api', () => ({
   getUserSetting: () => Promise.resolve({ settings: [] }),
   launchJupyterLab: () => Promise.resolve({ config: '' }),
 }));
-jest.mock('contexts/Store', () => ({
-  __esModule: true,
-  ...jest.requireActual('contexts/Store'),
-  useStore: () => ({ auth: { user: { id: 1 } as DetailedUser } }),
-}));
 
-jest.mock('stores/resourcePools', () => ({
-  __esModule: true,
-  ...jest.requireActual('stores/resourcePools'),
-  useResourcePools: (): Loadable<ResourcePool[]> => ({ _tag: 'Loaded', data: [] }),
-}));
+jest.mock('stores/cluster', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const loadable = require('utils/loadable');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const observable = require('utils/observable');
+
+  const store = { resourcePools: observable.observable(loadable.Loaded([])) };
+  return {
+    __esModule: true,
+    ...jest.requireActual('stores/cluster'),
+    useClusterStore: () => store,
+  };
+});
 
 jest.mock('utils/wait', () => ({
   openCommand: () => null,
@@ -49,13 +52,23 @@ jest.mock('components/MonacoEditor', () => ({
 }));
 
 const ModalTrigger: React.FC = () => {
-  const { setAuth, setAuthCheck } = useAuth();
-  const { contextHolder, modalOpen } = useModalJupyterLab();
+  const { contextHolder, modalOpen } = useModalJupyterLab({
+    workspace: {
+      archived: false,
+      id: 1,
+      immutable: false,
+      name: 'Uncategorized',
+      numExperiments: 0,
+      numProjects: 0,
+      pinned: false,
+      state: WorkspaceState.Unspecified,
+      userId: 1,
+    },
+  });
 
   useEffect(() => {
     setAuth({ isAuthenticated: true });
-    setAuthCheck();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setAuthChecked();
   }, []);
 
   return (
@@ -73,13 +86,13 @@ const setup = async () => {
 
   render(
     <BrowserRouter>
-      <StoreProvider>
+      <UIProvider>
         <UsersProvider>
-          <AuthProvider>
+          <WorkspacesProvider>
             <ModalTrigger />
-          </AuthProvider>
+          </WorkspacesProvider>
         </UsersProvider>
-      </StoreProvider>
+      </UIProvider>
     </BrowserRouter>,
   );
 

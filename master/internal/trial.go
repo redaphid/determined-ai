@@ -288,7 +288,6 @@ func (t *trial) maybeAllocateTask(ctx *actor.Context) error {
 			AllocationRef:     ctx.Self(),
 			Group:             ctx.Self().Parent(),
 			SlotsNeeded:       t.config.Resources().SlotsPerTrial(),
-			AgentLabel:        t.config.Resources().AgentLabel(),
 			ResourcePool:      t.config.Resources().ResourcePool(),
 			FittingRequirements: sproto.FittingRequirements{
 				SingleAgent: false,
@@ -323,7 +322,6 @@ func (t *trial) maybeAllocateTask(ctx *actor.Context) error {
 		Group:             ctx.Self().Parent(),
 
 		SlotsNeeded:  t.config.Resources().SlotsPerTrial(),
-		AgentLabel:   t.config.Resources().AgentLabel(),
 		ResourcePool: t.config.Resources().ResourcePool(),
 		FittingRequirements: sproto.FittingRequirements{
 			SingleAgent: false,
@@ -669,7 +667,8 @@ func (t *trial) maybeRestoreAllocation(ctx *actor.Context) (*model.Allocation, e
 	var allocations []model.Allocation
 	selectQuery := db.Bun().NewSelect().Model(&allocations).
 		Where("task_id = ?", t.taskID).
-		Where("end_time IS NULL")
+		Where("end_time IS NULL").
+		Where("state != ?", model.AllocationStateTerminated)
 
 	if t.rm.IsReattachableOnlyAfterStarted(ctx) {
 		selectQuery.Where("start_time IS NOT NULL")

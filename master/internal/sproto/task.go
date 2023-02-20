@@ -36,7 +36,6 @@ type (
 
 		// Resource configuration.
 		SlotsNeeded         int
-		AgentLabel          string
 		ResourcePool        string
 		FittingRequirements FittingRequirements
 
@@ -46,6 +45,9 @@ type (
 		ProxyPort    *ProxyPortConfig
 		StreamEvents *EventStreamConfig
 		Restore      bool
+
+		// Logging context of the allocation actor.
+		LogContext logger.Context
 	}
 
 	// IdleTimeoutConfig configures how idle timeouts should behave.
@@ -220,6 +222,15 @@ type ResourcesSummary struct {
 	Exited  *ResourcesStopped
 }
 
+// Slots returns slot count for the resources.
+func (s ResourcesSummary) Slots() int {
+	var res int
+	for _, devs := range s.AgentDevices {
+		res += len(devs)
+	}
+	return res
+}
+
 // Resources is an interface that provides function for task actors
 // to start tasks on assigned resources.
 type Resources interface {
@@ -263,13 +274,7 @@ func (ev *Event) ToTaskLog() model.TaskLog {
 	case ev.ScheduledEvent != nil:
 		message = fmt.Sprintf("Scheduling %s (id: %s)", description, ev.ParentID)
 	case ev.ResourcesStartedEvent != nil:
-		hpcJobID := ev.ResourcesStartedEvent.HPCJobID
-		if hpcJobID != "" {
-			message = fmt.Sprintf("Resources for %s have started, associated HPC job ID %s",
-				description, hpcJobID)
-		} else {
-			message = fmt.Sprintf("Resources for %s have started", description)
-		}
+		message = fmt.Sprintf("Resources for %s have started", description)
 	case ev.TerminateRequestEvent != nil:
 		message = fmt.Sprintf("%s was requested to terminate", description)
 	case ev.ExitedEvent != nil:
@@ -279,7 +284,11 @@ func (ev *Event) ToTaskLog() model.TaskLog {
 	case ev.ServiceReadyEvent != nil:
 		message = fmt.Sprintf("Service of %s is available", description)
 	case ev.AssignedEvent != nil:
-		message = fmt.Sprintf("%s was assigned to an agent", description)
+		if ev.AssignedEvent.Recovered {
+			message = fmt.Sprintf("%s was recovered on an agent", description)
+		} else {
+			message = fmt.Sprintf("%s was assigned to an agent", description)
+		}
 	default:
 		// The client could rely on logEntry IDs and since some of these events aren't actually log
 		// events we'd need to notify of them about these non existing logs either by adding a new

@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
+	bun "github.com/uptrace/bun"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -130,6 +131,7 @@ func (a *apiServer) GetUsers(
 		apiv1.GetUsersRequest_SORT_BY_ADMIN:         "admin",
 		apiv1.GetUsersRequest_SORT_BY_ACTIVE:        "active",
 		apiv1.GetUsersRequest_SORT_BY_MODIFIED_TIME: "modified_at",
+		apiv1.GetUsersRequest_SORT_BY_NAME:          "name",
 	}
 	orderByMap := map[apiv1.OrderBy]string{
 		apiv1.OrderBy_ORDER_BY_UNSPECIFIED: "ASC",
@@ -422,8 +424,10 @@ func (a *apiServer) PatchUser(
 		if *displayName != "" {
 			lowerDisplayName := strings.ToLower(*displayName)
 			if ok, err := db.Bun().NewSelect().Model(&model.User{}).
-				WhereOr("LOWER(username) = ?", lowerDisplayName).
-				WhereOr("LOWER(display_name) = ?", lowerDisplayName).
+				WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
+					return q.WhereOr("LOWER(username) = ?", lowerDisplayName).
+						WhereOr("LOWER(display_name) = ?", lowerDisplayName)
+				}).Where("id != ?", targetUser.ID).
 				Exists(ctx); err != nil {
 				return nil, errors.Wrap(err, "error finding similar display names")
 			} else if ok {

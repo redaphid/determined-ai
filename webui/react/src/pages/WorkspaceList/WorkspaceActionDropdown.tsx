@@ -2,6 +2,7 @@ import { Dropdown } from 'antd';
 import type { DropDownProps, MenuProps } from 'antd';
 import React, { useCallback, useMemo } from 'react';
 
+import Button from 'components/kit/Button';
 import useModalWorkspaceCreate from 'hooks/useModal/Workspace/useModalWorkspaceCreate';
 import useModalWorkspaceDelete from 'hooks/useModal/Workspace/useModalWorkspaceDelete';
 import usePermissions from 'hooks/usePermissions';
@@ -19,6 +20,7 @@ interface Props {
   direction?: 'vertical' | 'horizontal';
   onComplete?: () => void;
   onVisibleChange?: (visible: boolean) => void;
+  returnIndexOnDelete?: boolean;
   trigger?: ('click' | 'hover' | 'contextMenu')[];
   workspace: Workspace;
 }
@@ -29,13 +31,14 @@ const WorkspaceActionDropdown: React.FC<Props> = ({
   children,
   className,
   direction = 'vertical',
+  returnIndexOnDelete = true,
   workspace,
   onComplete,
   trigger,
   onVisibleChange,
 }: Props) => {
   const { contextHolder: modalWorkspaceDeleteContextHolder, modalOpen: openWorkspaceDelete } =
-    useModalWorkspaceDelete({ onClose: onComplete, workspace });
+    useModalWorkspaceDelete({ onClose: onComplete, returnIndexOnDelete, workspace });
   const { contextHolder: modalWorkspaceEditContextHolder, modalOpen: openWorkspaceEdit } =
     useModalWorkspaceCreate({ onClose: onComplete, workspaceID: workspace.id });
 
@@ -73,7 +76,7 @@ const WorkspaceActionDropdown: React.FC<Props> = ({
     } else {
       try {
         await pinWorkspace({ id: workspace.id });
-        updateWorkspace(workspace.id, (w) => ({ ...w, pinned: true }));
+        updateWorkspace(workspace.id, (w) => ({ ...w, pinned: true, pinnedAt: new Date() }));
         onComplete?.();
       } catch (e) {
         handleError(e, { publicSubject: 'Unable to pin workspace.' });
@@ -134,7 +137,7 @@ const WorkspaceActionDropdown: React.FC<Props> = ({
     }
     if (canDeleteWorkspace({ workspace }) && workspace.numExperiments === 0) {
       menuItems.push({ type: 'divider' });
-      menuItems.push({ key: MenuKey.Delete, label: 'Delete...' });
+      menuItems.push({ danger: true, key: MenuKey.Delete, label: 'Delete...' });
     }
     return { items: menuItems, onClick: onItemClick };
   }, [
@@ -165,9 +168,7 @@ const WorkspaceActionDropdown: React.FC<Props> = ({
       title="Open actions menu"
       onClick={stopPropagation}>
       <Dropdown menu={WorkspaceActionMenu} placement="bottomRight" trigger={trigger ?? ['click']}>
-        <button onClick={stopPropagation}>
-          <Icon name={`overflow-${direction}`} />
-        </button>
+        <Button ghost icon={<Icon name={`overflow-${direction}`} />} onClick={stopPropagation} />
       </Dropdown>
       {modalWorkspaceDeleteContextHolder}
       {modalWorkspaceEditContextHolder}

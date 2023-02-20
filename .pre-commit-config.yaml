@@ -32,6 +32,14 @@ repos:
         exclude_types:
           - zsh
         args: [-w, -s, -l, -i, '4', -ci, -bn]
+      - id: local-checks
+        name: Run local checks
+        description: run all local checks and format based on the directories changed.
+        stages:
+          - push
+        entry: ./pre-commit/check.py
+        language: python
+
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.28.0
@@ -51,7 +59,7 @@ repos:
       - id: check-github-workflows
 
   - repo: https://github.com/psf/black
-    rev: 20.8b1
+    rev: 21.7b0
     hooks:
       - id: black
         # known issue fixed in a newer version:

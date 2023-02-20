@@ -1,23 +1,27 @@
 import { LeftOutlined } from '@ant-design/icons';
-import { Breadcrumb, Button, Dropdown, Modal, Space } from 'antd';
+import { Dropdown, Modal, Space } from 'antd';
 import type { DropDownProps, MenuProps } from 'antd';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import InfoBox, { InfoRow } from 'components/InfoBox';
 import InlineEditor from 'components/InlineEditor';
+import Breadcrumb from 'components/kit/Breadcrumb';
+import Button from 'components/kit/Button';
 import Link from 'components/Link';
 import TagList from 'components/TagList';
 import TimeAgo from 'components/TimeAgo';
 import Avatar from 'components/UserAvatar';
 import useModalModelDownload from 'hooks/useModal/Model/useModalModelDownload';
 import useModalModelVersionDelete from 'hooks/useModal/Model/useModalModelVersionDelete';
+import usePermissions from 'hooks/usePermissions';
+import { WorkspaceDetailsTab } from 'pages/WorkspaceDetails';
 import { paths } from 'routes/utils';
 import CopyButton from 'shared/components/CopyButton';
 import Icon from 'shared/components/Icon/Icon';
 import { formatDatetime } from 'shared/utils/datetime';
 import { copyToClipboard } from 'shared/utils/dom';
 import { useUsers } from 'stores/users';
-import { ModelVersion } from 'types';
+import { ModelVersion, Workspace } from 'types';
 import { Loadable } from 'utils/loadable';
 import { getDisplayName } from 'utils/user';
 
@@ -36,15 +40,20 @@ interface Props {
   onSaveDescription: (editedNotes: string) => Promise<void>;
   onSaveName: (editedName: string) => Promise<void>;
   onUpdateTags: (newTags: string[]) => Promise<void>;
+  workspace: Workspace;
 }
 
 const ModelVersionHeader: React.FC<Props> = ({
   modelVersion,
+  workspace,
   onSaveDescription,
   onUpdateTags,
   onSaveName,
 }: Props) => {
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
+  const users = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
   const [showUseInNotebook, setShowUseInNotebook] = useState(false);
 
   const { contextHolder: modalModelDownloadContextHolder, modalOpen: openModelDownload } =
@@ -57,13 +66,16 @@ const ModelVersionHeader: React.FC<Props> = ({
     openModelDownload(modelVersion);
   }, [modelVersion, openModelDownload]);
 
+  const { canDeleteModelVersion, canModifyModelVersion } = usePermissions();
+
   const infoRows: InfoRow[] = useMemo(() => {
+    const user = users.find((user) => user.id === modelVersion.userId);
     return [
       {
         content: (
           <Space>
-            <Avatar userId={modelVersion.userId} />
-            {getDisplayName(users.find((user) => user.id === modelVersion.userId))}
+            <Avatar user={user} />
+            {getDisplayName(user)}
             on {formatDatetime(modelVersion.creationTime, { format: 'MMM D, YYYY' })}
           </Space>
         ),
@@ -78,7 +90,7 @@ const ModelVersionHeader: React.FC<Props> = ({
       {
         content: (
           <InlineEditor
-            disabled={modelVersion.model.archived}
+            disabled={modelVersion.model.archived || !canModifyModelVersion({ modelVersion })}
             placeholder={modelVersion.model.archived ? 'Archived' : 'Add description...'}
             value={modelVersion.comment ?? ''}
             onSave={onSaveDescription}
@@ -89,7 +101,7 @@ const ModelVersionHeader: React.FC<Props> = ({
       {
         content: (
           <TagList
-            disabled={modelVersion.model.archived}
+            disabled={modelVersion.model.archived || !canModifyModelVersion({ modelVersion })}
             ghost={false}
             tags={modelVersion.labels ?? []}
             onChange={onUpdateTags}
@@ -98,14 +110,14 @@ const ModelVersionHeader: React.FC<Props> = ({
         label: 'Tags',
       },
     ] as InfoRow[];
-  }, [modelVersion, onSaveDescription, onUpdateTags, users]);
+  }, [modelVersion, onSaveDescription, onUpdateTags, users, canModifyModelVersion]);
 
   const handleDelete = useCallback(() => {
     openModalVersionDelete(modelVersion);
   }, [openModalVersionDelete, modelVersion]);
 
-  const actions: Action[] = useMemo(
-    () => [
+  const actions: Action[] = useMemo(() => {
+    const items: Action[] = [
       {
         danger: false,
         disabled: false,
@@ -120,16 +132,18 @@ const ModelVersionHeader: React.FC<Props> = ({
         onClick: () => setShowUseInNotebook(true),
         text: 'Use in Notebook',
       },
-      {
+    ];
+    if (canDeleteModelVersion({ modelVersion })) {
+      items.push({
         danger: true,
         disabled: false,
         key: 'deregister-version',
         onClick: handleDelete,
         text: 'Deregister Version',
-      },
-    ],
-    [handleDelete, handleDownloadModel],
-  );
+      });
+    }
+    return items;
+  }, [handleDelete, handleDownloadModel, canDeleteModelVersion, modelVersion]);
 
   const referenceText = useMemo(() => {
     const escapedModelName = modelVersion.model.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
@@ -183,7 +197,18 @@ my_model.load_state_dict(ckpt['models_state_dict'][0])`;
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link path={paths.modelList()}>Model Registry</Link>
+            <Link
+              path={
+                workspace.id === 1 ? paths.projectDetails(1) : paths.workspaceDetails(workspace.id)
+              }>
+              {workspace.name}
+            </Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator />
+          <Breadcrumb.Item>
+            <Link path={paths.workspaceDetails(workspace.id, WorkspaceDetailsTab.ModelRegistry)}>
+              Model Registry
+            </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Separator />
           <Breadcrumb.Item>
@@ -202,7 +227,7 @@ my_model.load_state_dict(ckpt['models_state_dict'][0])`;
             <h1 className={css.versionName}>
               <InlineEditor
                 allowClear={false}
-                disabled={modelVersion.model.archived}
+                disabled={modelVersion.model.archived || !canModifyModelVersion({ modelVersion })}
                 placeholder="Add name..."
                 value={modelVersion.name ? modelVersion.name : `Version ${modelVersion.version}`}
                 onSave={onSaveName}
@@ -212,7 +237,6 @@ my_model.load_state_dict(ckpt['models_state_dict'][0])`;
           <div className={css.buttons}>
             {actions.slice(0, 2).map((action) => (
               <Button
-                className={css.buttonAction}
                 danger={action.danger}
                 disabled={action.disabled}
                 key={action.key}

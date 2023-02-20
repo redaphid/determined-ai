@@ -3,11 +3,11 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import StoreProvider from 'contexts/Store';
 import { NEW_PASSWORD_LABEL } from 'hooks/useModal/UserSettings/useModalPasswordChange';
 import { PatchUserParams } from 'services/types';
-import { AuthProvider, useAuth } from 'stores/auth';
-import { useCurrentUsers, useFetchUsers, UsersProvider } from 'stores/users';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
+import { setAuth } from 'stores/auth';
+import { useFetchUsers, UsersProvider, useUpdateCurrentUser } from 'stores/users';
 import { DetailedUser } from 'types';
 
 import SettingsAccount, { CHANGE_PASSWORD_TEXT } from './SettingsAccount';
@@ -54,23 +54,18 @@ const currentUser: DetailedUser = {
 };
 
 const Container: React.FC = () => {
-  const { setAuth } = useAuth();
-  const { updateCurrentUser } = useCurrentUsers();
+  const updateCurrentUser = useUpdateCurrentUser();
   const [canceler] = useState(new AbortController());
   const fetchUsers = useFetchUsers(canceler);
 
   const loadUsers = useCallback(() => {
-    updateCurrentUser(currentUser);
+    updateCurrentUser(currentUser.id);
   }, [updateCurrentUser]);
-  const getUsers = useCallback(async () => {
-    await fetchUsers();
-  }, [fetchUsers]);
 
   useEffect(() => {
-    (async () => await getUsers())();
+    fetchUsers();
     setAuth({ isAuthenticated: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchUsers]);
 
   useEffect(() => {
     loadUsers();
@@ -81,13 +76,11 @@ const Container: React.FC = () => {
 
 const setup = () =>
   render(
-    <StoreProvider>
+    <UIProvider>
       <UsersProvider>
-        <AuthProvider>
-          <Container />
-        </AuthProvider>
+        <Container />
       </UsersProvider>
-    </StoreProvider>,
+    </UIProvider>,
   );
 
 describe('SettingsAccount', () => {

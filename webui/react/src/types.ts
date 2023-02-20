@@ -28,7 +28,6 @@ export interface DetailedUserList extends WithPagination {
 export interface Auth {
   isAuthenticated: boolean;
   token?: string;
-  user?: DetailedUser;
 }
 
 export interface SsoProvider {
@@ -228,11 +227,6 @@ interface CheckpointStorage {
   type?: CheckpointStorageType;
 }
 
-interface DataLayer {
-  containerStoragePath?: string;
-  type: string;
-}
-
 export type HpImportance = Record<string, number>;
 export type HpImportanceMetricMap = Record<string, HpImportance>;
 export type HpImportanceMap = { [key in MetricType]: HpImportanceMetricMap };
@@ -294,7 +288,6 @@ export type ExperimentSearcherName = ValueOf<typeof ExperimentSearcherName>;
 export interface ExperimentConfig {
   checkpointPolicy: string;
   checkpointStorage?: CheckpointStorage;
-  dataLayer?: DataLayer;
   description?: string;
   hyperparameters: Hyperparameters;
   labels?: string[];
@@ -525,9 +518,21 @@ export interface MetricDatapoint {
   value: number;
 }
 
+export interface MetricDatapointTime {
+  time: Date;
+  value: number;
+}
+
+export interface MetricDatapointEpoch {
+  epoch: number;
+  value: number;
+}
+
 export interface MetricContainer {
   data: MetricDatapoint[];
+  epochs?: MetricDatapointEpoch[];
   name: string;
+  time?: MetricDatapointTime[];
   type: MetricType;
 }
 
@@ -554,12 +559,16 @@ export interface ExperimentItem {
   numTrials: number;
   progress?: number;
   projectId: number;
+  projectName?: string;
   resourcePool: string;
+  searcherMetricValue?: number;
   searcherType: string;
   startTime: string;
   state: CompoundRunState;
   trialIds?: number[];
   userId: number;
+  workspaceId?: number;
+  workspaceName?: string;
 }
 
 export interface ProjectExperiment extends ExperimentItem {
@@ -620,6 +629,7 @@ export interface ModelItem {
   notes?: string;
   numVersions: number;
   userId: number;
+  workspaceId: number;
 }
 
 export interface ModelVersion {
@@ -682,6 +692,7 @@ export interface CommandTask extends Task {
   state: CommandState;
   type: CommandType;
   userId: number;
+  workspaceId: number;
 }
 
 export type RecentEvent = {
@@ -731,6 +742,7 @@ export interface TaskFilters<T extends CommandType | TaskType = TaskType> {
   states?: string[];
   types?: T[];
   users?: string[];
+  workspaces?: string[];
 }
 
 export const LogLevel = {
@@ -789,10 +801,10 @@ export interface ResourcePool extends Omit<Api.V1ResourcePool, 'slotType'> {
 export interface Job extends Api.V1Job {
   summary: Api.V1JobSummary;
 }
-export const JobType = Api.Determinedjobv1Type;
-export type JobType = Api.Determinedjobv1Type;
-export const JobState = Api.Determinedjobv1State;
-export type JobState = Api.Determinedjobv1State;
+export const JobType = Api.Jobv1Type;
+export type JobType = Api.Jobv1Type;
+export const JobState = Api.Jobv1State;
+export type JobState = Api.Jobv1State;
 export type JobSummary = Api.V1JobSummary;
 export type RPStats = Api.V1RPQueueStat;
 
@@ -819,6 +831,7 @@ export interface Workspace {
   numExperiments: number;
   numProjects: number;
   pinned: boolean;
+  pinnedAt?: Date;
   state: WorkspaceState;
   userId: number;
 }

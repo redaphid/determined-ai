@@ -1,8 +1,9 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Input, Tag, Tooltip } from 'antd';
-import type { InputRef } from 'antd';
+import { Tag } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import Input, { InputRef } from 'components/kit/Input';
+import Tooltip from 'components/kit/Tooltip';
 import Link from 'components/Link';
 import { alphaNumericSorter } from 'shared/utils/sort';
 import { toHtmlId, truncate } from 'shared/utils/string';

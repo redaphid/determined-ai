@@ -1,14 +1,16 @@
-import { Button, notification } from 'antd';
+import { App as AntdApp } from 'antd';
+import { useObservable } from 'micro-observables';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 
+import Button from 'components/kit/Button';
 import Link from 'components/Link';
 import Navigation from 'components/Navigation';
 import PageMessage from 'components/PageMessage';
 import Router from 'components/Router';
-import StoreProvider from 'contexts/Store';
+import { ThemeProvider } from 'components/ThemeProvider';
 import useAuthCheck from 'hooks/useAuthCheck';
 import useKeyTracker from 'hooks/useKeyTracker';
 import usePageVisibility from 'hooks/usePageVisibility';
@@ -16,33 +18,34 @@ import useResize from 'hooks/useResize';
 import useRouteTracker from 'hooks/useRouteTracker';
 import { SettingsProvider } from 'hooks/useSettingsProvider';
 import useTelemetry from 'hooks/useTelemetry';
-import useTheme from 'hooks/useTheme';
 import Omnibar from 'omnibar/Omnibar';
 import appRoutes from 'routes';
 import { paths, serverAddress } from 'routes/utils';
 import Spinner from 'shared/components/Spinner/Spinner';
 import usePolling from 'shared/hooks/usePolling';
-import { StoreContext } from 'stores';
-import { useAuth } from 'stores/auth';
-import { initInfo, useDeterminedInfo, useEnsureInfoFetched } from 'stores/determinedInfo';
-import { useEnsureCurrentUserFetched, useFetchUsers } from 'stores/users';
+import { StoreProvider } from 'stores';
+import { auth as authObservable, selectIsAuthenticated } from 'stores/auth';
+import { fetchDeterminedInfo, initInfo, useDeterminedInfo } from 'stores/determinedInfo';
+import { useCurrentUser, useEnsureCurrentUserFetched, useFetchUsers } from 'stores/users';
 import { correctViewportHeight, refreshPage } from 'utils/browser';
+import { notification } from 'utils/dialogApi';
 import { Loadable } from 'utils/loadable';
 
 import css from './App.module.scss';
 
+import 'antd/dist/reset.css';
+
 const AppView: React.FC = () => {
   const resize = useResize();
-  const auth = useAuth().auth;
-  const isAuthenticated = Loadable.match(auth, {
-    Loaded: (auth) => auth.isAuthenticated,
-    NotLoaded: () => false,
-  });
+
+  const isAuthenticated = useObservable(selectIsAuthenticated);
+  const auth = useObservable(authObservable);
+  const loadableUser = useCurrentUser();
   const infoLoadable = useDeterminedInfo();
   const info = Loadable.getOrElse(initInfo, infoLoadable);
   const [canceler] = useState(new AbortController());
   const { updateTelemetry } = useTelemetry();
-  const checkAuth = useAuthCheck(canceler);
+  const checkAuth = useAuthCheck();
 
   const isServerReachable = useMemo(() => {
     return Loadable.match(infoLoadable, {
@@ -51,7 +54,6 @@ const AppView: React.FC = () => {
     });
   }, [infoLoadable]);
 
-  const fetchInfo = useEnsureInfoFetched(canceler);
   const fetchUsers = useFetchUsers(canceler);
   const fetchCurrentUser = useEnsureCurrentUserFetched(canceler);
 
@@ -59,13 +61,12 @@ const AppView: React.FC = () => {
     if (isServerReachable) checkAuth();
   }, [checkAuth, isServerReachable]);
 
-  useTheme();
   useKeyTracker();
   usePageVisibility();
   useRouteTracker();
 
   // Poll every 10 minutes
-  usePolling(fetchInfo, { interval: 600000 });
+  usePolling(() => fetchDeterminedInfo(canceler), { interval: 600000 });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -96,21 +97,23 @@ const AppView: React.FC = () => {
           .
         </div>
       );
-      notification.warn({
-        btn,
-        description,
-        duration: 0,
-        key: 'version-mismatch',
-        message,
-        placement: 'bottomRight',
-      });
+      setTimeout(() => {
+        notification.warning({
+          btn,
+          description,
+          duration: 0,
+          key: 'version-mismatch',
+          message,
+          placement: 'bottomRight',
+        });
+      }, 10);
     }
   }, [info]);
 
   // Detect telemetry settings changes and update telemetry library.
   useEffect(() => {
-    updateTelemetry(auth, info);
-  }, [auth, info, updateTelemetry]);
+    updateTelemetry(auth, loadableUser, info);
+  }, [auth, loadableUser, info, updateTelemetry]);
 
   // Abort cancel signal when app unmounts.
   useEffect(() => {
@@ -125,11 +128,15 @@ const AppView: React.FC = () => {
       <div className={css.base}>
         {isServerReachable ? (
           <SettingsProvider>
-            <Navigation>
-              <main>
-                <Router routes={appRoutes} />
-              </main>
-            </Navigation>
+            <ThemeProvider>
+              <AntdApp>
+                <Navigation>
+                  <main>
+                    <Router routes={appRoutes} />
+                  </main>
+                </Navigation>
+              </AntdApp>
+            </ThemeProvider>
           </SettingsProvider>
         ) : (
           <PageMessage title="Server is Unreachable">
@@ -151,11 +158,9 @@ const App: React.FC = () => {
   return (
     <HelmetProvider>
       <StoreProvider>
-        <StoreContext>
-          <DndProvider backend={HTML5Backend}>
-            <AppView />
-          </DndProvider>
-        </StoreContext>
+        <DndProvider backend={HTML5Backend}>
+          <AppView />
+        </DndProvider>
       </StoreProvider>
     </HelmetProvider>
   );

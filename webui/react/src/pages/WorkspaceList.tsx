@@ -1,8 +1,10 @@
-import { Button, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Grid, { GridMode } from 'components/Grid';
 import GridListRadioGroup, { GridListView } from 'components/GridListRadioGroup';
+import Button from 'components/kit/Button';
+import Empty from 'components/kit/Empty';
 import Link from 'components/Link';
 import Page from 'components/Page';
 import SelectFilter from 'components/SelectFilter';
@@ -24,15 +26,13 @@ import { UpdateSettings, useSettings } from 'hooks/useSettings';
 import { paths } from 'routes/utils';
 import { getWorkspaces } from 'services/api';
 import { V1GetWorkspacesRequestSortBy } from 'services/api-ts-sdk';
-import Icon from 'shared/components/Icon';
 import Message, { MessageType } from 'shared/components/Message';
 import Spinner from 'shared/components/Spinner';
 import usePolling from 'shared/hooks/usePolling';
 import usePrevious from 'shared/hooks/usePrevious';
 import { isEqual } from 'shared/utils/data';
 import { validateDetApiEnum } from 'shared/utils/service';
-import { useAuth } from 'stores/auth';
-import { useUsers } from 'stores/users';
+import { useCurrentUser, useUsers } from 'stores/users';
 import { ShirtSize } from 'themes';
 import { Workspace } from 'types';
 import { Loadable } from 'utils/loadable';
@@ -50,10 +50,13 @@ import WorkspaceCard from './WorkspaceList/WorkspaceCard';
 const { Option } = Select;
 
 const WorkspaceList: React.FC = () => {
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
-  const loadableAuth = useAuth();
-  const user = Loadable.match(loadableAuth.auth, {
-    Loaded: (auth) => auth.user,
+  const users = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
+  const loadableCurrentUser = useCurrentUser();
+  const user = Loadable.match(loadableCurrentUser, {
+    Loaded: (cUser) => cUser,
     NotLoaded: () => undefined,
   });
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -178,7 +181,7 @@ const WorkspaceList: React.FC = () => {
         dataIndex: 'userId',
         defaultWidth: DEFAULT_COLUMN_WIDTHS['userId'],
         key: 'user',
-        render: userRenderer,
+        render: (_, r) => userRenderer(users.find((u) => u.id === r.userId)),
         title: 'User',
       },
       {
@@ -208,7 +211,7 @@ const WorkspaceList: React.FC = () => {
         title: '',
       },
     ] as ColumnDef<Workspace>[];
-  }, [fetchWorkspaces]);
+  }, [fetchWorkspaces, users]);
 
   const switchShowArchived = useCallback(
     (showArchived: boolean) => {
@@ -336,11 +339,7 @@ const WorkspaceList: React.FC = () => {
       containerRef={pageRef}
       id="workspaces"
       options={
-        <Button
-          className={css.disableOverride}
-          disabled={!canCreateWorkspace}
-          title={canCreateWorkspace ? undefined : 'User lacks permission to create workspace'}
-          onClick={handleWorkspaceCreateClick}>
+        <Button disabled={!canCreateWorkspace} onClick={handleWorkspaceCreateClick}>
           New Workspace
         </Button>
       }
@@ -376,15 +375,11 @@ const WorkspaceList: React.FC = () => {
         {workspaces.length !== 0 ? (
           workspacesList
         ) : settings.whose === WhoseWorkspaces.All && settings.archived && !isLoading ? (
-          <div className={css.emptyBase}>
-            <div className={css.icon}>
-              <Icon name="workspaces" size="mega" />
-            </div>
-            <h4>No Workspaces</h4>
-            <p className={css.description}>
-              Create a workspace to keep track of related projects and experiments.
-            </p>
-          </div>
+          <Empty
+            description="Create a workspace to keep track of related projects and experiments."
+            icon="workspaces"
+            title="No Workspaces"
+          />
         ) : (
           <Message title="No workspaces matching the current filters" type={MessageType.Empty} />
         )}

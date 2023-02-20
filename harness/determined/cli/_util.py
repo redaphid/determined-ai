@@ -1,6 +1,9 @@
 import argparse
 import functools
-from typing import Any, Callable, Dict, List
+import sys
+from typing import Any, Callable, Dict, List, Sequence, Union
+
+import termcolor
 
 from determined.common import api, declarative_argparse, util
 from determined.common.api import authentication, bindings, certs
@@ -110,3 +113,13 @@ def require_feature_flag(feature_flag: str, error_message: str) -> Callable[...,
         return wrapper
 
     return decorator
+
+
+def report_cli_error(msg: Union[str, Exception]) -> None:
+    print(termcolor.colored(f"Error: {msg}", "red"), file=sys.stderr)
+    sys.exit(1)
+
+
+def print_warnings(warnings: Sequence[bindings.v1LaunchWarning]) -> None:
+    for warning in warnings:
+        print(termcolor.colored(api.WARNING_MESSAGE_MAP[warning], "yellow"), file=sys.stderr)

@@ -8,7 +8,7 @@ import { UpdateUserSettingParams } from 'services/types';
 import { Primitive } from 'shared/types';
 import { isEqual } from 'shared/utils/data';
 import { ErrorType } from 'shared/utils/error';
-import { useAuth } from 'stores/auth';
+import { useCurrentUser } from 'stores/users';
 import handleError from 'utils/error';
 import { Loadable } from 'utils/loadable';
 
@@ -22,7 +22,7 @@ export interface SettingsConfigProp<A> {
 }
 
 export interface SettingsConfig<T> {
-  applicableRoutespace: string;
+  applicableRoutespace?: string;
   settings: { [K in keyof T]: SettingsConfigProp<T[K]> };
   storagePath: string;
 }
@@ -135,17 +135,16 @@ const queryToSettings = <T>(config: SettingsConfig<T>, query: string) => {
 };
 
 const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
-  const loadableAuth = useAuth();
-  const user = Loadable.match(loadableAuth.auth, {
-    Loaded: (auth) => auth.user,
+  const loadableCurrentUser = useCurrentUser();
+  const user = Loadable.match(loadableCurrentUser, {
+    Loaded: (cUser) => cUser,
     NotLoaded: () => undefined,
   });
   const { isLoading, querySettings, state, update } = useContext(UserSettings);
   const navigate = useNavigate();
   const pathname = window.location.pathname;
   const shouldSkipUpdates = useMemo(
-    () =>
-      config.applicableRoutespace.includes('/') && !pathname.endsWith(config.applicableRoutespace),
+    () => config.applicableRoutespace && !pathname.endsWith(config.applicableRoutespace),
     [config.applicableRoutespace, pathname],
   );
 
@@ -154,7 +153,7 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
     if (!querySettings || shouldSkipUpdates) return;
 
     const settings = queryToSettings<T>(config, querySettings);
-    const stateSettings = state.get(config.applicableRoutespace) ?? {};
+    const stateSettings = state.get(config.storagePath) ?? {};
 
     if (isEqual(settings, stateSettings)) return;
 
@@ -162,13 +161,13 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
       stateSettings[setting] = settings[setting];
     });
 
-    update(config.applicableRoutespace, stateSettings, true);
+    update(config.storagePath, stateSettings, true);
   }, [config, querySettings, state, update, shouldSkipUpdates]);
 
   const settings: SettingsRecord<T> = useMemo(
     () =>
       ({
-        ...(state.get(config.applicableRoutespace) ?? {}),
+        ...(state.get(config.storagePath) ?? {}),
       } as SettingsRecord<T>),
     [config, state],
   );
@@ -224,10 +223,10 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
           acc.push({
             setting: {
               key: setting,
-              storagePath: config.applicableRoutespace,
+              storagePath: config.storagePath,
               value: JSON.stringify(newSettings[setting]),
             },
-            storagePath: config.applicableRoutespace,
+            storagePath: config.storagePath,
             userId: user.id,
           });
         }
@@ -254,7 +253,7 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
         }
       }
     },
-    [user?.id, config.applicableRoutespace, settings],
+    [user?.id, config.storagePath, settings],
   );
 
   const resetSettings = useCallback(
@@ -281,7 +280,7 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
         newSettings[setting as keyof T] = defaultSetting.defaultValue;
       });
 
-      update(config.applicableRoutespace, newSettings);
+      update(config.storagePath, newSettings);
 
       await updateDB(newSettings);
 
@@ -298,7 +297,7 @@ const useSettings = <T>(config: SettingsConfig<T>): UseSettingsReturn<T> => {
 
       if (isEqual(newSettings, settings)) return;
 
-      update(config.applicableRoutespace, newSettings);
+      update(config.storagePath, newSettings);
 
       await updateDB(newSettings);
 

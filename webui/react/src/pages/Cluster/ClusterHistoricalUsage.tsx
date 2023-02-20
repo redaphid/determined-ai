@@ -1,12 +1,16 @@
-import { Button, Space } from 'antd';
+import { Space } from 'antd';
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import Button from 'components/kit/Button';
 import Section from 'components/Section';
-import { SyncProvider } from 'components/UPlot/SyncableBounds';
+import { SyncProvider } from 'components/UPlot/SyncProvider';
 import { useSettings } from 'hooks/useSettings';
 import { getResourceAllocationAggregated } from 'services/api';
+import { V1ResourceAllocationAggregatedResponse } from 'services/api-ts-sdk';
 import { useUsers } from 'stores/users';
+import { DetailedUser } from 'types';
+import handleError from 'utils/error';
 import { Loadable } from 'utils/loadable';
 
 import css from './ClusterHistoricalUsage.module.scss';
@@ -16,7 +20,7 @@ import ClusterHistoricalUsageCsvModal from './ClusterHistoricalUsageCsvModal';
 import ClusterHistoricalUsageFilters, {
   ClusterHistoricalUsageFiltersInterface,
 } from './ClusterHistoricalUsageFilters';
-import { mapResourceAllocationApiToChartSeries, ResourceAllocationChartSeries } from './utils';
+import { mapResourceAllocationApiToChartSeries } from './utils';
 
 export const DEFAULT_RANGE_DAY = 14;
 export const DEFAULT_RANGE_MONTH = 6;
@@ -24,10 +28,15 @@ export const MAX_RANGE_DAY = 31;
 export const MAX_RANGE_MONTH = 36;
 
 const ClusterHistoricalUsage: React.FC = () => {
-  const [chartSeries, setChartSeries] = useState<ResourceAllocationChartSeries>();
+  const [aggRes, setAggRes] = useState<V1ResourceAllocationAggregatedResponse>({
+    resourceEntries: [],
+  });
   const [isCsvModalVisible, setIsCsvModalVisible] = useState<boolean>(false);
   const { settings, updateSettings } = useSettings<Settings>(settingsConfig);
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
+  const users: Readonly<DetailedUser[]> = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
 
   const filters = useMemo(() => {
     const filters: ClusterHistoricalUsageFiltersInterface = {
@@ -85,13 +94,8 @@ const ClusterHistoricalUsage: React.FC = () => {
     }
   }
 
-  /**
-   * Load chart data.
-   */
-  useEffect(() => {
-    setChartSeries(undefined);
-
-    (async () => {
+  const fetchResourceAllocationAggregated = useCallback(async () => {
+    try {
       const res = await getResourceAllocationAggregated({
         endDate: filters.beforeDate,
         period:
@@ -100,12 +104,19 @@ const ClusterHistoricalUsage: React.FC = () => {
             : 'RESOURCE_ALLOCATION_AGGREGATION_PERIOD_DAILY',
         startDate: filters.afterDate,
       });
+      setAggRes(res);
+    } catch (e) {
+      handleError(e);
+    }
+  }, [filters.afterDate, filters.beforeDate, filters.groupBy]);
 
-      setChartSeries(
-        mapResourceAllocationApiToChartSeries(res.resourceEntries, filters.groupBy, users),
-      );
-    })();
-  }, [filters, users]);
+  const chartSeries = useMemo(() => {
+    return mapResourceAllocationApiToChartSeries(aggRes.resourceEntries, filters.groupBy, users);
+  }, [aggRes.resourceEntries, filters.groupBy, users]);
+
+  useEffect(() => {
+    fetchResourceAllocationAggregated();
+  }, [fetchResourceAllocationAggregated]);
 
   return (
     <div className={css.base}>
@@ -148,16 +159,6 @@ const ClusterHistoricalUsage: React.FC = () => {
             <ClusterHistoricalUsageChart
               groupBy={chartSeries.groupedBy}
               hoursByLabel={chartSeries.hoursByResourcePool}
-              hoursTotal={chartSeries?.hoursTotal?.total}
-              time={chartSeries.time}
-            />
-          )}
-        </Section>
-        <Section bodyBorder loading={!chartSeries} title="Compute Hours by Agent Label">
-          {chartSeries && (
-            <ClusterHistoricalUsageChart
-              groupBy={chartSeries.groupedBy}
-              hoursByLabel={chartSeries.hoursByAgentLabel}
               hoursTotal={chartSeries?.hoursTotal?.total}
               time={chartSeries.time}
             />

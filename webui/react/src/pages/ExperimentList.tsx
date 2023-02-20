@@ -1,5 +1,5 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Input, MenuProps, Modal, Space, Typography } from 'antd';
+import { Dropdown, MenuProps, Space, Typography } from 'antd';
 import type { DropDownProps } from 'antd';
 import { FilterDropdownProps } from 'antd/lib/table/interface';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -8,6 +8,9 @@ import Badge, { BadgeType } from 'components/Badge';
 import { useSetDynamicTabBar } from 'components/DynamicTabs';
 import ExperimentActionDropdown from 'components/ExperimentActionDropdown';
 import FilterCounter from 'components/FilterCounter';
+import HumanReadableNumber from 'components/HumanReadableNumber';
+import Button from 'components/kit/Button';
+import Input from 'components/kit/Input';
 import Link from 'components/Link';
 import Page from 'components/Page';
 import InteractiveTable, {
@@ -51,7 +54,7 @@ import {
   pauseExperiment,
   unarchiveExperiment,
 } from 'services/api';
-import { Determinedexperimentv1State, V1GetExperimentsRequestSortBy } from 'services/api-ts-sdk';
+import { Experimentv1State, V1GetExperimentsRequestSortBy } from 'services/api-ts-sdk';
 import { encodeExperimentState } from 'services/decoder';
 import { GetExperimentsParams } from 'services/types';
 import Icon from 'shared/components/Icon/Icon';
@@ -62,8 +65,7 @@ import { ErrorLevel } from 'shared/utils/error';
 import { validateDetApiEnum, validateDetApiEnumList } from 'shared/utils/service';
 import { alphaNumericSorter } from 'shared/utils/sort';
 import { humanReadableBytes } from 'shared/utils/string';
-import { useAuth } from 'stores/auth';
-import { useEnsureUsersFetched, useUsers } from 'stores/users';
+import { useCurrentUser, useEnsureUsersFetched, useUsers } from 'stores/users';
 import {
   ExperimentAction as Action,
   CommandResponse,
@@ -74,6 +76,7 @@ import {
   ProjectExperiment,
   RunState,
 } from 'types';
+import { modal } from 'utils/dialogApi';
 import handleError from 'utils/error';
 import {
   canActionExperiment,
@@ -112,10 +115,13 @@ interface Props {
 }
 
 const ExperimentList: React.FC<Props> = ({ project }) => {
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
-  const loadableAuth = useAuth();
-  const user = Loadable.match(loadableAuth.auth, {
-    Loaded: (auth) => auth.user,
+  const users = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
+  const loadableCurrentUser = useCurrentUser();
+  const user = Loadable.match(loadableCurrentUser, {
+    Loaded: (cUser) => cUser,
     NotLoaded: () => undefined,
   });
 
@@ -177,7 +183,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
         orderBy: settings.sortDesc ? 'ORDER_BY_DESC' : 'ORDER_BY_ASC',
         projectId: id,
         sortBy: validateDetApiEnum(V1GetExperimentsRequestSortBy, settings.sortKey),
-        states: validateDetApiEnumList(Determinedexperimentv1State, states),
+        states: validateDetApiEnumList(Experimentv1State, states),
         users: settings.user,
       };
       const pinnedIds = pinned?.[id] ?? [];
@@ -425,9 +431,13 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
         disabled={record.archived || !canEditExperiment}
         placeholder={record.archived ? 'Archived' : canEditExperiment ? 'Add description...' : ''}
         title="Edit description"
-        onPressEnter={(e) => {
+        onBlur={(e) => {
           const newDesc = e.currentTarget.value;
           saveExperimentDescription(newDesc, record.id);
+        }}
+        onPressEnter={(e) => {
+          // when enter is pressed,
+          // input box gets blurred and then value will be saved in onBlur
           e.currentTarget.blur();
         }}
       />
@@ -593,7 +603,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
         filters: users.map((user) => ({ text: getDisplayName(user), value: user.id })),
         isFiltered: (settings: ExperimentListSettings) => !!settings.user,
         key: V1GetExperimentsRequestSortBy.USER,
-        render: userRenderer,
+        render: (_, r) => userRenderer(users.find((u) => u.id === r.userId)),
         sorter: true,
         title: 'User',
       },
@@ -608,6 +618,17 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
         render: actionRenderer,
         title: '',
         width: DEFAULT_COLUMN_WIDTHS['action'],
+      },
+      {
+        dataIndex: 'searcherMetricValue',
+        defaultWidth: DEFAULT_COLUMN_WIDTHS['searcherMetricValue'],
+        key: V1GetExperimentsRequestSortBy.SEARCHERMETRICVAL,
+        render: (_: string, record: ExperimentItem) => (
+          <HumanReadableNumber num={record.searcherMetricValue} />
+        ),
+        sorter: true,
+        title: 'Searcher Metric Value',
+        width: DEFAULT_COLUMN_WIDTHS['searcherMetricValue'],
       },
     ] as ColumnDef<ExperimentItem>[];
   }, [
@@ -655,6 +676,11 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
       .map((column) => column.dataIndex?.toString() ?? '');
   }, [columns]);
 
+  const initialVisibleColumns = useMemo(
+    () => settings.columns?.filter((col) => transferColumns.includes(col)),
+    [settings.columns, transferColumns],
+  );
+
   const { contextHolder: modalExperimentMoveContextHolder, modalOpen: openMoveModal } =
     useModalExperimentMove({ onClose: handleActionComplete, user });
 
@@ -665,6 +691,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
         return openOrCreateTensorBoard({ experimentIds: settings.row });
       }
       if (action === Action.Move) {
+        if (!settings?.row?.length) return;
         return openMoveModal({
           experimentIds: settings.row.filter(
             (id) =>
@@ -737,7 +764,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
 
   const showConfirmation = useCallback(
     (action: Action) => {
-      Modal.confirm({
+      modal.confirm({
         content: `
         Are you sure you want to ${action.toLocaleLowerCase()}
         all the eligible selected experiments?
@@ -799,7 +826,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
     useModalColumnsCustomize({
       columns: transferColumns,
       defaultVisibleColumns: DEFAULT_COLUMNS,
-      initialVisibleColumns: settings.columns?.filter((col) => transferColumns.includes(col)),
+      initialVisibleColumns,
       onSave: handleUpdateColumns as (columns: string[]) => void,
     });
 
@@ -929,7 +956,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
       // for docTitle, when id is 1 that means Uncategorized from webui/react/src/routes/routes.ts
       docTitle={id === 1 ? 'Uncategorized Experiments' : 'Project Details'}
       id="projectDetails">
-      <div className={css.experimentTab}>
+      <>
         <TableBatch
           actions={batchActions.map((action) => ({
             disabled: !availableBatchActions.includes(action),
@@ -968,7 +995,7 @@ const ExperimentList: React.FC<Props> = ({ project }) => {
           size="small"
           updateSettings={updateSettings as UpdateSettings}
         />
-      </div>
+      </>
       {modalColumnsCustomizeContextHolder}
       {modalExperimentMoveContextHolder}
     </Page>

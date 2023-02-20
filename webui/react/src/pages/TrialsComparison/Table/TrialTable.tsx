@@ -11,15 +11,18 @@ import InteractiveTable, {
   InteractiveTableSettings,
 } from 'components/Table/InteractiveTable';
 import SkeletonTable from 'components/Table/SkeletonTable';
-import { getFullPaginationConfig, relativeTimeRenderer } from 'components/Table/Table';
+import {
+  getFullPaginationConfig,
+  relativeTimeRenderer,
+  userRenderer,
+} from 'components/Table/Table';
 import TableFilterMultiSearch from 'components/Table/TableFilterMultiSearch';
 import TableFilterRank from 'components/Table/TableFilterRank';
-import UserAvatar from 'components/UserAvatar';
 import { Highlights } from 'hooks/useHighlight';
 import { UpdateSettings, UseSettingsReturn } from 'hooks/useSettings';
 import { TrialsWithMetadata } from 'pages/TrialsComparison/Trials/data';
 import { paths } from 'routes/utils';
-import { Determinedtrialv1State, V1AugmentedTrial } from 'services/api-ts-sdk';
+import { Trialv1State, V1AugmentedTrial } from 'services/api-ts-sdk';
 import { ColorScale, glasbeyColor } from 'shared/utils/color';
 import { isFiniteNumber } from 'shared/utils/data';
 import { useUsers } from 'stores/users';
@@ -71,7 +74,10 @@ const TrialTable: React.FC<Props> = ({
 }: Props) => {
   const { settings, updateSettings } = tableSettingsHook;
 
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
+  const users = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
 
   const { filters, setFilters } = collectionsInterface;
 
@@ -314,11 +320,11 @@ const TrialTable: React.FC<Props> = ({
         />
       ),
       filters: [
-        Determinedtrialv1State.ACTIVE,
-        Determinedtrialv1State.PAUSED,
-        Determinedtrialv1State.CANCELED,
-        Determinedtrialv1State.COMPLETED,
-        Determinedtrialv1State.ERROR,
+        Trialv1State.ACTIVE,
+        Trialv1State.PAUSED,
+        Trialv1State.CANCELED,
+        Trialv1State.COMPLETED,
+        Trialv1State.ERROR,
       ].map((value) => ({
         text: <Badge state={value} type={BadgeType.State} />,
         value,
@@ -417,7 +423,8 @@ const TrialTable: React.FC<Props> = ({
       filters: users.map((user) => ({ text: getDisplayName(user), value: user.id })),
       isFiltered: () => !!filters.userIds?.length,
       key: 'userId',
-      render: (_: string, record: V1AugmentedTrial) => <UserAvatar userId={record.userId} />,
+      render: (_: number, r: V1AugmentedTrial) =>
+        userRenderer(users.find((u) => u.id === r.userId)),
       sorter: true,
       title: 'User',
     }),

@@ -1,8 +1,9 @@
-import { Form, Input, message, Select, Typography } from 'antd';
-import { FormInstance } from 'antd/lib/form/hooks/useForm';
+import { Select, Typography } from 'antd';
 import { filter } from 'fp-ts/lib/Set';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import Form, { FormInstance } from 'components/kit/Form';
+import Input from 'components/kit/Input';
 import useFeature from 'hooks/useFeature';
 import usePermissions from 'hooks/usePermissions';
 import {
@@ -16,8 +17,9 @@ import {
 import { V1GroupDetails, V1GroupSearchResult } from 'services/api-ts-sdk';
 import useModal, { ModalHooks } from 'shared/hooks/useModal/useModal';
 import { ErrorType } from 'shared/utils/error';
-import { initKnowRoles, useKnownRoles } from 'stores/knowRoles';
+import { RolesStore } from 'stores/roles';
 import { DetailedUser, UserRole } from 'types';
+import { message } from 'utils/dialogApi';
 import handleError from 'utils/error';
 import { Loadable } from 'utils/loadable';
 import { getDisplayName } from 'utils/user';
@@ -48,10 +50,9 @@ const ModalForm: React.FC<Props> = ({ form, users, group, groupRoles }) => {
   const { canModifyPermissions } = usePermissions();
   const [isLoading, setIsLoading] = useState(true);
 
-  const knowRolesLoadable = useKnownRoles();
-  const knownRoles = Loadable.getOrElse(initKnowRoles, knowRolesLoadable);
-
   const [groupDetail, setGroupDetail] = useState<V1GroupDetails>();
+
+  const roles = RolesStore.useRoles();
 
   const fetchGroup = useCallback(async () => {
     if (group?.group.groupId) {
@@ -89,7 +90,7 @@ const ModalForm: React.FC<Props> = ({ form, users, group, groupRoles }) => {
           },
         ]}
         validateTrigger={['onSubmit', 'onChange']}>
-        <Input autoFocus maxLength={128} placeholder="Group Name" />
+        <Input autoComplete="off" autoFocus maxLength={128} placeholder="Group Name" />
       </Form.Item>
       {group ? (
         <Form.Item label={USER_ADD_LABEL} name={USER_ADD_NAME}>
@@ -127,9 +128,9 @@ const ModalForm: React.FC<Props> = ({ form, users, group, groupRoles }) => {
               optionFilterProp="children"
               placeholder={'Add Roles'}
               showSearch>
-              {Loadable.match(knowRolesLoadable, {
-                Loaded: () =>
-                  knownRoles.map((r) => (
+              {Loadable.match(roles, {
+                Loaded: (roles) =>
+                  roles.map((r) => (
                     <Select.Option
                       disabled={groupRoles?.find((gr) => gr.id === r.id)?.fromWorkspace?.length}
                       key={r.id}

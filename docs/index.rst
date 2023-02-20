@@ -5,14 +5,14 @@
    quickstart-mdldev
    Tutorials <tutorials/index>
    Examples <example-solutions/examples>
-   Model Hub <model-hub-library/index>
+   Model Hub Library <model-hub-library/index>
    System Architecture <architecture/index>
 
 .. toctree::
    :caption: Model Developer Guide
    :hidden:
 
-   Introduction to Distributed Training <training/dtrain-introduction>
+   Distributed Training <training/dtrain-introduction>
    Prepare Container Environment <training/setup-guide/overview>
    Prepare Data <training/load-model-data>
    Training API Guides <training/apis-howto/overview>
@@ -41,7 +41,7 @@
    :caption: Reference
    :hidden:
 
-   Python API <reference/python-api>
+   Python SDK <reference/python-sdk>
    REST API <reference/rest-api>
    Training Reference <reference/reference-training/index>
    Model Hub Reference <reference/reference-model-hub/index>
@@ -86,7 +86,7 @@
 
 |
 
-Determined is an open source deep learning training platform that makes building models fast and
+Determined is an open-source deep learning training platform that makes building models fast and
 easy.
 
 With Determined you can:
@@ -140,7 +140,7 @@ so you can spend your time building models instead of managing infrastructure.
              </a>
          </div>
          <div class="tile-container">
-             <a class="tile" href="reference/python-api.html">
+             <a class="tile" href="reference/python-sdk.html">
                  <h2 class="tile-title">Reference</h2>
                  <p class="tile-description">Explore API libraries and configuration settings.</p>
              </a>

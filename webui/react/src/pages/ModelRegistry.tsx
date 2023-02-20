@@ -1,4 +1,4 @@
-import { Button, Dropdown, Space, Typography } from 'antd';
+import { Dropdown, Space, Typography } from 'antd';
 import type { DropDownProps, MenuProps } from 'antd';
 import {
   FilterDropdownProps,
@@ -8,8 +8,12 @@ import {
 } from 'antd/lib/table/interface';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import DynamicIcon from 'components/DynamicIcon';
 import FilterCounter from 'components/FilterCounter';
-import InlineEditor from 'components/InlineEditor';
+import Button from 'components/kit/Button';
+import Empty from 'components/kit/Empty';
+import Input from 'components/kit/Input';
+import Tooltip from 'components/kit/Tooltip';
 import Link from 'components/Link';
 import Page from 'components/Page';
 import InteractiveTable, {
@@ -29,8 +33,11 @@ import TableFilterDropdown from 'components/Table/TableFilterDropdown';
 import TableFilterSearch from 'components/Table/TableFilterSearch';
 import TagList from 'components/TagList';
 import Toggle from 'components/Toggle';
+import WorkspaceFilter from 'components/WorkspaceFilter';
 import useModalModelCreate from 'hooks/useModal/Model/useModalModelCreate';
 import useModalModelDelete from 'hooks/useModal/Model/useModalModelDelete';
+import useModalModelMove from 'hooks/useModal/Model/useModalModelMove';
+import usePermissions from 'hooks/usePermissions';
 import { UpdateSettings, useSettings } from 'hooks/useSettings';
 import { paths } from 'routes/utils';
 import { archiveModel, getModelLabels, getModels, patchModel, unarchiveModel } from 'services/api';
@@ -42,9 +49,9 @@ import { isEqual } from 'shared/utils/data';
 import { ErrorType } from 'shared/utils/error';
 import { validateDetApiEnum } from 'shared/utils/service';
 import { alphaNumericSorter } from 'shared/utils/sort';
-import { useAuth } from 'stores/auth';
 import { useEnsureUsersFetched, useUsers } from 'stores/users';
-import { ModelItem } from 'types';
+import { useEnsureWorkspacesFetched, useWorkspaces } from 'stores/workspaces';
+import { ModelItem, Workspace } from 'types';
 import handleError from 'utils/error';
 import { Loadable } from 'utils/loadable';
 import { getDisplayName } from 'utils/user';
@@ -57,35 +64,45 @@ import settingsConfig, {
   Settings,
 } from './ModelRegistry.settings';
 
-const filterKeys: Array<keyof Settings> = ['tags', 'name', 'users', 'description'];
+const filterKeys: Array<keyof Settings> = ['tags', 'name', 'users', 'description', 'workspace'];
 
-const ModelRegistry: React.FC = () => {
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
-  const loadableAuth = useAuth();
-  const user = Loadable.match(loadableAuth.auth, {
-    Loaded: (auth) => auth.user,
-    NotLoaded: () => undefined,
-  });
+interface Props {
+  workspace?: Workspace;
+}
+
+const ModelRegistry: React.FC<Props> = ({ workspace }: Props) => {
+  const users = Loadable.match(useUsers(), {
+    Loaded: (cUser) => cUser.users,
+    NotLoaded: () => [],
+  }); // TODO: handle loading state
   const [models, setModels] = useState<ModelItem[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [canceler] = useState(new AbortController());
   const [total, setTotal] = useState(0);
   const pageRef = useRef<HTMLElement>(null);
+  const fetchWorkspaces = useEnsureWorkspacesFetched(canceler);
+  const { canCreateModels, canDeleteModel, canModifyModel } = usePermissions();
 
   const { contextHolder: modalModelCreateContextHolder, modalOpen: openModelCreate } =
-    useModalModelCreate();
+    useModalModelCreate({ workspaceId: workspace?.id });
 
   const { contextHolder: modalModelDeleteContextHolder, modalOpen: openModelDelete } =
     useModalModelDelete();
 
+  const { contextHolder: modalModelMoveContextHolder, modalOpen: openModelMove } =
+    useModalModelMove();
+
+  const settingConfig = useMemo(() => {
+    return settingsConfig(workspace?.id.toString() ?? 'global');
+  }, [workspace?.id]);
   const {
     activeSettings,
     isLoading: isLoadingSettings,
     settings,
     updateSettings,
     resetSettings,
-  } = useSettings<Settings>(settingsConfig);
+  } = useSettings<Settings>(settingConfig);
 
   const filterCount = useMemo(() => activeSettings(filterKeys).length, [activeSettings]);
 
@@ -106,6 +123,8 @@ const ModelRegistry: React.FC = () => {
           orderBy: settings.sortDesc ? 'ORDER_BY_DESC' : 'ORDER_BY_ASC',
           sortBy: validateDetApiEnum(V1GetModelsRequestSortBy, settings.sortKey),
           users: settings.users,
+          workspaceId: workspace?.id,
+          workspaceIds: settings.workspace,
         },
         { signal: canceler.signal },
       );
@@ -123,21 +142,29 @@ const ModelRegistry: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [settings, canceler.signal]);
+  }, [settings, workspace?.id, canceler.signal]);
 
   const fetchTags = useCallback(async () => {
     try {
-      const tags = await getModelLabels({ signal: canceler.signal });
+      const tags = await getModelLabels(
+        { workspaceId: workspace?.id },
+        { signal: canceler.signal },
+      );
       tags.sort((a, b) => alphaNumericSorter(a, b));
       setTags(tags);
     } catch (e) {
       handleError(e);
     }
-  }, [canceler.signal]);
+  }, [canceler.signal, workspace?.id]);
 
   const fetchAll = useCallback(async () => {
-    await Promise.allSettled([fetchModels(), fetchTags(), fetchUsers()]);
-  }, [fetchModels, fetchTags, fetchUsers]);
+    await Promise.allSettled([fetchModels(), fetchTags(), fetchUsers(), fetchWorkspaces()]);
+  }, [fetchModels, fetchTags, fetchUsers, fetchWorkspaces]);
+
+  const workspaces = Loadable.match(useWorkspaces(), {
+    Loaded: (ws) => ws,
+    NotLoaded: () => [],
+  });
 
   usePolling(fetchAll, { rerunOnNewFn: true });
 
@@ -171,6 +198,13 @@ const ModelRegistry: React.FC = () => {
       }
     },
     [fetchModels],
+  );
+
+  const moveModelToWorkspace = useCallback(
+    (model: ModelItem) => {
+      openModelMove(model);
+    },
+    [openModelMove],
   );
 
   const setModelTags = useCallback(
@@ -273,6 +307,56 @@ const ModelRegistry: React.FC = () => {
     updateSettings({ tags: undefined });
   }, [updateSettings]);
 
+  const handleWorkspaceFilterApply = useCallback(
+    (workspaces: string[]) => {
+      updateSettings({
+        row: undefined,
+        workspace: workspaces.length !== 0 ? workspaces : undefined,
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleWorkspaceFilterReset = useCallback(() => {
+    updateSettings({ row: undefined, workspace: undefined });
+  }, [updateSettings]);
+
+  const workspaceFilterDropdown = useCallback(
+    (filterProps: FilterDropdownProps) => (
+      <TableFilterDropdown
+        {...filterProps}
+        multiple
+        values={settings.workspace?.map((ws) => ws.toString())}
+        width={220}
+        onFilter={handleWorkspaceFilterApply}
+        onReset={handleWorkspaceFilterReset}
+      />
+    ),
+    [handleWorkspaceFilterApply, handleWorkspaceFilterReset, settings.workspace],
+  );
+
+  const workspaceRenderer = useCallback(
+    (record: ModelItem): React.ReactNode => {
+      const workspace = workspaces.find((u) => u.id === record.workspaceId);
+      const workspaceId = record.workspaceId;
+      return (
+        <Tooltip placement="top" title={workspace?.name}>
+          <div className={`${css.centerVertically} ${css.centerHorizontally}`}>
+            <Link
+              path={
+                workspaceId === 1
+                  ? paths.projectDetails(workspaceId)
+                  : paths.workspaceDetails(workspaceId)
+              }>
+              <DynamicIcon name={workspace?.name} size={24} />
+            </Link>
+          </div>
+        </Tooltip>
+      );
+    },
+    [workspaces],
+  );
+
   const labelFilterDropdown = useCallback(
     (filterProps: FilterDropdownProps) => (
       <TableFilterDropdown
@@ -314,15 +398,23 @@ const ModelRegistry: React.FC = () => {
   }, [resetSettings]);
 
   const ModelActionMenu = useCallback(
-    (record: ModelItem): DropDownProps['menu'] => {
+    (
+      record: ModelItem,
+      canDeleteModelFlag: boolean,
+      canModifyModelFlag: boolean,
+    ): DropDownProps['menu'] => {
       const MenuKey = {
         DeleteModel: 'delete-model',
+        MoveModel: 'move-model',
         SwitchArchived: 'switch-archived',
       } as const;
 
       const funcs = {
         [MenuKey.SwitchArchived]: () => {
           switchArchived(record);
+        },
+        [MenuKey.MoveModel]: () => {
+          moveModelToWorkspace(record);
         },
         [MenuKey.DeleteModel]: () => {
           showConfirmDelete(record);
@@ -333,17 +425,23 @@ const ModelRegistry: React.FC = () => {
         funcs[e.key as ValueOf<typeof MenuKey>]();
       };
 
-      const menuItems: MenuProps['items'] = [
-        { key: MenuKey.SwitchArchived, label: record.archived ? 'Unarchive' : 'Archive' },
-      ];
-
-      if (user?.id === record.userId || user?.isAdmin) {
+      const menuItems: MenuProps['items'] = [];
+      if (canModifyModelFlag) {
+        menuItems.push({
+          key: MenuKey.SwitchArchived,
+          label: record.archived ? 'Unarchive' : 'Archive',
+        });
+        if (!record.archived) {
+          menuItems.push({ key: MenuKey.MoveModel, label: 'Move' });
+        }
+      }
+      if (canDeleteModelFlag) {
         menuItems.push({ danger: true, key: MenuKey.DeleteModel, label: 'Delete Model' });
       }
 
       return { items: menuItems, onClick: onItemClick };
     },
-    [showConfirmDelete, switchArchived, user?.id, user?.isAdmin],
+    [moveModelToWorkspace, showConfirmDelete, switchArchived],
   );
 
   const columns = useMemo(() => {
@@ -356,7 +454,7 @@ const ModelRegistry: React.FC = () => {
           <div>
             <TagList
               compact
-              disabled={record.archived}
+              disabled={record.archived || !canModifyModel({ model: record })}
               tags={record.labels ?? []}
               onChange={(tags) => setModelTags(record.name, tags)}
             />
@@ -365,20 +463,35 @@ const ModelRegistry: React.FC = () => {
       </div>
     );
 
-    const actionRenderer = (_: string, record: ModelItem) => (
-      <Dropdown menu={ModelActionMenu(record)} trigger={['click']}>
-        <Button className={css.overflow} type="text">
-          <Icon name="overflow-vertical" />
-        </Button>
-      </Dropdown>
-    );
+    const actionRenderer = (_: string, record: ModelItem) => {
+      const canDeleteModelFlag = canDeleteModel({ model: record });
+      const canModifyModelFlag = canModifyModel({ model: record });
+      return (
+        <Dropdown
+          disabled={!canDeleteModelFlag && !canModifyModelFlag}
+          menu={ModelActionMenu(record, canDeleteModelFlag, canModifyModelFlag)}
+          trigger={['click']}>
+          <Button icon={<Icon name="overflow-vertical" />} type="text" />
+        </Dropdown>
+      );
+    };
 
     const descriptionRenderer = (value: string, record: ModelItem) => (
-      <InlineEditor
-        disabled={record.archived}
+      <Input
+        className={css.descriptionRenderer}
+        defaultValue={value}
+        disabled={record.archived || !canModifyModel({ model: record })}
         placeholder={record.archived ? 'Archived' : 'Add description...'}
-        value={value}
-        onSave={(newDescription: string) => saveModelDescription(record.name, newDescription)}
+        title={record.archived ? 'Archived description' : 'Edit description'}
+        onBlur={(e) => {
+          const newDesc = e.currentTarget.value;
+          saveModelDescription(record.name, newDesc);
+        }}
+        onPressEnter={(e) => {
+          // when enter is pressed,
+          // input box gets blurred and then value will be saved in onBlur
+          e.currentTarget.blur();
+        }}
       />
     );
 
@@ -405,6 +518,21 @@ const ModelRegistry: React.FC = () => {
         render: descriptionRenderer,
         sorter: true,
         title: 'Description',
+      },
+      {
+        align: 'center',
+        dataIndex: 'workspace',
+        defaultWidth: DEFAULT_COLUMN_WIDTHS['workspace'],
+        filterDropdown: workspaceFilterDropdown,
+        filters: workspaces.map((ws) => ({
+          text: <WorkspaceFilter workspace={ws} />,
+          value: ws.id,
+        })),
+        isFiltered: (settings: Settings) => !!settings.workspace,
+        key: V1GetModelsRequestSortBy.WORKSPACE,
+        render: (v: string, record: ModelItem) => workspaceRenderer(record),
+        sorter: true,
+        title: 'Workspace',
       },
       {
         align: 'right',
@@ -449,7 +577,7 @@ const ModelRegistry: React.FC = () => {
         filters: users.map((user) => ({ text: getDisplayName(user), value: user.id })),
         isFiltered: (settings: Settings) => !!settings.users,
         key: 'user',
-        render: userRenderer,
+        render: (_, r) => userRenderer(users.find((u) => u.id === r.userId)),
         title: 'User',
       },
       {
@@ -465,6 +593,8 @@ const ModelRegistry: React.FC = () => {
       },
     ] as ColumnDef<ModelItem>[];
   }, [
+    canDeleteModel,
+    canModifyModel,
     nameFilterSearch,
     tableSearchIcon,
     descriptionFilterSearch,
@@ -475,6 +605,9 @@ const ModelRegistry: React.FC = () => {
     setModelTags,
     ModelActionMenu,
     saveModelDescription,
+    workspaceFilterDropdown,
+    workspaceRenderer,
+    workspaces,
   ]);
 
   const handleTableChange = useCallback(
@@ -553,15 +686,19 @@ const ModelRegistry: React.FC = () => {
       children: React.ReactNode;
       onVisibleChange?: (visible: boolean) => void;
       record: ModelItem;
-    }) => (
-      <Dropdown
-        menu={ModelActionMenu(record)}
-        trigger={['contextMenu']}
-        onOpenChange={onVisibleChange}>
-        {children}
-      </Dropdown>
-    ),
-    [ModelActionMenu],
+    }) => {
+      const canDeleteModelFlag = canDeleteModel({ model: record });
+      const canModifyModelFlag = canModifyModel({ model: record });
+      return (
+        <Dropdown
+          menu={ModelActionMenu(record, canDeleteModelFlag, canModifyModelFlag)}
+          trigger={['contextMenu']}
+          onOpenChange={onVisibleChange}>
+          {children}
+        </Dropdown>
+      );
+    },
+    [ModelActionMenu, canDeleteModel, canModifyModel],
   );
 
   return (
@@ -578,23 +715,33 @@ const ModelRegistry: React.FC = () => {
           {filterCount > 0 && (
             <FilterCounter activeFilterCount={filterCount} onReset={resetFilters} />
           )}
-          <Button onClick={showCreateModelModal}>New Model</Button>
+          {canCreateModels ? (
+            <Button onClick={showCreateModelModal}>New Model</Button>
+          ) : (
+            <Tooltip placement="leftBottom" title="User lacks permission to create models">
+              <div>
+                <Button disabled onClick={showCreateModelModal}>
+                  New Model
+                </Button>
+              </div>
+            </Tooltip>
+          )}
         </Space>
       }
       title="Model Registry">
       {models.length === 0 && !isLoading && filterCount === 0 ? (
-        <div className={css.emptyBase}>
-          <div className={css.icon}>
-            <Icon name="model" size="mega" />
-          </div>
-          <h4>No Models Registered</h4>
-          <p className={css.description}>
-            Track important checkpoints and versions from your experiments.&nbsp;
-            <Link external path={paths.docs('/post-training/model-registry.html')}>
-              Learn more
-            </Link>
-          </p>
-        </div>
+        <Empty
+          description={
+            <>
+              Track important checkpoints and versions from your experiments.{' '}
+              <Link external path={paths.docs('/post-training/model-registry.html')}>
+                Learn more
+              </Link>
+            </>
+          }
+          icon="model"
+          title="No Models Registered"
+        />
       ) : (
         <InteractiveTable
           columns={columns}
@@ -620,6 +767,7 @@ const ModelRegistry: React.FC = () => {
       )}
       {modalModelCreateContextHolder}
       {modalModelDeleteContextHolder}
+      {modalModelMoveContextHolder}
     </Page>
   );
 };

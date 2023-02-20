@@ -8,13 +8,12 @@ import React, { useEffect } from 'react';
 import { act } from 'react-dom/test-utils';
 import { unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
-import StoreProvider from 'contexts/Store';
 import { SettingsProvider } from 'hooks/useSettingsProvider';
 import { paths } from 'routes/utils';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
 import history from 'shared/routes/history';
-import { AuthProvider, useAuth } from 'stores/auth';
-import { UsersProvider } from 'stores/users';
-import { DetailedUser } from 'types';
+import { setAuth, setAuthChecked } from 'stores/auth';
+import { UsersProvider, useUpdateCurrentUser } from 'stores/users';
 
 import CodeViewer, { Props } from './CodeViewer';
 
@@ -83,11 +82,6 @@ jest.mock('components/MonacoEditor', () => ({
   __esModule: true,
   default: () => MonacoEditorMock,
 }));
-jest.mock('contexts/Store', () => ({
-  __esModule: true,
-  ...jest.requireActual('contexts/Store'),
-  useStore: () => ({ auth: { user: { id: 1 } as DetailedUser } }),
-}));
 
 jest.mock('hooks/useSettings', () => {
   const actualModule = jest.requireActual('hooks/useSettings');
@@ -110,11 +104,12 @@ const experimentIdMock = 123;
 const user = userEvent.setup();
 
 const Container: React.FC<Props> = (props) => {
-  const { setAuth, setAuthCheck } = useAuth();
+  const updateCurrentUser = useUpdateCurrentUser();
 
   useEffect(() => {
     setAuth({ isAuthenticated: true });
-    setAuthCheck();
+    setAuthChecked();
+    updateCurrentUser(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -130,11 +125,11 @@ const setup = (
 ) => {
   render(
     <HistoryRouter history={history}>
-      <StoreProvider>
-        <AuthProvider>
+      <UIProvider>
+        <UsersProvider>
           <Container {...props} />
-        </AuthProvider>
-      </StoreProvider>
+        </UsersProvider>
+      </UIProvider>
     </HistoryRouter>,
   );
 };

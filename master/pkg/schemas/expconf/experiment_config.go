@@ -20,7 +20,6 @@ type ExperimentConfigV0 struct {
 	RawBindMounts               BindMountsConfigV0          `json:"bind_mounts"`
 	RawCheckpointPolicy         *string                     `json:"checkpoint_policy"`
 	RawCheckpointStorage        *CheckpointStorageConfigV0  `json:"checkpoint_storage"`
-	RawDataLayer                *DataLayerConfigV0          `json:"data_layer"`
 	RawData                     map[string]interface{}      `json:"data"`
 	RawDebug                    *bool                       `json:"debug"`
 	RawDescription              *string                     `json:"description"`
@@ -89,10 +88,11 @@ func (e *ExperimentConfigV0) Scan(src interface{}) error {
 // AsLegacy converts a current ExperimentConfig to a (limited capacity) LegacyConfig.
 func (e ExperimentConfig) AsLegacy() LegacyConfig {
 	return LegacyConfig{
-		checkpointStorage: schemas.Copy(e.CheckpointStorage()),
-		bindMounts:        schemas.Copy(e.BindMounts()),
-		envvars:           schemas.Copy(e.Environment().EnvironmentVariables()),
-		podSpec:           schemas.Copy(e.Environment().PodSpec()),
+		CheckpointStorage: schemas.Copy(e.CheckpointStorage()),
+		BindMounts:        schemas.Copy(e.BindMounts()),
+		Environment:       schemas.Copy(e.Environment()),
+		Hyperparameters:   schemas.Copy(e.Hyperparameters()),
+		Searcher:          e.Searcher().AsLegacy(),
 	}
 }
 
@@ -210,7 +210,6 @@ type ResourcesConfigV0 struct {
 	RawWeight         *float64 `json:"weight"`
 	RawNativeParallel *bool    `json:"native_parallel,omitempty"`
 	RawShmSize        *int     `json:"shm_size"`
-	RawAgentLabel     *string  `json:"agent_label"`
 	RawResourcePool   *string  `json:"resource_pool"`
 	RawPriority       *int     `json:"priority"`
 

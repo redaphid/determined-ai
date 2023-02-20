@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import Grid, { GridMode } from 'components/Grid';
 import Link from 'components/Link';
@@ -7,22 +7,20 @@ import ResourcePoolDetails from 'components/ResourcePoolDetails';
 import Section from 'components/Section';
 import { paths } from 'routes/utils';
 import { V1ResourcePoolType } from 'services/api-ts-sdk';
-import usePolling from 'shared/hooks/usePolling';
 import { percent } from 'shared/utils/number';
-import { useEnsureAgentsFetched } from 'stores/agents';
-import { useFetchResourcePools, useResourcePools } from 'stores/resourcePools';
+import { useClusterStore } from 'stores/cluster';
 import { ShirtSize } from 'themes';
 import { Agent, ClusterOverview as Overview, ResourcePool, ResourceType } from 'types';
 import { Loadable } from 'utils/loadable';
+import { useObservable } from 'utils/observable';
 
 import { ClusterOverallBar } from '../Cluster/ClusterOverallBar';
 import { ClusterOverallStats } from '../Cluster/ClusterOverallStats';
 
-import css from './ClustersOverview.module.scss';
-
 /**
  * maximum theoretcial capacity of the resource pool in terms of the advertised
  * compute slot type.
+ *
  * @param pool resource pool
  */
 export const maxPoolSlotCapacity = (pool: ResourcePool): number => {
@@ -33,7 +31,8 @@ export const maxPoolSlotCapacity = (pool: ResourcePool): number => {
   return pool.slotsAvailable;
 };
 
-/** maximum theoretical capacity of the cluster, by advertised compute slot type. if all pools are
+/**
+ * maximum theoretical capacity of the cluster, by advertised compute slot type. if all pools are
  * static pools, we just tally the agent slots. this method returns a correct cluster-wide total for
  * slurm where pools can have overlapping sets of agents.
  */
@@ -85,27 +84,14 @@ export const clusterStatusText = (
 };
 
 const ClusterOverview: React.FC = () => {
-  const loadableResourcePools = useResourcePools();
-  const resourcePools = Loadable.getOrElse([], loadableResourcePools); // TODO show spinner when this is loading
+  const resourcePools = Loadable.getOrElse([], useObservable(useClusterStore().resourcePools)); // TODO show spinner when this is loading
 
   const [rpDetail, setRpDetail] = useState<ResourcePool>();
 
-  const [canceler] = useState(new AbortController());
-
-  const fetchAgents = useEnsureAgentsFetched(canceler);
-  const fetchResourcePools = useFetchResourcePools(canceler);
-
-  usePolling(fetchResourcePools, { interval: 10000 });
-
   const hideModal = useCallback(() => setRpDetail(undefined), []);
 
-  useEffect(() => {
-    fetchAgents();
-    return () => canceler.abort();
-  }, [canceler, fetchAgents]);
-
   return (
-    <div className={css.base}>
+    <>
       <ClusterOverallStats />
       <ClusterOverallBar />
       <Section title="Resource Pools">
@@ -120,7 +106,7 @@ const ClusterOverview: React.FC = () => {
       {!!rpDetail && (
         <ResourcePoolDetails finally={hideModal} resourcePool={rpDetail} visible={!!rpDetail} />
       )}
-    </div>
+    </>
   );
 };
 

@@ -1,16 +1,20 @@
-import { Divider, Form, Input, InputNumber, Switch } from 'antd';
+import { Divider, Switch } from 'antd';
 import { ModalFuncProps } from 'antd/es/modal/Modal';
 import yaml from 'js-yaml';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import Form from 'components/kit/Form';
+import Input from 'components/kit/Input';
+import InputNumber from 'components/kit/InputNumber';
 import usePermissions from 'hooks/usePermissions';
 import { paths } from 'routes/utils';
-import { createWorkspace, getWorkspace, patchWorkspace } from 'services/api';
+import { getWorkspace, patchWorkspace } from 'services/api';
 import { V1AgentUserGroup } from 'services/api-ts-sdk';
 import Spinner from 'shared/components/Spinner';
 import useModal, { ModalCloseReason, ModalHooks } from 'shared/hooks/useModal/useModal';
 import { DetError, ErrorLevel, ErrorType } from 'shared/utils/error';
 import { routeToReactUrl } from 'shared/utils/routes';
+import { useCreateWorkspace } from 'stores/workspaces';
 import { Workspace } from 'types';
 import handleError from 'utils/error';
 
@@ -47,6 +51,7 @@ const useModalWorkspaceCreate = ({ onClose, workspaceID }: Props = {}): ModalHoo
 
   const [canceler] = useState(new AbortController());
   const [workspace, setWorkspace] = useState<Workspace>();
+  const createWorkspace = useCreateWorkspace();
 
   const fetchWorkspace = useCallback(async () => {
     if (workspaceID) {
@@ -103,7 +108,13 @@ const useModalWorkspaceCreate = ({ onClose, workspaceID }: Props = {}): ModalHoo
         <Form.Item
           label="Workspace Name"
           name="workspaceName"
-          rules={[{ message: 'Workspace name is required ', required: true }]}>
+          rules={[
+            {
+              message: 'Name must be 1 ~ 80 letters, and contain at least non-whitespace letter',
+              pattern: new RegExp('.*[^ ].*'),
+              required: true,
+            },
+          ]}>
           <Input maxLength={80} />
         </Form.Item>
         {canModifyAUG && (
@@ -274,7 +285,7 @@ const useModalWorkspaceCreate = ({ onClose, workspaceID }: Props = {}): ModalHoo
         });
       }
     }
-  }, [form, workspaceID, canModifyAUG, canModifyCPS]);
+  }, [form, workspaceID, canModifyAUG, canModifyCPS, createWorkspace]);
 
   const getModalProps = useMemo((): ModalFuncProps => {
     return {

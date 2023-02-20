@@ -1,31 +1,32 @@
-import { Button, Divider, message } from 'antd';
+import { Divider } from 'antd';
 import React, { useCallback } from 'react';
 
 import InlineEditor from 'components/InlineEditor';
+import Button from 'components/kit/Button';
 import Avatar from 'components/UserAvatar';
 import useModalPasswordChange from 'hooks/useModal/UserSettings/useModalPasswordChange';
 import { patchUser } from 'services/api';
 import { Size } from 'shared/components/Avatar';
 import { ErrorType } from 'shared/utils/error';
-import { useCurrentUsers, useUsers } from 'stores/users';
+import { useCurrentUser, useUpdateUser } from 'stores/users';
+import { message } from 'utils/dialogApi';
 import handleError from 'utils/error';
 import { Loadable } from 'utils/loadable';
 
 import css from './SettingsAccount.module.scss';
 
-export const API_DISPLAYNAME_ERROR_MESSAGE = 'Could not update display name.';
 export const API_DISPLAYNAME_SUCCESS_MESSAGE = 'Display name updated.';
 export const API_USERNAME_ERROR_MESSAGE = 'Could not update username.';
 export const API_USERNAME_SUCCESS_MESSAGE = 'Username updated.';
 export const CHANGE_PASSWORD_TEXT = 'Change Password';
 
 const SettingsAccount: React.FC = () => {
-  const { updateCurrentUser, currentUser: loadableCurrentUser } = useCurrentUsers();
+  const loadableCurrentUser = useCurrentUser();
+  const updateUser = useUpdateUser();
   const currentUser = Loadable.match(loadableCurrentUser, {
     Loaded: (cUser) => cUser,
     NotLoaded: () => undefined,
   });
-  const users = Loadable.getOrElse([], useUsers()); // TODO: handle loading state
 
   const { contextHolder: modalPasswordChangeContextHolder, modalOpen: openChangePasswordModal } =
     useModalPasswordChange();
@@ -41,15 +42,14 @@ const SettingsAccount: React.FC = () => {
           userId: currentUser?.id || 0,
           userParams: { displayName: newValue },
         });
-        updateCurrentUser(user, users);
+        updateUser(user.id, (oldUser) => ({ ...oldUser, displayName: newValue }));
         message.success(API_DISPLAYNAME_SUCCESS_MESSAGE);
       } catch (e) {
-        message.error(API_DISPLAYNAME_ERROR_MESSAGE);
-        handleError(e, { silent: true, type: ErrorType.Input });
+        handleError(e, { silent: false, type: ErrorType.Input });
         return e as Error;
       }
     },
-    [currentUser, updateCurrentUser, users],
+    [currentUser, updateUser],
   );
 
   const handleSaveUsername = useCallback(
@@ -59,7 +59,7 @@ const SettingsAccount: React.FC = () => {
           userId: currentUser?.id || 0,
           userParams: { username: newValue },
         });
-        updateCurrentUser(user, users);
+        updateUser(user.id, (oldUser) => ({ ...oldUser, username: newValue }));
         message.success(API_USERNAME_SUCCESS_MESSAGE);
       } catch (e) {
         message.error(API_USERNAME_ERROR_MESSAGE);
@@ -67,13 +67,13 @@ const SettingsAccount: React.FC = () => {
         return e as Error;
       }
     },
-    [currentUser, updateCurrentUser, users],
+    [currentUser, updateUser],
   );
 
   return (
     <div className={css.base}>
       <div className={css.avatar}>
-        <Avatar hideTooltip size={Size.ExtraLarge} userId={currentUser?.id} />
+        <Avatar hideTooltip size={Size.ExtraLarge} user={currentUser} />
       </div>
       <Divider />
       <div className={css.row}>

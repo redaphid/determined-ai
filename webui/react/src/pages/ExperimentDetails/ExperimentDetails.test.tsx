@@ -3,7 +3,6 @@ import React from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { unstable_HistoryRouter as HistoryRouter, useParams } from 'react-router-dom';
 
-import StoreProvider from 'contexts/Store';
 import {
   getExperimentDetails,
   getExpTrials,
@@ -12,11 +11,10 @@ import {
   getTrialDetails,
   getWorkspace,
 } from 'services/api';
+import { StoreProvider as UIProvider } from 'shared/contexts/stores/UI';
 import history from 'shared/routes/history';
-import { AuthProvider } from 'stores/auth';
+import { ClusterProvider } from 'stores/cluster';
 import { ProjectsProvider } from 'stores/projects';
-import { ResourcePoolsProvider } from 'stores/resourcePools';
-import { UserRolesProvider } from 'stores/userRoles';
 import { UsersProvider } from 'stores/users';
 import { WorkspacesProvider } from 'stores/workspaces';
 
@@ -70,25 +68,21 @@ jest.mock('./ExperimentVisualization', () => ({
 
 const setup = () => {
   const view = render(
-    <StoreProvider>
+    <UIProvider>
       <HelmetProvider>
         <WorkspacesProvider>
           <UsersProvider>
-            <AuthProvider>
-              <UserRolesProvider>
-                <ResourcePoolsProvider>
-                  <ProjectsProvider>
-                    <HistoryRouter history={history}>
-                      <ExperimentDetails />
-                    </HistoryRouter>
-                  </ProjectsProvider>
-                </ResourcePoolsProvider>
-              </UserRolesProvider>
-            </AuthProvider>
+            <ClusterProvider>
+              <ProjectsProvider>
+                <HistoryRouter history={history}>
+                  <ExperimentDetails />
+                </HistoryRouter>
+              </ProjectsProvider>
+            </ClusterProvider>
           </UsersProvider>
         </WorkspacesProvider>
       </HelmetProvider>
-    </StoreProvider>,
+    </UIProvider>,
   );
   return { view };
 };

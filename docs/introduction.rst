@@ -84,7 +84,7 @@ Model Registry
 The Model Registry is a way to group together conceptually related checkpoints (including ones
 across different experiments), storing metadata and longform notes about a model, and retrieving the
 latest version of a model for use or futher development. The Model Registry can be accessed through
-the WebUI, Python API, REST API, or CLI, though the WebUI has some features that the others are
+the WebUI, Python SDK, REST API, or CLI, though the WebUI has some features that the others are
 missing.
 
 The Model Registry is a top-level option in the navigation bar. This will take you to a page listing
@@ -259,7 +259,8 @@ with learning rates of .001, .01, and .1.
 
 To run experiments, you need to write your model training code. A *model definition* represents a
 specification of a deep learning model and its training procedure. It contains training code that
-implements :doc:`training APIs </training/apis-howto/overview>`.
+implements training APIs. Visit the :doc:`Training API Guides </training/apis-howto/overview>` for
+more information.
 
 For each experiment, you can configure a *searcher*, also known as a *search algorithm*. The search
 algorithm determines how many trials will be run for a particular experiment and how the

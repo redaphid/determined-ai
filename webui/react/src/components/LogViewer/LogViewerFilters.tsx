@@ -1,7 +1,9 @@
-import { Button, Input, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { SelectValue } from 'antd/es/select';
 import React, { useCallback, useMemo } from 'react';
 
+import Button from 'components/kit/Button';
+import Input from 'components/kit/Input';
 import { alphaNumericSorter } from 'shared/utils/sort';
 import { LogLevelFromApi } from 'types';
 
@@ -54,7 +56,7 @@ const LogViewerFilters: React.FC<Props> = ({
       levels: Object.entries(LogLevelFromApi)
         .filter((entry) => entry[1] !== LogLevelFromApi.Unspecified)
         .map(([key, value]) => ({ label: key, value })),
-      rankIds: rankIds ? rankIds.sortAll(alphaNumericSorter) : undefined,
+      rankIds: rankIds ? [-1].concat(rankIds).sortAll(alphaNumericSorter) : [-1],
     };
   }, [options]);
 
@@ -156,7 +158,7 @@ const LogViewerFilters: React.FC<Props> = ({
             onChange={handleChange('rankIds', Number)}>
             {selectOptions?.rankIds?.map((id, index) => (
               <Option key={id ?? `no-id-${index}`} value={id}>
-                {id ?? 'No Rank'}
+                {id === -1 ? 'No Rank' : id}
               </Option>
             ))}
           </Select>

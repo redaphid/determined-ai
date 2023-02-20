@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 project = "Determined"
 html_title = "Determined AI Documentation"
-copyright = "2022, Determined AI"
+copyright = "2023, Determined AI"
 author = "hello@determined.ai"
 version = pathlib.Path(__file__).parents[1].joinpath("VERSION").read_text()
 release = version
@@ -128,6 +128,12 @@ sitemap_url_scheme = "latest/{link}"
 
 redirects = {
     "api-pytorch": "training/apis-howto/api-pytorch-ug.html",
+    "apis-howto/api-core/checkpoints": "../../api-core-ug.html",
+    "apis-howto/api-core/hpsearch": "../../api-core-ug.html",
+    "apis-howto/api-core/overview": "../../api-core-ug.html",
+    "apis-howto/api-core/metrics": "../../api-core-ug.html",
+    "apis-howto/api-core/getting-started": "../../api-core-ug.html",
+    "apis-howto/api-core/distributed": "../../api-core-ug.html",
     "concepts/elastic-infrastructure": "../introduction.html",
     "concepts/index": "../architecture/index.html",
     "concepts/resource-pool": "../introduction.html",
@@ -222,7 +228,8 @@ redirects = {
     "reference/experiment-config": "../reference/reference-training/experiment-config-reference.html",
     "reference/helm-config": "../reference/reference-deploy/config/helm-config-reference.html",
     "reference/historical-cluster-usage-data": "../cluster-setup-guide/historical-cluster-usage-data.html",
-    "reference/index": "../reference/python-api.html",
+    "reference/index": "../reference/python-sdk.html",
+    "reference/python-api.html": "../reference/python-sdk.html",
     "sysadmin-basics/cluster-config": "../reference/reference-deploy/index.html",
     "sysadmin-basics/elasticsearch-logging-backend": "../cluster-setup-guide/elasticsearch-logging-backend.html",
     "sysadmin-basics/historical-cluster-usage-data": "../cluster-setup-guide/historical-cluster-usage-data.html",
@@ -301,12 +308,12 @@ redirects = {
     "topic-guides/user-interfaces": "../interfaces/commands-and-shells.html",
     "topic-guides/users": "../cluster-setup-guide/users.html",
     "topic-guides/yaml": "../introduction.html",
-    "training-apis/api-core/checkpoints": "../../training/apis-howto/api-core/checkpoints.html",
-    "training-apis/api-core/distributed": "../../training/apis-howto/api-core/distributed.html",
-    "training-apis/api-core/getting-started": "../../training/apis-howto/api-core/getting-started.html",
-    "training-apis/api-core/hpsearch": "../../training/apis-howto/api-core/hpsearch.html",
-    "training-apis/api-core/index": "../../training/apis-howto/api-core/overview.html",
-    "training-apis/api-core/metrics": "../../training/apis-howto/api-core/metrics.html",
+    "training-apis/api-core/checkpoints": "../../training/apis-howto/api-core-ug.html",
+    "training-apis/api-core/distributed": "../../training/apis-howto/api-core-ug.html",
+    "training-apis/api-core/getting-started": "../../training/apis-howto/api-core-ug.html",
+    "training-apis/api-core/hpsearch": "../../training/apis-howto/api-core-ug.html",
+    "training-apis/api-core/index": "../../training/apis-howto/api-core-ug.html",
+    "training-apis/api-core/metrics": "../../training/apis-howto/api-core-ug.html",
     "training-apis/api-core/reference": "../../reference/reference-training/training/api-core-reference.html",
     "training-apis/api-determined": "../index.html",
     "training-apis/api-estimator-reference": "../reference/reference-training/training/api-estimator-reference.html",

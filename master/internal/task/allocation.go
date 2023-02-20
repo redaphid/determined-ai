@@ -120,6 +120,8 @@ type (
 	SetAllocationProxyAddress struct {
 		ProxyAddress string
 	}
+	// IsAllocationRestoring asks the allocation if it is in the middle of a restore.
+	IsAllocationRestoring struct{}
 )
 
 const (
@@ -133,6 +135,9 @@ func NewAllocation(
 	logCtx detLogger.Context, req sproto.AllocateRequest, db db.DB, rm rm.ResourceManager,
 	logger *Logger,
 ) actor.Actor {
+	req.LogContext = detLogger.MergeContexts(logCtx, detLogger.Context{
+		"allocation-id": req.AllocationID,
+	})
 	return &Allocation{
 		db:     db,
 		rm:     rm,
@@ -143,15 +148,12 @@ func NewAllocation(
 			AllocationID: req.AllocationID,
 			TaskID:       req.TaskID,
 			Slots:        req.SlotsNeeded,
-			AgentLabel:   req.AgentLabel,
 			ResourcePool: req.ResourcePool,
 		},
 
 		resources: resourcesList{},
 
-		logCtx: detLogger.MergeContexts(logCtx, detLogger.Context{
-			"allocation-id": req.AllocationID,
-		}),
+		logCtx: req.LogContext,
 	}
 }
 
@@ -184,6 +186,10 @@ func (a *Allocation) Receive(ctx *actor.Context) error {
 		if err := a.RequestResources(ctx); err != nil {
 			a.Error(ctx, err)
 		}
+
+	case IsAllocationRestoring:
+		ctx.Respond(a.req.Restore && !a.restored)
+
 	case sproto.ResourcesAllocated:
 		if err := a.ResourcesAllocated(ctx, msg); err != nil {
 			a.Error(ctx, err)
@@ -479,6 +485,7 @@ func (a *Allocation) ResourcesAllocated(ctx *actor.Context, msg sproto.Resources
 		}
 	}
 
+	a.restored = a.req.Restore
 	a.resourcesStarted = true
 	a.sendEvent(ctx, sproto.Event{AssignedEvent: &msg})
 	return nil
@@ -622,7 +629,15 @@ func (a *Allocation) ResourcesStateChanged(
 			}))
 			a.Exit(ctx, "resources were killed")
 		case msg.ResourcesStopped.Failure != nil:
-			a.Error(ctx, *msg.ResourcesStopped.Failure)
+			// Avoid erroring out if we have killed our daemons gracefully.
+			// This occurs in the case of an early stop in dtrain. One resource
+			// will exit with a 0 exit code and kill the rest of the resources sending
+			// failed messages for these resources.
+			if a.killedDaemonsGracefully {
+				a.Exit(ctx, "remaining resources terminated")
+			} else {
+				a.Error(ctx, *msg.ResourcesStopped.Failure)
+			}
 		default:
 			a.logger.Insert(ctx, a.enrichLog(model.TaskLog{
 				ContainerID: msg.ContainerIDStr(),
@@ -658,6 +673,7 @@ func (a *Allocation) RestoreResourceFailure(
 	}
 
 	if a.req.Restore {
+		// TODO(DET-8822): This heartbeat can be nil.
 		switch heartbeat := cluster.TheLastBootClusterHeartbeat(); {
 		case a.model.StartTime == nil:
 			break
@@ -946,6 +962,12 @@ func (a *Allocation) terminated(ctx *actor.Context, reason string) {
 				ctx.Log().Debug(exitReason)
 				exit.Err = err
 				return
+			case sproto.RestoreError:
+				exitReason = fmt.Sprintf("allocation failed due to restore error: %s", err)
+				ctx.Log().Warn(exitReason)
+				exit.Err = err
+				return
+
 			default:
 				panic(fmt.Errorf("unexpected allocation failure: %w", err))
 			}
